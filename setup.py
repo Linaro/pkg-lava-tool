@@ -24,7 +24,7 @@ from launch_control_tool import get_version
 
 
 setup(
-    name = 'linaro_launch_control_tool',
+    name = 'launch_control_tool',
     version = get_version(),
     author = "Zygmunt Krynicki",
     author_email = "zygmunt.krynicki@linaro.org",
