@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# lc-tool - command line interface for validation dashboard
-#
 # Copyright (C) 2010 Linaro Limited
 #
 # Author: Zygmunt Krynicki <zygmunt.krynicki@linaro.org>
@@ -19,14 +16,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Launch Control.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Module with miscellaneous commands (such as help and version)
+"""
 
-if __name__ == '__main__':
-    try:
-        import launch_control_tool.commands
-        from launch_control_tool.dispatcher import main
-    except ImportError:
-        print "Unable to import launch_control.commands.dispatcher"
-        print "Your installation is probably faulty"
-        raise
-    else:
-        main()
+from launch_control_tool.interface import Command
+from launch_control_tool import get_version
+
+class help(Command):
+    """
+    Show a summary of all available commands
+    """
+    def invoke(self):
+        self.parser.print_help()
+
+
+class version(Command):
+    """
+    Show dashboard client version
+    """
+    def invoke(self):
+        print "Dashboard client version: {version}".format(
+                version = get_version())

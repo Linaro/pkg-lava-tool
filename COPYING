@@ -1,17 +1,13 @@
 Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=135
-Name: Launch Control 
+Name: Launch Control Tool 
 Maintainer: Linaro Infrastructure Team <infrastructure@linaro.org>
 Source: http://launchpad.net/launch-control/
 
-Files: * 
-Copyright: 2010, Linaro Limited 
-License: Affero GPL-3
-
-Files: launch-control/*
+Files: *
 Copyright: 2010, Linaro Limited 
 License: LGPL-3
 
-Files: launch-control/thirdparty/mocker.py
+Files: launch_control_tool/mocker.py
 Copyright: 2007-2010, Gustavo Niemeyer <gustavo@niemeyer.net>
 License:
  Redistribution and use in source and binary forms, with or without
