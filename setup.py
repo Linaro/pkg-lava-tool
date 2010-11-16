@@ -20,26 +20,22 @@
 
 from setuptools import setup, find_packages
 
-from dashboard_app import get_version
+from launch_control_tool import get_version
 
 
 setup(
-        name = 'launch-control',
+        name = 'linaro_launch_control_tool',
         version = get_version(),
         author = "Zygmunt Krynicki",
         author_email = "zygmunt.krynicki@linaro.org",
-        packages = ['dashboard_app', 'launch_control', 'dashboard_server'],
+        packages = find_packages(),
         scripts = ['lc-tool.py'],
-        long_description = """
-        Launch control is a collection of tools for distribution wide QA
-        management. It is implemented for the Linaro organization.
-        """,
-        url='https://launchpad.net/launch-control',
-        test_suite='launch_control.tests.test_suite',
+        description = "Command line utility for launch-control",
+        url='https://launchpad.net/launch-control-tool',
+        test_suite='launch_control_tool.tests.test_suite',
         classifiers=[
             "Development Status :: 3 - Alpha",
             "Intended Audience :: Developers",
-            "License :: OSI Approved :: GNU Affero General Public License v3",
             "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
             "Operating System :: OS Independent",
             "Programming Language :: Python :: 2.6",
