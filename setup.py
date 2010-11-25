@@ -4,19 +4,19 @@
 #
 # Author: Zygmunt Krynicki <zygmunt.krynicki@linaro.org>
 #
-# This file is part of Launch Control.
+# This file is part of launch-control-tool.
 #
-# Launch Control is free software: you can redistribute it and/or modify
+# launch-control-tool is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License version 3
 # as published by the Free Software Foundation
 #
-# Launch Control is distributed in the hope that it will be useful,
+# launch-control-tool is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with Launch Control.  If not, see <http://www.gnu.org/licenses/>.
+# along with launch-control-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup, find_packages
 
@@ -24,17 +24,17 @@ from launch_control_tool import get_version
 
 
 setup(
-    name = 'launch_control_tool',
+    name = 'launch-control-tool',
     version = get_version(),
     author = "Zygmunt Krynicki",
     author_email = "zygmunt.krynicki@linaro.org",
     packages = find_packages(),
     scripts = ['lc-tool.py'],
-    description = "Command line utility for launch-control",
+    description = "Command line utility for Launch Control",
     url='https://launchpad.net/launch-control-tool',
     test_suite='launch_control_tool.tests.test_suite',
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
         "Operating System :: OS Independent",
