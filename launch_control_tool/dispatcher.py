@@ -21,9 +21,7 @@ Module with LaunchControlDispatcher - the command dispatcher
 """
 
 import argparse
-import sys
-
-from launch_control_tool.interface import Command
+import pkg_resources
 
 
 class LaunchControlDispatcher(object):
@@ -43,9 +41,8 @@ class LaunchControlDispatcher(object):
                 add_help=False)
         self.subparsers = self.parser.add_subparsers(
                 title="Sub-command to invoke")
-        for command_cls in Command.get_subclasses():
-            if getattr(command_cls, '__abstract__', False):
-                continue
+        for entrypoint in pkg_resources.iter_entry_points("launch_control_tool.commands"):
+            command_cls = entrypoint.load()
             sub_parser = self.subparsers.add_parser(
                     command_cls.get_name(),
                     help=command_cls.get_help())
@@ -59,5 +56,6 @@ class LaunchControlDispatcher(object):
 
 
 def main():
-    sys.exit(LaunchControlDispatcher().dispatch())
+    raise SystemExit(
+        LaunchControlDispatcher().dispatch())
 

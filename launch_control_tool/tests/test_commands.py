@@ -76,40 +76,6 @@ class CommandTestCase(MockerTestCase):
 
 class DispatcherTestCase(MockerTestCase):
 
-    def test_command_registration(self):
-        TestCmd = self.mocker.mock()
-        Command = self.mocker.replace('launch_control_tool.interface.Command')
-        expect(Command.get_subclasses()).result([TestCmd])
-        expect(TestCmd.__abstract__).result(False)
-        expect(TestCmd.get_name()).result("TestCmd")
-        expect(TestCmd.get_help()).result("test command")
-        expect(TestCmd.register_arguments(ANY))
-        self.mocker.replay()
-        lcd = LaunchControlDispatcher()
-
-    def test_command_registration_skips_abstract_classes(self):
-        TestCmd = self.mocker.mock()
-        Command = self.mocker.replace('launch_control_tool.interface.Command')
-        expect(Command.get_subclasses()).result([TestCmd])
-        expect(TestCmd.__abstract__).result(True)
-        self.mocker.replay()
-        lcd = LaunchControlDispatcher()
-
-    def test_command_dispatch(self):
-        TestCmd = self.mocker.mock()
-        test_cmd_obj = self.mocker.mock()
-        Command = self.mocker.replace('launch_control_tool.interface.Command')
-        expect(Command.get_subclasses()).result([TestCmd])
-        expect(TestCmd.__abstract__).result(False)
-        expect(TestCmd.get_name()).result("TestCmd")
-        expect(TestCmd.get_help()).result("test command")
-        expect(TestCmd.register_arguments(ANY))
-        expect(TestCmd(ANY, ANY)).result(test_cmd_obj)
-        expect(test_cmd_obj.invoke())
-        self.mocker.replay()
-        lcd = LaunchControlDispatcher()
-        lcd.dispatch(["TestCmd"])
-
     def test_main(self):
         LaunchControlDispatcher = self.mocker.replace('launch_control_tool.dispatcher.LaunchControlDispatcher')
         LaunchControlDispatcher().dispatch()
