@@ -31,14 +31,12 @@ def app_modules():
             'launch_control_tool.commands.misc',
             'launch_control_tool.dispatcher',
             'launch_control_tool.interface',
-            'launch_control_tool.registry',
             ]
 
 
 def test_modules():
     return [
             'launch_control_tool.tests.test_commands',
-            'launch_control_tool.tests.test_registry',
             ]
 
 

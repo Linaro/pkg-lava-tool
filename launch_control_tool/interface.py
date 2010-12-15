@@ -22,10 +22,8 @@ Interface for all launch-control-tool commands
 
 import inspect
 
-from launch_control_tool.registry import RegistryBase
 
-
-class Command(RegistryBase):
+class Command(object):
     """
     Base class for all command line tool sub-commands.
     """

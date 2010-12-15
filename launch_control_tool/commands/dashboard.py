@@ -269,9 +269,6 @@ class XMLRPCCommand(Command):
     socket and XML-RPC errors and prints a pretty error message.
     """
 
-    __abstract__ = True
-
-
     @staticmethod
     def _construct_xml_rpc_url(url):
         """
@@ -343,8 +340,6 @@ class server_version(XMLRPCCommand):
     Display dashboard server version
     """
 
-    __abstract__ = False
-
     def invoke_remote(self):
         print "Dashboard server version: %s" % (self.server.version(),)
 
@@ -353,7 +348,6 @@ class put(XMLRPCCommand):
     """
     Upload a bundle on the server
     """
-    __abstract__ = False
 
     @classmethod
     def register_arguments(cls, parser):
@@ -386,7 +380,6 @@ class get(XMLRPCCommand):
     """
     Download a bundle from the server
     """
-    __abstract__ = False
 
     @classmethod
     def register_arguments(cls, parser):
@@ -431,7 +424,6 @@ class deserialize(XMLRPCCommand):
     """
     Deserialize a bundle on the server
     """
-    __abstract__ = False
 
     @classmethod
     def register_arguments(cls, parser):
@@ -461,7 +453,6 @@ class streams(XMLRPCCommand):
     """
     Show streams you have access to
     """
-    __abstract__ = False
 
     renderer = DataSetRenderer(
             order = ('pathname', 'bundle_count', 'name'),
@@ -485,7 +476,6 @@ class bundles(XMLRPCCommand):
     """
     Show bundles in the specified stream
     """
-    __abstract__ = False
 
     renderer = DataSetRenderer(
             column_map = {
