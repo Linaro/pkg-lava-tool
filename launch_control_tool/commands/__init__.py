@@ -19,7 +19,3 @@
 """
 Package with command line commands
 """
-
-# Trigger command registration
-from launch_control_tool.commands import misc
-from launch_control_tool.commands import dashboard

@@ -29,10 +29,22 @@ setup(
     author = "Zygmunt Krynicki",
     author_email = "zygmunt.krynicki@linaro.org",
     packages = find_packages(),
-    scripts = ['lc-tool.py'],
     description = "Command line utility for Launch Control",
     url='https://launchpad.net/launch-control-tool',
     test_suite='launch_control_tool.tests.test_suite',
+    entry_points = """
+    [console_scripts]
+    lc-tool = launch_control_tool.dispatcher:main
+    [launch_control_tool.commands]
+    bundles = launch_control_tool.commands.dashboard:bundles
+    deserialize = launch_control_tool.commands.dashboard:deserialize
+    get = launch_control_tool.commands.dashboard:get
+    help = launch_control_tool.commands.misc:help
+    put = launch_control_tool.commands.dashboard:put
+    server_version = launch_control_tool.commands.dashboard:server_version
+    streams = launch_control_tool.commands.dashboard:streams
+    version = launch_control_tool.commands.misc:version
+    """,
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
