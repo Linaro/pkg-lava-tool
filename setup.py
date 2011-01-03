@@ -56,6 +56,9 @@ setup(
     install_requires = [
         'versiontools >= 1.0.1',
     ],
+    setup_requires = [
+        'versiontools >= 1.0.1',
+    ],
     tests_require = [
     ],
     zip_safe = True,
