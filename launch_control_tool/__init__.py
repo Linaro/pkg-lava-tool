@@ -22,7 +22,7 @@ Launch Control Tool package
 
 from versiontools import Version
 
-__version__ = Version(0, 3, 0, "dev")
+__version__ = Version(0, 3, 0, "final")
 
 
 def get_version():
