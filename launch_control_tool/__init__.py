@@ -20,22 +20,13 @@
 Launch Control Tool package
 """
 
+from versiontools import Version
 
-__version__ = (0, 3, 0, "dev", 0)
+__version__ = Version(0, 3, 0, "dev")
 
 
 def get_version():
     """
     Return a string representing the version of this package
     """
-    # XXX: I should get this code in a common library someday
-    major, minor, micro, releaselevel, serial = __version__
-    assert releaselevel in ('dev', 'alpha', 'beta', 'candidate', 'final')
-    base_version = "%s.%s" % (major, minor)
-    if micro != 0:
-        base_version += ".%s" % micro
-    if releaselevel != 'final':
-        base_version += "-%s" % releaselevel
-    return base_version
-
-
+    return str(__version__)

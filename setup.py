@@ -53,4 +53,10 @@ setup(
         "Programming Language :: Python :: 2.6",
         "Topic :: Software Development :: Testing",
     ],
+    install_requires = [
+        'versiontools >= 1.0.1',
+    ],
+    tests_require = [
+    ],
+    zip_safe = True,
 )
