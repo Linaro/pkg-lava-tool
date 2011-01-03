@@ -20,9 +20,13 @@
 Launch Control Tool package
 """
 
-from versiontools import Version
-
-__version__ = Version(0, 3, 0, "final")
+# Chicken-and-egg problem
+__version__ = "0.3.1.final"
+try:
+    import versiontools
+    __version__ = versiontools.Version(*__version__.split("."))
+except ImportError:
+    pass
 
 
 def get_version():
