@@ -55,6 +55,7 @@ setup(
     ],
     install_requires = [
         'versiontools >= 1.0.1',
+        'argparse >= 1.1'
     ],
     setup_requires = [
         'versiontools >= 1.0.1',
