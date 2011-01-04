@@ -21,7 +21,7 @@ Launch Control Tool package
 """
 
 # Chicken-and-egg problem
-__version__ = "0.3.1.final"
+__version__ = "0.3.2.final"
 try:
     import versiontools
     __version__ = versiontools.Version(*__version__.split("."))
