@@ -21,10 +21,10 @@ Launch Control Tool package
 """
 
 # Chicken-and-egg problem
-__version__ = "0.3.2.final"
+__version__ = (0, 3, 2, "final", 0)
 try:
     import versiontools
-    __version__ = versiontools.Version(*__version__.split("."))
+    __version__ = versiontools.Version.from_tuple(__version__)
 except ImportError:
     pass
 
