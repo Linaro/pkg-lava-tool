@@ -19,13 +19,13 @@
 # along with launch-control-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup, find_packages
-
-from launch_control_tool import get_version
+import versiontools
+import launch_control_tool
 
 
 setup(
     name = 'launch-control-tool',
-    version = get_version(),
+    version = versiontools.format_version(launch_control_tool.__version__),
     author = "Zygmunt Krynicki",
     author_email = "zygmunt.krynicki@linaro.org",
     packages = find_packages(),
@@ -54,11 +54,11 @@ setup(
         "Topic :: Software Development :: Testing",
     ],
     install_requires = [
-        'versiontools >= 1.0.1',
+        'versiontools >= 1.1.c1.dev21',
         'argparse >= 1.1'
     ],
     setup_requires = [
-        'versiontools >= 1.0.1',
+        'versiontools >= 1.1.c1.dev21',
     ],
     tests_require = [
     ],
