@@ -32,6 +32,7 @@ setup(
     description = "Command line utility for Launch Control",
     url='https://launchpad.net/launch-control-tool',
     test_suite='launch_control_tool.tests.test_suite',
+    license="LGPLv3",
     entry_points = """
     [console_scripts]
     lc-tool = launch_control_tool.dispatcher:main
