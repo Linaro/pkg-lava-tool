@@ -21,7 +21,7 @@ Launch Control Tool package
 """
 
 # Chicken-and-egg problem
-__version__ = (0, 3, 2, "final", 0)
+__version__ = (0, 3, 3, "final", 0)
 try:
     import versiontools
     __version__ = versiontools.Version.from_tuple(__version__)
