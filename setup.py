@@ -54,11 +54,11 @@ setup(
         "Topic :: Software Development :: Testing",
     ],
     install_requires = [
-        'versiontools >= 1.1.c1.dev21',
+        'versiontools >= 1.1',
         'argparse >= 1.1'
     ],
     setup_requires = [
-        'versiontools >= 1.1.c1.dev21',
+        'versiontools >= 1.1',
     ],
     tests_require = [
     ],
