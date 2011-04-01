@@ -368,10 +368,10 @@ class put(XMLRPCCommand):
 
     def handle_xmlrpc_fault(self, faultCode, faultString):
         if faultCode == 404:
-            print "Bundle stream %s does not exist" % (
+            print >>sys.stderr, "Bundle stream %s does not exist" % (
                     self.args.REMOTE)
         elif faultCode == 409:
-            print "You have already uploaded this bundle to the dashboard"
+            print >>sys.stderr, "You have already uploaded this bundle to the dashboard"
         else:
             super(put, self).handle_xmlrpc_fault(faultCode, faultString)
 
