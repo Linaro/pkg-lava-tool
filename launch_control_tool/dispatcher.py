@@ -44,8 +44,9 @@ class LaunchControlDispatcher(object):
         for entrypoint in pkg_resources.iter_entry_points("launch_control_tool.commands"):
             command_cls = entrypoint.load()
             sub_parser = self.subparsers.add_parser(
-                    command_cls.get_name(),
-                    help=command_cls.get_help())
+                command_cls.get_name(),
+                help=command_cls.get_help(),
+                epilog=command_cls.get_epilog())
             sub_parser.set_defaults(command_cls=command_cls)
             command_cls.register_arguments(sub_parser)
 
