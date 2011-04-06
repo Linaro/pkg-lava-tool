@@ -299,6 +299,7 @@ class XMLRPCCommand(Command):
         group.add_argument("--verbose-xml-rpc",
                 action="store_true", default=False,
                 help="Show XML-RPC data")
+        return group
 
     def invoke(self):
         try:
@@ -588,3 +589,37 @@ class restore(XMLRPCCommand):
                     content = stream.read()
                 self.server.put(content, content_filename, stream_pathname)
             
+
+class pull(XMLRPCCommand):
+    """
+    Pull bundles and bundle streams from one REMOTE DASHBOARD to DASHBOARD
+    """
+
+    def __init__(self, parser, args):
+        super(pull, self).__init__(parser, args)
+        remote_xml_rpc_url = self._construct_xml_rpc_url(self.args.remote_dashboard_url) 
+        self.remote_server = xmlrpclib.ServerProxy(remote_xml_rpc_url, use_datetime=True,
+                allow_none=True, verbose=args.verbose_xml_rpc)
+
+    @classmethod
+    def register_arguments(cls, parser):
+        group = super(pull, cls).register_arguments(parser)
+        group.add_argument("--remote-dashboard-url", required=True,
+                metavar="REMOTE_URL", help="URL of the remote validation dashboard")
+
+    def invoke_remote(self):
+        print "Checking local and remote streams"
+        remote = [stream["pathname"] for stream in self.remote_server.streams()]
+        local = [stream["pathname"] for stream in self.server.streams()]
+        missing = set(remote) - set(local)
+        for stream_pathname in remote:
+            if stream_pathname in missing:
+                print "Creating missing stream %s" % stream_pathname
+                self.server.make_stream(stream_pathname)
+            local_bundles = [bundle["content_sha1"] for bundle in self.server.bundles(stream_pathname)]
+            remote_bundles = [bundle["content_sha1"] for bundle in self.remote_server.bundles(stream_pathname)]
+            missing_bundles = set(remote_bundles) - set(local_bundles)
+            for content_sha1 in missing_bundles:
+                print "Pulling bundle %s" % content_sha1
+                data = self.remote_server.get(content_sha1)
+                self.server.put(data["content"], data["content_filename"], stream_pathname)
