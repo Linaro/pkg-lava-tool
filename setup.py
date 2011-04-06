@@ -43,6 +43,9 @@ setup(
     help = launch_control_tool.commands.misc:help
     put = launch_control_tool.commands.dashboard:put
     server_version = launch_control_tool.commands.dashboard:server_version
+    make_stream = launch_control_tool.commands.dashboard:make_stream
+    backup = launch_control_tool.commands.dashboard:backup
+    restore = launch_control_tool.commands.dashboard:restore
     streams = launch_control_tool.commands.dashboard:streams
     version = launch_control_tool.commands.misc:version
     """,
