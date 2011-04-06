@@ -565,6 +565,7 @@ class make_stream(XMLRPCCommand):
 
 
     def invoke_remote(self):
+        self._check_server_version(self.server, "0.3.0.candidate.9")
         pathname = self.server.make_stream(self.args.pathname, self.args.name)
         print "Bundle stream {pathname} created".format(pathname=pathname)
 
@@ -612,6 +613,7 @@ class restore(XMLRPCCommand):
                             help="Directory to backup from")
 
     def invoke_remote(self):
+        self._check_server_version(self.server, "0.3.0.candidate.9")
         for stream_pathname_quoted in os.listdir(self.args.BACKUP_DIR):
             filesystem_stream_pathname = os.path.join(self.args.BACKUP_DIR, stream_pathname_quoted)
             if not os.path.isdir(filesystem_stream_pathname):
@@ -648,6 +650,7 @@ class pull(XMLRPCCommand):
                 metavar="REMOTE_URL", help="URL of the remote validation dashboard")
 
     def invoke_remote(self):
+        self._check_server_version(self.server, "0.3.0.candidate.9")
         print "Checking local and remote streams"
         remote = self.remote_server.streams()
         local = self.server.streams()
