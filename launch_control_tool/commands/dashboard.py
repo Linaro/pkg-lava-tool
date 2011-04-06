@@ -27,6 +27,7 @@ import os
 import socket
 import sys
 import urlparse
+import urllib
 import xmlrpclib
 
 import argparse
@@ -512,3 +513,78 @@ class bundles(XMLRPCCommand):
                     self.args.PATHNAME)
         else:
             super(bundles, self).handle_xmlrpc_fault(faultCode, faultString)
+
+
+class make_stream(XMLRPCCommand):
+    """
+    Create a bundle stream on the server
+    """
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(make_stream, cls).register_arguments(parser)
+        parser.add_argument("pathname",
+                type=str,
+                help="Pathname of the bundle stream to create")
+
+    def invoke_remote(self):
+        pathname = self.server.make_stream(self.args.pathname)
+        print "Bundle stream {pathname} created".format(pathname=pathname)
+
+
+class backup(XMLRPCCommand):
+    """
+    Backup a dashboard instance
+    """
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(backup, cls).register_arguments(parser)
+        parser.add_argument("BACKUP_DIR", type=str,
+                            help="Directory to backup to")
+
+    def invoke_remote(self):
+        if not os.path.exists(self.args.BACKUP_DIR):
+            os.mkdir(self.args.BACKUP_DIR)
+        for stream in self.server.streams():
+            print "Processing stream %s" % stream["pathname"]
+            stream_dir = os.path.join(self.args.BACKUP_DIR, urllib.quote_plus(stream["pathname"]))
+            if not os.path.exists(stream_dir):
+                os.mkdir(stream_dir)
+            for bundle in self.server.bundles(stream["pathname"]):
+                print " * Backing up bundle %s" % bundle["content_filename"]
+                data = self.server.get(bundle["content_sha1"])
+                bundle_pathname = os.path.join(stream_dir, urllib.quote_plus(data["content_filename"]))
+                with open(bundle_pathname, "wb") as stream:
+                    stream.write(data["content"])
+
+
+class restore(XMLRPCCommand):
+    """
+    Restore a dashboard instance from backup
+    """
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(restore, cls).register_arguments(parser)
+        parser.add_argument("BACKUP_DIR", type=str,
+                            help="Directory to backup from")
+
+    def invoke_remote(self):
+        for stream_pathname_quoted in os.listdir(self.args.BACKUP_DIR):
+            filesystem_stream_pathname = os.path.join(self.args.BACKUP_DIR, stream_pathname_quoted)
+            if not os.path.isdir(filesystem_stream_pathname):
+                continue
+            stream_pathname = urllib.unquote(stream_pathname_quoted)
+            print "Processing stream %s" % stream_pathname
+            self.server.make_stream(stream_pathname)
+            for content_filename_quoted in os.listdir(filesystem_stream_pathname):
+                filesystem_content_filename = os.path.join(filesystem_stream_pathname, content_filename_quoted)
+                if not os.path.isfile(filesystem_content_filename):
+                    continue
+                content_filename = urllib.unquote(content_filename_quoted)
+                print " * Restoring bundle %s" % content_filename
+                with open(filesystem_content_filename, "rb") as stream:
+                    content = stream.read()
+                self.server.put(content, content_filename, stream_pathname)
+            
