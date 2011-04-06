@@ -62,7 +62,23 @@ class Command(object):
         """
         Return the help message of this command
         """
-        return inspect.getdoc(cls)
+        doc = inspect.getdoc(cls)
+        if "" in doc:
+            doc = doc[:doc.index("")]
+        return doc
+
+    @classmethod
+    def get_epilog(cls):
+        """
+        Return the epilog of the help message
+        """
+        doc = inspect.getdoc(cls)
+        if "" in doc:
+            doc = doc[doc.index(""):]
+        else:
+            doc = None
+        return doc
+
 
     @classmethod
     def register_arguments(cls, parser):
