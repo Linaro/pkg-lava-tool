@@ -46,6 +46,7 @@ setup(
     make_stream = launch_control_tool.commands.dashboard:make_stream
     backup = launch_control_tool.commands.dashboard:backup
     restore = launch_control_tool.commands.dashboard:restore
+    pull = launch_control_tool.commands.dashboard:pull
     streams = launch_control_tool.commands.dashboard:streams
     version = launch_control_tool.commands.misc:version
     """,
