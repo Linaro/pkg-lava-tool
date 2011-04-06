@@ -571,7 +571,11 @@ class make_stream(XMLRPCCommand):
 
 class backup(XMLRPCCommand):
     """
-    Backup a dashboard instance
+    Backup data uploaded to a dashboard instance.
+    
+    Not all data is preserved. The following data is lost: identity of the user
+    that uploaded each bundle, time of uploading and deserialization on the
+    server, name of the bundle stream that contained the data
     """
 
     @classmethod
