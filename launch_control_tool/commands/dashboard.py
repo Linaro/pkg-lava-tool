@@ -645,17 +645,17 @@ class pull(XMLRPCCommand):
 
     def invoke_remote(self):
         print "Checking local and remote streams"
-        remote = [stream["pathname"] for stream in self.remote_server.streams()]
-        local = [stream["pathname"] for stream in self.server.streams()]
-        missing = set(remote) - set(local)
-        for stream_pathname in remote:
-            if stream_pathname in missing:
-                print "Creating missing stream %s" % stream_pathname
-                self.server.make_stream(stream_pathname)
-            local_bundles = [bundle["content_sha1"] for bundle in self.server.bundles(stream_pathname)]
-            remote_bundles = [bundle["content_sha1"] for bundle in self.remote_server.bundles(stream_pathname)]
+        remote = self.remote_server.streams()
+        local = self.server.streams()
+        missing_pathnames = set([stream["pathname"] for stream in remote]) - set([stream["pathname"] for stream in local])
+        for stream in remote:
+            if stream["pathname"] in missing_pathnames:
+                print "Creating missing stream %s" % stream["pathname"]
+                self.server.make_stream(stream["pathname"], stream["name"])
+            local_bundles = [bundle["content_sha1"] for bundle in self.server.bundles(stream["pathname"])]
+            remote_bundles = [bundle["content_sha1"] for bundle in self.remote_server.bundles(stream["pathname"])]
             missing_bundles = set(remote_bundles) - set(local_bundles)
             for content_sha1 in missing_bundles:
                 print "Pulling bundle %s" % content_sha1
                 data = self.remote_server.get(content_sha1)
-                self.server.put(data["content"], data["content_filename"], stream_pathname)
+                self.server.put(data["content"], data["content_filename"], stream["pathname"])
