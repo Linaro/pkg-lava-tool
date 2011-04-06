@@ -524,12 +524,19 @@ class make_stream(XMLRPCCommand):
     @classmethod
     def register_arguments(cls, parser):
         super(make_stream, cls).register_arguments(parser)
-        parser.add_argument("pathname",
-                type=str,
-                help="Pathname of the bundle stream to create")
+        parser.add_argument(
+            "pathname",
+            type=str,
+            help="Pathname of the bundle stream to create")
+        parser.add_argument(
+            "--name",
+            type=str,
+            default=None,
+            help="Name of the bundle stream (description)")
+
 
     def invoke_remote(self):
-        pathname = self.server.make_stream(self.args.pathname)
+        pathname = self.server.make_stream(self.args.pathname, self.args.name)
         print "Bundle stream {pathname} created".format(pathname=pathname)
 
 
