@@ -35,6 +35,16 @@ import argparse
 from launch_control_tool.interface import Command
 
 
+class InsufficientServerVersion(Exception):
+    """
+    Exception raised when server version that a command interacts with is too
+    old to support required features.
+    """
+    def __init__(self, server_version, required_version):
+        self.server_version = server_version
+        self.required_version = required_version
+
+
 class DataSetRenderer(object):
     """
     Support class for rendering a table out of list of dictionaries.
@@ -279,6 +289,21 @@ class XMLRPCCommand(Command):
         return urlparse.urlunsplit(
             (parts.scheme, parts.netloc, parts.path.rstrip("/") + "/xml-rpc/", "", ""))
 
+    def _check_server_version(self, server_obj, required_version):
+        """
+        Check that server object has is at least required_version.
+        which must be a tuple of integer (major, minor, micro).
+
+        This method may raise InsufficientServerVersion.
+        """
+        from distutils.version import StrictVersion, LooseVersion
+        # For backwards compatibility the server reports
+        # major.minor.micro.releaselevel.serial which is not PEP-386 compliant
+        server_version = LooseVersion(server_obj.version())
+        required_version = LooseVersion(required_version)
+        if server_version < required_version:
+            raise InsufficientServerVersion(server_version, required_version)
+
     def __init__(self, parser, args):
         super(XMLRPCCommand, self).__init__(parser, args)
         xml_rpc_url = self._construct_xml_rpc_url(self.args.dashboard_url) 
@@ -324,6 +349,10 @@ class XMLRPCCommand(Command):
             print >>sys.stderr, "HTTP error code: %d/%s" % (ex.errcode, ex.errmsg)
         except xmlrpclib.Fault as ex:
             self.handle_xmlrpc_fault(ex.faultCode, ex.faultString)
+        except InsufficientServerVersion as ex:
+            print >>sys.stderr, ("This command requires at least server version "
+                                 "%s, actual server version is %s" %
+                                 (ex.required_version, ex.server_version))
         return -1
 
     def handle_xmlrpc_fault(self, faultCode, faultString):
