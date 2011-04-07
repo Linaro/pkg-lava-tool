@@ -620,7 +620,7 @@ class restore(XMLRPCCommand):
                 continue
             stream_pathname = urllib.unquote(stream_pathname_quoted)
             print "Processing stream %s" % stream_pathname
-            self.server.make_stream(stream_pathname)
+            self.server.make_stream(stream_pathname, "Restored from backup")
             for content_filename_quoted in os.listdir(filesystem_stream_pathname):
                 filesystem_content_filename = os.path.join(filesystem_stream_pathname, content_filename_quoted)
                 if not os.path.isfile(filesystem_content_filename):
