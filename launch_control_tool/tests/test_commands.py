@@ -73,6 +73,28 @@ class CommandTestCase(MockerTestCase):
         class mysterious(Command): pass
         self.assertEqual(mysterious.get_help(), None)
 
+    def test_get_epilog_defaults_to_None(self):
+        class mysterious(Command): pass
+        self.assertEqual(mysterious.get_epilog(), None)
+
+    def test_get_epilog_returns_data_after_carriage_L(self):
+        class help_with_epilog(Command):
+            """
+            before
+            
+            after
+            """
+        self.assertEqual(help_with_epilog.get_epilog(), "after")
+
+    def test_get_help_returns_data_before_carriage_L(self):
+        class help_with_epilog(Command):
+            """
+            before
+            
+            after
+            """
+        self.assertEqual(help_with_epilog.get_help(), "before")
+
 
 class DispatcherTestCase(MockerTestCase):
 
