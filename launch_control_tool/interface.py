@@ -63,8 +63,8 @@ class Command(object):
         Return the help message of this command
         """
         doc = inspect.getdoc(cls)
-        if "" in doc:
-            doc = doc[:doc.index("")]
+        if doc is not None and "" in doc:
+            doc = doc[:doc.index("")].rstrip()
         return doc
 
     @classmethod
@@ -73,12 +73,11 @@ class Command(object):
         Return the epilog of the help message
         """
         doc = inspect.getdoc(cls)
-        if "" in doc:
-            doc = doc[doc.index(""):]
+        if doc is not None and "" in doc:
+            doc = doc[doc.index("")+1:].lstrip()
         else:
             doc = None
         return doc
-
 
     @classmethod
     def register_arguments(cls, parser):
