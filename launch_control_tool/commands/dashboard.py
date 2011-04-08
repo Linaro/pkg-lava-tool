@@ -326,9 +326,10 @@ class XMLRPCCommand(Command):
                 help="Show XML-RPC data")
         return group
 
-    def invoke(self):
+    @contextlib.contextmanager
+    def safety_net(self):
         try:
-            return self.invoke_remote()
+            yield
         except socket.error as ex:
             print >>sys.stderr, "Unable to connect to server at %s" % (
                     self.args.dashboard_url,)
@@ -353,7 +354,10 @@ class XMLRPCCommand(Command):
             print >>sys.stderr, ("This command requires at least server version "
                                  "%s, actual server version is %s" %
                                  (ex.required_version, ex.server_version))
-        return -1
+
+    def invoke(self):
+        with self.safety_net():
+            return self.invoke_remote()
 
     def handle_xmlrpc_fault(self, faultCode, faultString):
         if faultCode == 500:
