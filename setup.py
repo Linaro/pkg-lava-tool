@@ -48,6 +48,7 @@ setup(
     restore = launch_control_tool.commands.dashboard:restore
     pull = launch_control_tool.commands.dashboard:pull
     streams = launch_control_tool.commands.dashboard:streams
+    data_views = launch_control_tool.commands.dashboard:data_views
     version = launch_control_tool.commands.misc:version
     """,
     classifiers=[
