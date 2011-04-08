@@ -670,3 +670,24 @@ class pull(XMLRPCCommand):
                 print "Pulling bundle %s" % content_sha1
                 data = self.remote_server.get(content_sha1)
                 self.server.put(data["content"], data["content_filename"], stream["pathname"])
+
+
+class data_views(XMLRPCCommand):
+    """
+    Show data views defined on the server
+    """
+    renderer = DataSetRenderer(
+        column_map = {
+            'name': 'Name',
+            'summary': 'Summary',
+        },
+        order = ('name', 'summary'),
+        empty = "There are no data views defined yet",
+        caption = "Data Views",
+        separator = " | ")
+
+    def invoke_remote(self):
+        self._check_server_version(self.server, "0.4.0.dev")
+        self.renderer.render(self.server.data_views())
+        print
+        print "Tip: to invoke a data view try `lc-tool query-data-view`"
