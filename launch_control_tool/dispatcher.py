@@ -36,7 +36,7 @@ class LaunchControlDispatcher(object):
                 """,
                 epilog="""
                 Please report all bugs using the Launchpad bug tracker:
-                http://bugs.launchpad.net/launch-control/+filebug
+                http://bugs.launchpad.net/launch-control-tool/+filebug
                 """,
                 add_help=False)
         self.subparsers = self.parser.add_subparsers(
