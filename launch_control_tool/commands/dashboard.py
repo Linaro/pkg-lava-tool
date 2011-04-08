@@ -22,15 +22,15 @@ server. All commands listed here should have counterparts in the
 launch_control.dashboard_app.xml_rpc package.
 """
 
+import argparse
+import contextlib
 import errno
 import os
 import socket
 import sys
-import urlparse
 import urllib
+import urlparse
 import xmlrpclib
-
-import argparse
 
 from launch_control_tool.interface import Command
 
