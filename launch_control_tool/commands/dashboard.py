@@ -691,3 +691,73 @@ class data_views(XMLRPCCommand):
         self.renderer.render(self.server.data_views())
         print
         print "Tip: to invoke a data view try `lc-tool query-data-view`"
+
+
+class query_data_view(XMLRPCCommand):
+    """
+    Invoke a specified data view
+    """
+    @classmethod
+    def register_arguments(cls, parser):
+        super(query_data_view, cls).register_arguments(parser)
+        parser.add_argument("QUERY", metavar="QUERY", nargs="...",
+                           help="Data view name and any optional and required arguments")
+
+    def _probe_data_views(self):
+        """
+        Probe the server for information about data views
+        """
+        with self.safety_net():
+            self._check_server_version(self.server, "0.4.0.dev")
+            return self.server.data_views()
+
+    def reparse_arguments(self, parser, raw_args):
+        self.data_views = self._probe_data_views()
+        if self.data_views is None:
+            return
+        # Here we hack a little, the last actuin is the QUERY action added
+        # in register_arguments above. By removing it we make the output
+        # of lc-tool query-data-view NAME --help more consistent.
+        del parser._actions[-1]
+        subparsers = parser.add_subparsers(
+            title="Data views available on the server")
+        for data_view in self.data_views: 
+            data_view_parser = subparsers.add_parser(
+                data_view["name"],
+                help=data_view["summary"],
+                epilog=data_view["documentation"])
+            data_view_parser.set_defaults(data_view=data_view)
+            group = data_view_parser.add_argument_group("Data view parameters")
+            for argument in data_view["arguments"]:
+                group.add_argument(
+                    "--{name}".format(name=argument["name"]),
+                    help=argument["help"],
+                    type=str,
+                    default=argument["default"])
+        self.args = self.parser.parse_args(raw_args)
+
+    def invoke_remote(self):
+        if self.data_views is None:
+            return -1
+        self._check_server_version(self.server, "0.4.0.dev")
+        # Build a collection of arguments for data view
+        data_view_args = {}
+        for argument in self.args.data_view["arguments"]:
+            arg_name = argument["name"]
+            if arg_name in self.args:
+                data_view_args[arg_name] = getattr(self.args, arg_name) 
+        # Invoke the data view
+        response = self.server.query_data_view(self.args.data_view["name"], data_view_args) 
+        # Create a pretty-printer
+        renderer = DataSetRenderer(
+            separator=" | ",
+            caption=self.args.data_view["summary"],
+            order=[item["name"] for item in response["columns"]])
+        # Post-process the data so that it fits the printer
+        data_for_renderer = [
+            dict(zip(
+                [column["name"] for column in response["columns"]],
+                row))
+            for row in response["rows"]]
+        # Print the data
+        renderer.render(data_for_renderer)
