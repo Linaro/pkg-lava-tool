@@ -26,6 +26,7 @@ import argparse
 import contextlib
 import errno
 import os
+import re
 import socket
 import sys
 import urllib
@@ -370,6 +371,61 @@ class XMLRPCCommand(Command):
         raise NotImplementedError()
 
 
+class ExperimentalNoticeAction(argparse.Action):
+    """
+    Argparse action that implements the --experimental-notice
+    """
+
+    message = """
+    Some lc-tool sub-commands are marked as EXPERIMENTAL. Those commands are
+    not guaranteed to work identically, or have identical interface between
+    subsequent lc-tool releases.
+
+    We do that to make it possible to provide good user interface and
+    server-side API when working on new features. Once a feature is stabilized
+    the UI will be frozen and all subsequent changes will retain backwards
+    compatibility.
+    """
+    message = message.lstrip()
+    message = re.sub(re.compile("[ \t]+", re.M), " ", message)
+    message = re.sub(re.compile("^ ", re.M), "", message)
+
+    def __init__(self,
+                 option_strings, dest, default=None, required=False,
+                 help=None):
+        super(ExperimentalNoticeAction, self).__init__(
+            option_strings=option_strings, dest=dest, default=default, nargs=0,
+            help=help)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        parser.exit(message=self.message)
+
+
+class ExperimentalCommandMixIn(object):
+    """
+    Experimental command.
+
+    Prints a warning message on each call to invoke()
+    """
+
+    def invoke(self):
+        self.print_experimental_notice()
+        return super(ExperimentalCommandMixIn, self).invoke()
+
+    @classmethod
+    def register_arguments(cls, parser):
+        retval = super(ExperimentalCommandMixIn, cls).register_arguments(parser)
+        parser.register("action", "experimental_notice", ExperimentalNoticeAction)
+        parser.add_argument("--experimental-notice",
+                            action="experimental_notice",
+                            default=argparse.SUPPRESS,
+                            help="Explain the nature of experimental commands")
+        return retval
+    
+    def print_experimental_notice(self):
+        print "EXPERIMENTAL - SUBJECT TO CHANGE (See --experimental-notice for more info)"
+
+
 class server_version(XMLRPCCommand):
     """
     Display dashboard server version
@@ -636,7 +692,7 @@ class restore(XMLRPCCommand):
                 self.server.put(content, content_filename, stream_pathname)
             
 
-class pull(XMLRPCCommand):
+class pull(ExperimentalCommandMixIn, XMLRPCCommand):
     """
     Pull bundles and bundle streams from one REMOTE DASHBOARD to DASHBOARD
     """
@@ -672,7 +728,7 @@ class pull(XMLRPCCommand):
                 self.server.put(data["content"], data["content_filename"], stream["pathname"])
 
 
-class data_views(XMLRPCCommand):
+class data_views(ExperimentalCommandMixIn, XMLRPCCommand):
     """
     Show data views defined on the server
     """
@@ -693,7 +749,7 @@ class data_views(XMLRPCCommand):
         print "Tip: to invoke a data view try `lc-tool query-data-view`"
 
 
-class query_data_view(XMLRPCCommand):
+class query_data_view(ExperimentalCommandMixIn, XMLRPCCommand):
     """
     Invoke a specified data view
     """
