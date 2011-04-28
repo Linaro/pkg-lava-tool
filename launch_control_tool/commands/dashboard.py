@@ -756,7 +756,7 @@ class pull(ExperimentalCommandMixIn, XMLRPCCommand):
             except KeyError as ex:
                 # Older servers did not return content_size so this part is optional
                 missing_bytes = None
-            if missing_bytes is not None:
+            if missing_bytes:
                 print "Stream %s needs update (%s)" % (stream["pathname"], self._filesizeformat(missing_bytes))
             elif missing_bundles:
                 print "Stream %s needs update" % (stream["pathname"],)
