@@ -707,25 +707,71 @@ class pull(ExperimentalCommandMixIn, XMLRPCCommand):
     def register_arguments(cls, parser):
         group = super(pull, cls).register_arguments(parser)
         group.add_argument("--remote-dashboard-url", required=True,
-                metavar="REMOTE_URL", help="URL of the remote validation dashboard")
+                metavar="URL", help="URL of the remote validation dashboard")
+        group.add_argument("STREAM", nargs="*", help="Streams to pull from (all by default)")
+
+    @staticmethod
+    def _filesizeformat(num_bytes):
+        """
+        Formats the value like a 'human-readable' file size (i.e. 13 KB, 4.1 MB,
+        102 num_bytes, etc).
+        """
+        try:
+            num_bytes = float(num_bytes)
+        except (TypeError,ValueError,UnicodeDecodeError):
+            return "%(size)d byte", "%(size)d num_bytes" % {'size': 0}
+
+        filesize_number_format = lambda value: "%0.2f" % (round(value, 1),)
+
+        if num_bytes < 1024:
+            return "%(size)d bytes" % {'size': num_bytes}
+        if num_bytes < 1024 * 1024:
+            return "%s KB" % filesize_number_format(num_bytes / 1024)
+        if num_bytes < 1024 * 1024 * 1024:
+            return "%s MB" % filesize_number_format(num_bytes / (1024 * 1024))
+        return "%s GB" % filesize_number_format(num_bytes / (1024 * 1024 * 1024))
 
     def invoke_remote(self):
         self._check_server_version(self.server, "0.3.0.candidate.9")
         print "Checking local and remote streams"
         remote = self.remote_server.streams()
+        if self.args.STREAM:
+            # Check that all requested streams are available remotely
+            requested_set = frozenset(self.args.STREAM)
+            remote_set = frozenset((stream["pathname"] for stream in remote))
+            unavailable_set = requested_set - remote_set
+            if unavailable_set:
+                print >>sys.stderr, "Remote stream not found: %s" % ", ".join(unavailable_set)
+                return -1
+            # Limit to requested streams if necessary
+            remote = [stream for stream in remote if stream["pathname"] in requested_set]
         local = self.server.streams()
         missing_pathnames = set([stream["pathname"] for stream in remote]) - set([stream["pathname"] for stream in local])
         for stream in remote:
+            local_bundles = [bundle for bundle in self.server.bundles(stream["pathname"])]
+            remote_bundles = [bundle for bundle in self.remote_server.bundles(stream["pathname"])]
+            missing_bundles = set((bundle["content_sha1"] for bundle in remote_bundles)) - set((bundle["content_sha1"] for bundle in local_bundles))
+            try:
+                missing_bytes = sum((bundle["content_size"] for bundle in remote_bundles if bundle["content_sha1"] in missing_bundles))
+            except KeyError as ex:
+                # Older servers did not return content_size so this part is optional
+                missing_bytes = None
+            if missing_bytes is not None:
+                print "Stream %s needs update (%s)" % (stream["pathname"], self._filesizeformat(missing_bytes))
+            elif missing_bundles:
+                print "Stream %s needs update" % (stream["pathname"],)
+            else:
+                print "Stream %s is up to date" % (stream["pathname"],)
             if stream["pathname"] in missing_pathnames:
-                print "Creating missing stream %s" % stream["pathname"]
                 self.server.make_stream(stream["pathname"], stream["name"])
-            local_bundles = [bundle["content_sha1"] for bundle in self.server.bundles(stream["pathname"])]
-            remote_bundles = [bundle["content_sha1"] for bundle in self.remote_server.bundles(stream["pathname"])]
-            missing_bundles = set(remote_bundles) - set(local_bundles)
             for content_sha1 in missing_bundles:
-                print "Pulling bundle %s" % content_sha1
+                print "Getting %s" % (content_sha1,),
+                sys.stdout.flush()
                 data = self.remote_server.get(content_sha1)
+                print "got %s, storing" % (self._filesizeformat(len(data["content"]))),
+                sys.stdout.flush()
                 self.server.put(data["content"], data["content_filename"], stream["pathname"])
+                print "done"
 
 
 class data_views(ExperimentalCommandMixIn, XMLRPCCommand):
