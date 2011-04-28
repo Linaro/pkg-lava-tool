@@ -317,7 +317,7 @@ class XMLRPCCommand(Command):
         default_dashboard_url = os.getenv("DASHBOARD_URL")
         if default_dashboard_url:
             group.add_argument("--dashboard-url",
-                    metavar="URL", help="URL of your validation dashboard",
+                    metavar="URL", help="URL of your validation dashboard (%(default)s)",
                     default=default_dashboard_url)
         else:
             group.add_argument("--dashboard-url", required=True,
