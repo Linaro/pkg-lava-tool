@@ -22,15 +22,16 @@ server. All commands listed here should have counterparts in the
 launch_control.dashboard_app.xml_rpc package.
 """
 
+import argparse
+import contextlib
 import errno
 import os
+import re
 import socket
 import sys
-import urlparse
 import urllib
+import urlparse
 import xmlrpclib
-
-import argparse
 
 from launch_control_tool.interface import Command
 
@@ -326,9 +327,10 @@ class XMLRPCCommand(Command):
                 help="Show XML-RPC data")
         return group
 
-    def invoke(self):
+    @contextlib.contextmanager
+    def safety_net(self):
         try:
-            return self.invoke_remote()
+            yield
         except socket.error as ex:
             print >>sys.stderr, "Unable to connect to server at %s" % (
                     self.args.dashboard_url,)
@@ -353,7 +355,10 @@ class XMLRPCCommand(Command):
             print >>sys.stderr, ("This command requires at least server version "
                                  "%s, actual server version is %s" %
                                  (ex.required_version, ex.server_version))
-        return -1
+
+    def invoke(self):
+        with self.safety_net():
+            return self.invoke_remote()
 
     def handle_xmlrpc_fault(self, faultCode, faultString):
         if faultCode == 500:
@@ -364,6 +369,61 @@ class XMLRPCCommand(Command):
 
     def invoke_remote(self):
         raise NotImplementedError()
+
+
+class ExperimentalNoticeAction(argparse.Action):
+    """
+    Argparse action that implements the --experimental-notice
+    """
+
+    message = """
+    Some lc-tool sub-commands are marked as EXPERIMENTAL. Those commands are
+    not guaranteed to work identically, or have identical interface between
+    subsequent lc-tool releases.
+
+    We do that to make it possible to provide good user interface and
+    server-side API when working on new features. Once a feature is stabilized
+    the UI will be frozen and all subsequent changes will retain backwards
+    compatibility.
+    """
+    message = message.lstrip()
+    message = re.sub(re.compile("[ \t]+", re.M), " ", message)
+    message = re.sub(re.compile("^ ", re.M), "", message)
+
+    def __init__(self,
+                 option_strings, dest, default=None, required=False,
+                 help=None):
+        super(ExperimentalNoticeAction, self).__init__(
+            option_strings=option_strings, dest=dest, default=default, nargs=0,
+            help=help)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        parser.exit(message=self.message)
+
+
+class ExperimentalCommandMixIn(object):
+    """
+    Experimental command.
+
+    Prints a warning message on each call to invoke()
+    """
+
+    def invoke(self):
+        self.print_experimental_notice()
+        return super(ExperimentalCommandMixIn, self).invoke()
+
+    @classmethod
+    def register_arguments(cls, parser):
+        retval = super(ExperimentalCommandMixIn, cls).register_arguments(parser)
+        parser.register("action", "experimental_notice", ExperimentalNoticeAction)
+        parser.add_argument("--experimental-notice",
+                            action="experimental_notice",
+                            default=argparse.SUPPRESS,
+                            help="Explain the nature of experimental commands")
+        return retval
+    
+    def print_experimental_notice(self):
+        print "EXPERIMENTAL - SUBJECT TO CHANGE (See --experimental-notice for more info)"
 
 
 class server_version(XMLRPCCommand):
@@ -632,7 +692,7 @@ class restore(XMLRPCCommand):
                 self.server.put(content, content_filename, stream_pathname)
             
 
-class pull(XMLRPCCommand):
+class pull(ExperimentalCommandMixIn, XMLRPCCommand):
     """
     Pull bundles and bundle streams from one REMOTE DASHBOARD to DASHBOARD
     """
@@ -666,3 +726,94 @@ class pull(XMLRPCCommand):
                 print "Pulling bundle %s" % content_sha1
                 data = self.remote_server.get(content_sha1)
                 self.server.put(data["content"], data["content_filename"], stream["pathname"])
+
+
+class data_views(ExperimentalCommandMixIn, XMLRPCCommand):
+    """
+    Show data views defined on the server
+    """
+    renderer = DataSetRenderer(
+        column_map = {
+            'name': 'Name',
+            'summary': 'Summary',
+        },
+        order = ('name', 'summary'),
+        empty = "There are no data views defined yet",
+        caption = "Data Views",
+        separator = " | ")
+
+    def invoke_remote(self):
+        self._check_server_version(self.server, "0.4.0.dev")
+        self.renderer.render(self.server.data_views())
+        print
+        print "Tip: to invoke a data view try `lc-tool query-data-view`"
+
+
+class query_data_view(ExperimentalCommandMixIn, XMLRPCCommand):
+    """
+    Invoke a specified data view
+    """
+    @classmethod
+    def register_arguments(cls, parser):
+        super(query_data_view, cls).register_arguments(parser)
+        parser.add_argument("QUERY", metavar="QUERY", nargs="...",
+                           help="Data view name and any optional and required arguments")
+
+    def _probe_data_views(self):
+        """
+        Probe the server for information about data views
+        """
+        with self.safety_net():
+            self._check_server_version(self.server, "0.4.0.dev")
+            return self.server.data_views()
+
+    def reparse_arguments(self, parser, raw_args):
+        self.data_views = self._probe_data_views()
+        if self.data_views is None:
+            return
+        # Here we hack a little, the last actuin is the QUERY action added
+        # in register_arguments above. By removing it we make the output
+        # of lc-tool query-data-view NAME --help more consistent.
+        del parser._actions[-1]
+        subparsers = parser.add_subparsers(
+            title="Data views available on the server")
+        for data_view in self.data_views: 
+            data_view_parser = subparsers.add_parser(
+                data_view["name"],
+                help=data_view["summary"],
+                epilog=data_view["documentation"])
+            data_view_parser.set_defaults(data_view=data_view)
+            group = data_view_parser.add_argument_group("Data view parameters")
+            for argument in data_view["arguments"]:
+                group.add_argument(
+                    "--{name}".format(name=argument["name"]),
+                    help=argument["help"],
+                    type=str,
+                    default=argument["default"])
+        self.args = self.parser.parse_args(raw_args)
+
+    def invoke_remote(self):
+        if self.data_views is None:
+            return -1
+        self._check_server_version(self.server, "0.4.0.dev")
+        # Build a collection of arguments for data view
+        data_view_args = {}
+        for argument in self.args.data_view["arguments"]:
+            arg_name = argument["name"]
+            if arg_name in self.args:
+                data_view_args[arg_name] = getattr(self.args, arg_name) 
+        # Invoke the data view
+        response = self.server.query_data_view(self.args.data_view["name"], data_view_args) 
+        # Create a pretty-printer
+        renderer = DataSetRenderer(
+            separator=" | ",
+            caption=self.args.data_view["summary"],
+            order=[item["name"] for item in response["columns"]])
+        # Post-process the data so that it fits the printer
+        data_for_renderer = [
+            dict(zip(
+                [column["name"] for column in response["columns"]],
+                row))
+            for row in response["rows"]]
+        # Print the data
+        renderer.render(data_for_renderer)
