@@ -47,6 +47,20 @@ class Command(object):
         """
         raise NotImplementedError()
 
+    def reparse_arguments(self, parser, raw_args):
+        """
+        Re-parse raw arguments into normal argments
+        
+        Parser is the same as in register_arguments (a sub-parser)
+        The true, topmost parser is in self.parser.
+
+        This method is only needed for specific commands
+        that need to peek at the arguments before being
+        able to truly redefine the parser and reparse the
+        raw arguments again.
+        """
+        raise NotImplementedError()
+
     @classmethod
     def get_name(cls):
         """

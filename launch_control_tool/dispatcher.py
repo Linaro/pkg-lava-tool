@@ -36,7 +36,7 @@ class LaunchControlDispatcher(object):
                 """,
                 epilog="""
                 Please report all bugs using the Launchpad bug tracker:
-                http://bugs.launchpad.net/launch-control/+filebug
+                http://bugs.launchpad.net/launch-control-tool/+filebug
                 """,
                 add_help=False)
         self.subparsers = self.parser.add_subparsers(
@@ -48,11 +48,16 @@ class LaunchControlDispatcher(object):
                 help=command_cls.get_help(),
                 epilog=command_cls.get_epilog())
             sub_parser.set_defaults(command_cls=command_cls)
+            sub_parser.set_defaults(sub_parser=sub_parser)
             command_cls.register_arguments(sub_parser)
 
-    def dispatch(self, args=None):
-        args = self.parser.parse_args(args)
+    def dispatch(self, raw_args=None):
+        args = self.parser.parse_args(raw_args)
         command = args.command_cls(self.parser, args)
+        try:
+            command.reparse_arguments(args.sub_parser, raw_args)
+        except NotImplementedError:
+            pass
         return command.invoke()
 
 
