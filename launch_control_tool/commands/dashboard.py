@@ -748,7 +748,11 @@ class pull(ExperimentalCommandMixIn, XMLRPCCommand):
         local = self.server.streams()
         missing_pathnames = set([stream["pathname"] for stream in remote]) - set([stream["pathname"] for stream in local])
         for stream in remote:
-            local_bundles = [bundle for bundle in self.server.bundles(stream["pathname"])]
+            if stream["pathname"] in missing_pathnames:
+                self.server.make_stream(stream["pathname"], stream["name"])
+                local_bundles = []
+            else:
+                local_bundles = [bundle for bundle in self.server.bundles(stream["pathname"])]
             remote_bundles = [bundle for bundle in self.remote_server.bundles(stream["pathname"])]
             missing_bundles = set((bundle["content_sha1"] for bundle in remote_bundles)) - set((bundle["content_sha1"] for bundle in local_bundles))
             try:
@@ -762,8 +766,6 @@ class pull(ExperimentalCommandMixIn, XMLRPCCommand):
                 print "Stream %s needs update" % (stream["pathname"],)
             else:
                 print "Stream %s is up to date" % (stream["pathname"],)
-            if stream["pathname"] in missing_pathnames:
-                self.server.make_stream(stream["pathname"], stream["name"])
             for content_sha1 in missing_bundles:
                 print "Getting %s" % (content_sha1,),
                 sys.stdout.flush()
