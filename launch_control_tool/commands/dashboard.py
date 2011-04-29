@@ -65,7 +65,7 @@ class DataSetRenderer(object):
     is used to determine columns.
     """
     def __init__(self, column_map=None, row_formatter=None, empty=None,
-            order=None, caption=None, separator = " "):
+            order=None, caption=None, separator = " ", header_separator=None):
         if column_map is None:
             column_map = {}
         if row_formatter is None:
@@ -78,6 +78,7 @@ class DataSetRenderer(object):
         self.order = order
         self.separator = separator
         self.caption = caption
+        self.header_separator = header_separator
 
     def _analyze_dataset(self, dataset):
         """
@@ -188,6 +189,13 @@ class DataSetRenderer(object):
         ...     dataset, columns, maxlen)
               a       bee
 
+        If you enable the header separator then column names will be visually
+        separated from the first row of data.
+        >>> DataSetRenderer(header_separator=True)._render_header(
+        ...     dataset, columns, maxlen)
+              a       bee
+        -----------------
+
         If you provide a caption it gets rendered as a centered
         underlined text before the data:
         >>> DataSetRenderer(caption="Dataset")._render_header(
@@ -195,6 +203,14 @@ class DataSetRenderer(object):
              Dataset     
         =================
               a       bee
+
+        You can use both caption and header separator
+        >>> DataSetRenderer(caption="Dataset", header_separator=True)._render_header(
+        ...     dataset, columns, maxlen)
+             Dataset     
+        =================
+              a       bee
+        -----------------
 
         Observe how the total length of the output horizontal line
         depends on the separator! Also note the columns labels are
@@ -205,15 +221,20 @@ class DataSetRenderer(object):
         ===================
               a       | bee
         """
+        total_len = sum(maxlen.itervalues())
+        if len(columns):
+            total_len += len(self.separator) * (len(columns) - 1)
+        # Print the caption
         if self.caption:
-            total_len = sum(maxlen.itervalues())
-            if len(columns):
-                total_len += len(self.separator) * (len(columns) - 1)
             print "{0:^{1}}".format(self.caption, total_len)
             print "=" * total_len
+        # Now print the coulum names
         print self.separator.join([
             "{0:^{1}}".format(self.column_map.get(column, column),
                 maxlen[column]) for column in columns])
+        # Finally print the header separator
+        if self.header_separator:
+            print "-" * total_len
 
     def _render_rows(self, dataset, columns, maxlen):
         """
@@ -540,24 +561,32 @@ class deserialize(XMLRPCCommand):
             super(deserialize, self).handle_xmlrpc_fault(faultCode, faultString)
 
 
+
+def _get_pretty_renderer(**kwargs):
+    if "separator" not in kwargs:
+        kwargs["separator"] = " | "
+    if "header_separator" not in kwargs:
+        kwargs["header_separator"] = True
+    return DataSetRenderer(**kwargs)
+
+
 class streams(XMLRPCCommand):
     """
     Show streams you have access to
     """
 
-    renderer = DataSetRenderer(
-            order = ('pathname', 'bundle_count', 'name'),
-            column_map = {
-                'pathname': 'Pathname',
-                'bundle_count': 'Number of bundles',
-                'name': 'Name'
-                },
-            row_formatter = {
-                'name': lambda name: name or "(not set)"
-                },
-            empty = "There are no streams you can access on the server",
-            caption = "Bundle streams",
-            separator = " | ")
+    renderer = _get_pretty_renderer(
+        order = ('pathname', 'bundle_count', 'name'),
+        column_map = {
+            'pathname': 'Pathname',
+            'bundle_count': 'Number of bundles',
+            'name': 'Name'
+        },
+        row_formatter = {
+            'name': lambda name: name or "(not set)"
+        },
+        empty = "There are no streams you can access on the server",
+        caption = "Bundle streams")
 
     def invoke_remote(self):
         self.renderer.render(self.server.streams())
@@ -568,7 +597,7 @@ class bundles(XMLRPCCommand):
     Show bundles in the specified stream
     """
 
-    renderer = DataSetRenderer(
+    renderer = _get_pretty_renderer(
             column_map = {
                 'uploaded_by': 'Uploader',
                 'uploaded_on': 'Upload date',
@@ -780,15 +809,14 @@ class data_views(ExperimentalCommandMixIn, XMLRPCCommand):
     """
     Show data views defined on the server
     """
-    renderer = DataSetRenderer(
+    renderer = _get_pretty_renderer(
         column_map = {
             'name': 'Name',
             'summary': 'Summary',
         },
         order = ('name', 'summary'),
         empty = "There are no data views defined yet",
-        caption = "Data Views",
-        separator = " | ")
+        caption = "Data Views")
 
     def invoke_remote(self):
         self._check_server_version(self.server, "0.4.0.dev")
@@ -853,8 +881,7 @@ class query_data_view(ExperimentalCommandMixIn, XMLRPCCommand):
         # Invoke the data view
         response = self.server.query_data_view(self.args.data_view["name"], data_view_args) 
         # Create a pretty-printer
-        renderer = DataSetRenderer(
-            separator=" | ",
+        renderer = _get_pretty_renderer(
             caption=self.args.data_view["summary"],
             order=[item["name"] for item in response["columns"]])
         # Post-process the data so that it fits the printer
