@@ -334,19 +334,20 @@ class XMLRPCCommand(Command):
 
     @classmethod
     def register_arguments(cls, parser):
-        group = parser.add_argument_group("Dashboard Server options")
+        dashboard_group = parser.add_argument_group("dashboard specific arguments")
         default_dashboard_url = os.getenv("DASHBOARD_URL")
         if default_dashboard_url:
-            group.add_argument("--dashboard-url",
-                    metavar="URL", help="URL of your validation dashboard (%(default)s)",
+            dashboard_group.add_argument("--dashboard-url",
+                    metavar="URL", help="URL of your validation dashboard (currently %(default)s)",
                     default=default_dashboard_url)
         else:
-            group.add_argument("--dashboard-url", required=True,
+            dashboard_group.add_argument("--dashboard-url", required=True,
                     metavar="URL", help="URL of your validation dashboard")
-        group.add_argument("--verbose-xml-rpc",
+        debug_group = parser.add_argument_group("debugging arguments")
+        debug_group.add_argument("--verbose-xml-rpc",
                 action="store_true", default=False,
                 help="Show XML-RPC data")
-        return group
+        return dashboard_group
 
     @contextlib.contextmanager
     def safety_net(self):
@@ -437,7 +438,8 @@ class ExperimentalCommandMixIn(object):
     def register_arguments(cls, parser):
         retval = super(ExperimentalCommandMixIn, cls).register_arguments(parser)
         parser.register("action", "experimental_notice", ExperimentalNoticeAction)
-        parser.add_argument("--experimental-notice",
+        group = parser.add_argument_group("experimental commands")
+        group.add_argument("--experimental-notice",
                             action="experimental_notice",
                             default=argparse.SUPPRESS,
                             help="Explain the nature of experimental commands")
