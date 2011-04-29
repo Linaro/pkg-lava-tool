@@ -723,20 +723,33 @@ class restore(XMLRPCCommand):
 
 class pull(ExperimentalCommandMixIn, XMLRPCCommand):
     """
-    Pull bundles and bundle streams from one REMOTE DASHBOARD to DASHBOARD
+    Copy bundles and bundle streams from one dashboard to another.
+    
+    This command checks for two environment varialbes:
+    The value of DASHBOARD_URL is used as a replacement for --dashbard-url.
+    The value of REMOTE_DASHBOARD_URL as a replacement for FROM.
+    Their presence automatically makes the corresponding argument optional.
     """
 
     def __init__(self, parser, args):
         super(pull, self).__init__(parser, args)
-        remote_xml_rpc_url = self._construct_xml_rpc_url(self.args.remote_dashboard_url) 
+        remote_xml_rpc_url = self._construct_xml_rpc_url(self.args.FROM)
         self.remote_server = xmlrpclib.ServerProxy(remote_xml_rpc_url, use_datetime=True,
                 allow_none=True, verbose=args.verbose_xml_rpc)
 
     @classmethod
     def register_arguments(cls, parser):
         group = super(pull, cls).register_arguments(parser)
-        group.add_argument("--remote-dashboard-url", required=True,
-                metavar="URL", help="URL of the remote validation dashboard")
+        default_remote_dashboard_url = os.getenv("REMOTE_DASHBOARD_URL")
+        if default_remote_dashboard_url:
+            group.add_argument(
+                "FROM", nargs="?",
+                help="URL of the remote validation dashboard (currently %(default)s)",
+                default=default_remote_dashboard_url)
+        else:
+            group.add_argument(
+                "FROM",
+                help="URL of the remote validation dashboard)")
         group.add_argument("STREAM", nargs="*", help="Streams to pull from (all by default)")
 
     @staticmethod
