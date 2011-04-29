@@ -833,11 +833,18 @@ class query_data_view(ExperimentalCommandMixIn, XMLRPCCommand):
             data_view_parser.set_defaults(data_view=data_view)
             group = data_view_parser.add_argument_group("Data view parameters")
             for argument in data_view["arguments"]:
-                group.add_argument(
-                    "--{name}".format(name=argument["name"]),
-                    help=argument["help"],
-                    type=str,
-                    default=argument["default"])
+                if argument["default"] is None:
+                    group.add_argument(
+                        "--{name}".format(name=argument["name"]),
+                        help=argument["help"],
+                        type=str,
+                        required=True)
+                else:
+                    group.add_argument(
+                        "--{name}".format(name=argument["name"]),
+                        help=argument["help"],
+                        type=str,
+                        default=argument["default"])
         self.args = self.parser.parse_args(raw_args)
 
     def invoke_remote(self):
