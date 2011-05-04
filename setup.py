@@ -38,7 +38,6 @@ setup(
     lava-tool = lava_tool.dispatcher:main
     [lava_tool.commands]
     help = lava_tool.commands.misc:help
-    version = lava_tool.commands.misc:version
     """,
     classifiers=[
         "Development Status :: 4 - Beta",
