@@ -7,7 +7,7 @@
     138: Zygmunt Krynicki 2011-04-09 Add query-data-view command
     137: Zygmunt Krynicki 2011-04-09 Add data_views command.
     136: Zygmunt Krynicki 2011-04-09 Fix URL for bug reporting
-    135: Zygmunt Krynicki 2011-04-09 Change LaunchControlDispatcher.dispatch() to allow commands to use reparse_arguments()
+    135: Zygmunt Krynicki 2011-04-09 Change LavaDispatcher.dispatch() to allow commands to use reparse_arguments()
     134: Zygmunt Krynicki 2011-04-09 Add XMLRPCCommand.safety_net()
     133: Zygmunt Krynicki 2011-04-09 Sort import statements
     132: Zygmunt Krynicki 2011-04-09 Add Command.reparse_arguments()

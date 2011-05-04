@@ -29,7 +29,7 @@ setup(
     author = "Zygmunt Krynicki",
     author_email = "zygmunt.krynicki@linaro.org",
     packages = find_packages(),
-    description = "Command line utility for Launch Control",
+    description = "Command line utility for Linaro validation services",
     url='https://launchpad.net/lava-tool',
     test_suite='lava_tool.tests.test_suite',
     license="LGPLv3",

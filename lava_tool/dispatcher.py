@@ -17,19 +17,22 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Module with LaunchControlDispatcher - the command dispatcher
+Module with LavaDispatcher - the command dispatcher
 """
 
 import argparse
 import pkg_resources
 
 
-class LaunchControlDispatcher(object):
+class LavaDispatcher(object):
     """
     Class implementing command line interface for launch control
     """
 
-    def __init__(self, toolname=None):
+    toolname = None
+
+    def __init__(self):
+        # XXX The below needs to allow some customization.
         self.parser = argparse.ArgumentParser(
                 description="""
                 Command line tool for interacting with Launch Control 
@@ -42,8 +45,8 @@ class LaunchControlDispatcher(object):
         self.subparsers = self.parser.add_subparsers(
                 title="Sub-command to invoke")
         prefixes = ['lava_tool']
-        if toolname is not None:
-            prefixes.append(toolname)
+        if self.toolname is not None:
+            prefixes.append(self.toolname)
         for prefix in prefixes:
             for entrypoint in pkg_resources.iter_entry_points("%s.commands" % prefix):
                 command_cls = entrypoint.load()
@@ -65,7 +68,9 @@ class LaunchControlDispatcher(object):
         return command.invoke()
 
 
-def main():
-    raise SystemExit(
-        LaunchControlDispatcher().dispatch())
+def run_with_dispatcher_class(cls):
+    raise SystemExit(cls().dispatch())
 
+
+def main():
+    run_with_dispatcher_class(LavaDispatcher)
