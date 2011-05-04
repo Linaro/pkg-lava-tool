@@ -1,6 +1,7 @@
-# Copyright (C) 2010 Linaro Limited
+# Copyright (C) 2010, 2011 Linaro Limited
 #
 # Author: Zygmunt Krynicki <zygmunt.krynicki@linaro.org>
+# Author: Michael Hudson-Doyle <michael.hudson@linaro.org>
 #
 # This file is part of lava-tool.
 #
@@ -21,7 +22,7 @@ Launch Control Tool package
 """
 
 # Chicken-and-egg problem
-__version__ = (0, 5, 0, "dev", 0)
+__version__ = (0, 1, 0, "dev", 0)
 try:
     import versiontools
     __version__ = versiontools.Version.from_tuple(__version__)
