@@ -30,18 +30,17 @@ class LavaDispatcher(object):
     """
 
     toolname = None
+    description = None
+    epilog = None
 
     def __init__(self):
         # XXX The below needs to allow some customization.
-        self.parser = argparse.ArgumentParser(
-                description="""
-                Command line tool for interacting with Launch Control 
-                """,
-                epilog="""
-                Please report all bugs using the Launchpad bug tracker:
-                http://bugs.launchpad.net/lava-tool/+filebug
-                """,
-                add_help=False)
+        parser_args = dict(add_help=False)
+        if self.description is not None:
+            parser_args['description'] = self.description
+        if self.epilog is not None:
+            parser_args['epilog'] = self.epilog
+        self.parser = argparse.ArgumentParser(**parser_args)
         self.subparsers = self.parser.add_subparsers(
                 title="Sub-command to invoke")
         prefixes = ['lava_tool']
