@@ -22,15 +22,15 @@ Unit tests for the launch_control.commands package
 
 from unittest import TestCase
 
-from launch_control_tool.interface import Command
-from launch_control_tool.dispatcher import (
+from lava_tool.interface import Command
+from lava_tool.dispatcher import (
         LaunchControlDispatcher,
         main,
         )
-from launch_control_tool.commands.dashboard import (
+from lava_tool.commands.dashboard import (
         XMLRPCCommand,
         )
-from launch_control_tool.mocker import (
+from lava_tool.mocker import (
         ANY,
         MockerTestCase,
         expect,
@@ -99,7 +99,7 @@ class CommandTestCase(MockerTestCase):
 class DispatcherTestCase(MockerTestCase):
 
     def test_main(self):
-        LaunchControlDispatcher = self.mocker.replace('launch_control_tool.dispatcher.LaunchControlDispatcher')
+        LaunchControlDispatcher = self.mocker.replace('lava_tool.dispatcher.LaunchControlDispatcher')
         LaunchControlDispatcher().dispatch()
         self.mocker.replay()
         self.assertRaises(SystemExit, main)

@@ -20,37 +20,37 @@
 
 from setuptools import setup, find_packages
 import versiontools
-import launch_control_tool
+import lava_tool
 
 
 setup(
     name = 'launch-control-tool',
-    version = versiontools.format_version(launch_control_tool.__version__),
+    version = versiontools.format_version(lava_tool.__version__),
     author = "Zygmunt Krynicki",
     author_email = "zygmunt.krynicki@linaro.org",
     packages = find_packages(),
     description = "Command line utility for Launch Control",
     url='https://launchpad.net/launch-control-tool',
-    test_suite='launch_control_tool.tests.test_suite',
+    test_suite='lava_tool.tests.test_suite',
     license="LGPLv3",
     entry_points = """
     [console_scripts]
-    lc-tool = launch_control_tool.dispatcher:main
-    [launch_control_tool.commands]
-    bundles = launch_control_tool.commands.dashboard:bundles
-    deserialize = launch_control_tool.commands.dashboard:deserialize
-    get = launch_control_tool.commands.dashboard:get
-    help = launch_control_tool.commands.misc:help
-    put = launch_control_tool.commands.dashboard:put
-    server_version = launch_control_tool.commands.dashboard:server_version
-    make_stream = launch_control_tool.commands.dashboard:make_stream
-    backup = launch_control_tool.commands.dashboard:backup
-    restore = launch_control_tool.commands.dashboard:restore
-    pull = launch_control_tool.commands.dashboard:pull
-    streams = launch_control_tool.commands.dashboard:streams
-    data_views = launch_control_tool.commands.dashboard:data_views
-    query_data_view = launch_control_tool.commands.dashboard:query_data_view
-    version = launch_control_tool.commands.misc:version
+    lc-tool = lava_tool.dispatcher:main
+    [lava_tool.commands]
+    bundles = lava_tool.commands.dashboard:bundles
+    deserialize = lava_tool.commands.dashboard:deserialize
+    get = lava_tool.commands.dashboard:get
+    help = lava_tool.commands.misc:help
+    put = lava_tool.commands.dashboard:put
+    server_version = lava_tool.commands.dashboard:server_version
+    make_stream = lava_tool.commands.dashboard:make_stream
+    backup = lava_tool.commands.dashboard:backup
+    restore = lava_tool.commands.dashboard:restore
+    pull = lava_tool.commands.dashboard:pull
+    streams = lava_tool.commands.dashboard:streams
+    data_views = lava_tool.commands.dashboard:data_views
+    query_data_view = lava_tool.commands.dashboard:query_data_view
+    version = lava_tool.commands.misc:version
     """,
     classifiers=[
         "Development Status :: 4 - Beta",

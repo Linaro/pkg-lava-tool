@@ -20,8 +20,8 @@
 Module with miscellaneous commands (such as help and version)
 """
 
-from launch_control_tool.interface import Command
-from launch_control_tool import get_version
+from lava_tool.interface import Command
+from lava_tool import get_version
 
 class help(Command):
     """

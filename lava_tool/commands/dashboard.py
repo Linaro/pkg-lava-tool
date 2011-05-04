@@ -33,7 +33,7 @@ import urllib
 import urlparse
 import xmlrpclib
 
-from launch_control_tool.interface import Command
+from lava_tool.interface import Command
 
 
 class InsufficientServerVersion(Exception):

@@ -41,7 +41,7 @@ class LaunchControlDispatcher(object):
                 add_help=False)
         self.subparsers = self.parser.add_subparsers(
                 title="Sub-command to invoke")
-        for entrypoint in pkg_resources.iter_entry_points("launch_control_tool.commands"):
+        for entrypoint in pkg_resources.iter_entry_points("lava_tool.commands"):
             command_cls = entrypoint.load()
             sub_parser = self.subparsers.add_parser(
                 command_cls.get_name(),
