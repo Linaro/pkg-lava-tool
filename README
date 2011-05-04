@@ -1,8 +1,13 @@
 About
 =====
 
-This source package contains command-line tool for interacting with launch
-control dashboard developed by the Linaro (www.linaro.org) Infrastructure Team.
+This source package contains the command-line tool for interacting
+with the various services built by the Linaro (www.linaro.org)
+Infrastructure Team.
+
+Note that this package only contains the core tool; to actually
+interact with a service you'll need to install a corresponding plugin.
+XXX explain where to get some plugins.
 
 Installation
 ============
