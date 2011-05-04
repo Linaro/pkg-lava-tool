@@ -24,16 +24,10 @@ from unittest import TestCase
 
 from lava_tool.interface import Command
 from lava_tool.dispatcher import (
-        LaunchControlDispatcher,
         main,
         )
-from lava_tool.commands.dashboard import (
-        XMLRPCCommand,
-        )
 from lava_tool.mocker import (
-        ANY,
         MockerTestCase,
-        expect,
         )
 
 
@@ -103,22 +97,3 @@ class DispatcherTestCase(MockerTestCase):
         LaunchControlDispatcher().dispatch()
         self.mocker.replay()
         self.assertRaises(SystemExit, main)
-
-
-class XMLRPCCommandTestCase(TestCase):
-
-    def test_construct_xml_rpc_url_preserves_path(self):
-        self.assertEqual(
-            XMLRPCCommand._construct_xml_rpc_url("http://domain/path"),
-            "http://domain/path/xml-rpc/")
-        self.assertEqual(
-            XMLRPCCommand._construct_xml_rpc_url("http://domain/path/"),
-            "http://domain/path/xml-rpc/")
-
-    def test_construct_xml_rpc_url_adds_proper_suffix(self):
-        self.assertEqual(
-            XMLRPCCommand._construct_xml_rpc_url("http://domain/"),
-            "http://domain/xml-rpc/")
-        self.assertEqual(
-            XMLRPCCommand._construct_xml_rpc_url("http://domain"),
-            "http://domain/xml-rpc/")
