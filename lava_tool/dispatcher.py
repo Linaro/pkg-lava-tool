@@ -29,7 +29,7 @@ class LaunchControlDispatcher(object):
     Class implementing command line interface for launch control
     """
 
-    def __init__(self):
+    def __init__(self, toolname=None):
         self.parser = argparse.ArgumentParser(
                 description="""
                 Command line tool for interacting with Launch Control 
@@ -41,15 +41,19 @@ class LaunchControlDispatcher(object):
                 add_help=False)
         self.subparsers = self.parser.add_subparsers(
                 title="Sub-command to invoke")
-        for entrypoint in pkg_resources.iter_entry_points("lava_tool.commands"):
-            command_cls = entrypoint.load()
-            sub_parser = self.subparsers.add_parser(
-                command_cls.get_name(),
-                help=command_cls.get_help(),
-                epilog=command_cls.get_epilog())
-            sub_parser.set_defaults(command_cls=command_cls)
-            sub_parser.set_defaults(sub_parser=sub_parser)
-            command_cls.register_arguments(sub_parser)
+        prefixes = ['lava_tool']
+        if toolname is not None:
+            prefixes.append(toolname)
+        for prefix in prefixes:
+            for entrypoint in pkg_resources.iter_entry_points("%s.commands" % prefix):
+                command_cls = entrypoint.load()
+                sub_parser = self.subparsers.add_parser(
+                    command_cls.get_name(),
+                    help=command_cls.get_help(),
+                    epilog=command_cls.get_epilog())
+                sub_parser.set_defaults(command_cls=command_cls)
+                sub_parser.set_defaults(sub_parser=sub_parser)
+                command_cls.register_arguments(sub_parser)
 
     def dispatch(self, raw_args=None):
         args = self.parser.parse_args(raw_args)
