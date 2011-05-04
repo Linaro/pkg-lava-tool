@@ -4,19 +4,19 @@
 #
 # Author: Zygmunt Krynicki <zygmunt.krynicki@linaro.org>
 #
-# This file is part of launch-control-tool.
+# This file is part of lava-tool.
 #
-# launch-control-tool is free software: you can redistribute it and/or modify
+# lava-tool is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License version 3
 # as published by the Free Software Foundation
 #
-# launch-control-tool is distributed in the hope that it will be useful,
+# lava-tool is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with launch-control-tool.  If not, see <http://www.gnu.org/licenses/>.
+# along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup, find_packages
 import versiontools
@@ -24,13 +24,13 @@ import lava_tool
 
 
 setup(
-    name = 'launch-control-tool',
+    name = 'lava-tool',
     version = versiontools.format_version(lava_tool.__version__),
     author = "Zygmunt Krynicki",
     author_email = "zygmunt.krynicki@linaro.org",
     packages = find_packages(),
     description = "Command line utility for Launch Control",
-    url='https://launchpad.net/launch-control-tool',
+    url='https://launchpad.net/lava-tool',
     test_suite='lava_tool.tests.test_suite',
     license="LGPLv3",
     entry_points = """
