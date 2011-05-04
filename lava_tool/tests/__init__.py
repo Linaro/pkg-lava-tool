@@ -17,7 +17,7 @@
 # along with launch-control-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Package with unit tests for launch_control_tool
+Package with unit tests for lava_tool
 """
 
 import doctest
@@ -26,17 +26,17 @@ import unittest
 
 def app_modules():
     return [
-            'launch_control_tool.commands',
-            'launch_control_tool.commands.dashboard',
-            'launch_control_tool.commands.misc',
-            'launch_control_tool.dispatcher',
-            'launch_control_tool.interface',
+            'lava_tool.commands',
+            'lava_tool.commands.dashboard',
+            'lava_tool.commands.misc',
+            'lava_tool.dispatcher',
+            'lava_tool.interface',
             ]
 
 
 def test_modules():
     return [
-            'launch_control_tool.tests.test_commands',
+            'lava_tool.tests.test_commands',
             ]
 
 
