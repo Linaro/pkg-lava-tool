@@ -93,7 +93,7 @@ class CommandTestCase(MockerTestCase):
 class DispatcherTestCase(MockerTestCase):
 
     def test_main(self):
-        LaunchControlDispatcher = self.mocker.replace('lava_tool.dispatcher.LaunchControlDispatcher')
-        LaunchControlDispatcher().dispatch()
+        LavaDispatcher = self.mocker.replace('lava_tool.dispatcher.LavaDispatcher')
+        LavaDispatcher().dispatch()
         self.mocker.replay()
         self.assertRaises(SystemExit, main)
