@@ -35,21 +35,9 @@ setup(
     license="LGPLv3",
     entry_points = """
     [console_scripts]
-    lc-tool = lava_tool.dispatcher:main
+    lava-tool = lava_tool.dispatcher:main
     [lava_tool.commands]
-    bundles = lava_tool.commands.dashboard:bundles
-    deserialize = lava_tool.commands.dashboard:deserialize
-    get = lava_tool.commands.dashboard:get
     help = lava_tool.commands.misc:help
-    put = lava_tool.commands.dashboard:put
-    server_version = lava_tool.commands.dashboard:server_version
-    make_stream = lava_tool.commands.dashboard:make_stream
-    backup = lava_tool.commands.dashboard:backup
-    restore = lava_tool.commands.dashboard:restore
-    pull = lava_tool.commands.dashboard:pull
-    streams = lava_tool.commands.dashboard:streams
-    data_views = lava_tool.commands.dashboard:data_views
-    query_data_view = lava_tool.commands.dashboard:query_data_view
     version = lava_tool.commands.misc:version
     """,
     classifiers=[
