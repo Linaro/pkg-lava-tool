@@ -27,7 +27,6 @@ import unittest
 def app_modules():
     return [
             'lava_tool.commands',
-            'lava_tool.commands.dashboard',
             'lava_tool.commands.misc',
             'lava_tool.dispatcher',
             'lava_tool.interface',
