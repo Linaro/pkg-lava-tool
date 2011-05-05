@@ -21,17 +21,4 @@
 Lava Tool package
 """
 
-# Chicken-and-egg problem
 __version__ = (0, 1, 0, "dev", 0)
-try:
-    import versiontools
-    __version__ = versiontools.Version.from_tuple(__version__)
-except ImportError:
-    pass
-
-
-def get_version():
-    """
-    Return a string representing the version of this package
-    """
-    return str(__version__)
