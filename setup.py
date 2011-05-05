@@ -19,7 +19,14 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup, find_packages
-import versiontools
+try:
+    import versiontools
+except ImportError:
+    print "This package requires python-versiontools to be configured"
+    print "See: http://packages.python.org/versiontools/installation.html"
+    raise
+
+
 import lava_tool
 
 
@@ -48,7 +55,6 @@ setup(
         "Topic :: Software Development :: Testing",
     ],
     install_requires = [
-        'versiontools >= 1.1',
         'argparse >= 1.1'
     ],
     setup_requires = [
