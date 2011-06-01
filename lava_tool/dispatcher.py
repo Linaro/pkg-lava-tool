@@ -22,6 +22,9 @@ Module with LavaDispatcher - the command dispatcher
 
 import argparse
 import pkg_resources
+import sys
+
+from lava_tool.interface import LavaCommandError
 
 
 class LavaDispatcher(object):
@@ -66,7 +69,11 @@ class LavaDispatcher(object):
             command.reparse_arguments(args.sub_parser, raw_args)
         except NotImplementedError:
             pass
-        return command.invoke()
+        try:
+            return command.invoke()
+        except LavaCommandError as ex:
+            print >> sys.stderr, "ERROR: %s" % (ex,)
+            return 1
 
 
 def run_with_dispatcher_class(cls):
