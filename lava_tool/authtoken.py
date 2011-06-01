@@ -14,7 +14,7 @@ def add_token_to_uri(uri, auth_backend):
     token = auth_backend.get_token_for_host(user, host)
     if token is None:
         raise LavaCommandError("username provided but no token found")
-    return orig_uri
+    return "%s://%s:%s@%s%s" % (type, user, token, host, handler)
 
 
 class AuthenticatingServerProxy(xmlrpclib.ServerProxy):
