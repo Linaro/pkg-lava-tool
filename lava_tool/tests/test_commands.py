@@ -20,7 +20,10 @@
 Unit tests for the launch_control.commands package
 """
 
-from lava_tool.interface import Command
+from lava_tool.interface import (
+    Command,
+    LavaCommandError,
+    )
 from lava_tool.dispatcher import (
     LavaDispatcher,
     main,
@@ -107,3 +110,16 @@ class DispatcherTestCase(MockerTestCase):
         dispatcher.add_command_cls(test)
         dispatcher.dispatch(raw_args=['test'])
         self.assertEqual(1, len(test_calls))
+
+    def test_print_LavaCommandError_nicely(self):
+        stderr = self.mocker.replace('sys.stderr', passthrough=False)
+        stderr.write("ERROR: error message")
+        stderr.write("\n")
+        self.mocker.replay()
+        class error(Command):
+            def invoke(self):
+                raise LavaCommandError("error message")
+        dispatcher = LavaDispatcher()
+        dispatcher.add_command_cls(error)
+        exit_code = dispatcher.dispatch(raw_args=['error'])
+        self.assertEquals(1, exit_code)
