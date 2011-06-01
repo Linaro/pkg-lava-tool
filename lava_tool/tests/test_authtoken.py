@@ -32,3 +32,9 @@ class TestAddTokenToUri(TestCase):
         self.assertRaises(
             LavaCommandError, add_token_to_uri, uri, auth_backend)
 
+    def test_adds_token(self):
+        auth_backend = StubAuthBackend([('user', 'example.com', 'TOKEN')])
+        self.assertEquals(
+            'https://user@example.com/',
+            add_token_to_uri('https://user:TOKEN@example.com/', auth_backend))
+
