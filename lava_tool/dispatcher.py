@@ -22,6 +22,9 @@ Module with LavaDispatcher - the command dispatcher
 
 import argparse
 import pkg_resources
+import sys
+
+from lava_tool.interface import LavaCommandError
 
 
 class LavaDispatcher(object):
@@ -48,14 +51,16 @@ class LavaDispatcher(object):
             prefixes.append(self.toolname)
         for prefix in prefixes:
             for entrypoint in pkg_resources.iter_entry_points("%s.commands" % prefix):
-                command_cls = entrypoint.load()
-                sub_parser = self.subparsers.add_parser(
-                    command_cls.get_name(),
-                    help=command_cls.get_help(),
-                    epilog=command_cls.get_epilog())
-                sub_parser.set_defaults(command_cls=command_cls)
-                sub_parser.set_defaults(sub_parser=sub_parser)
-                command_cls.register_arguments(sub_parser)
+                self.add_command_cls(entrypoint.load())
+
+    def add_command_cls(self, command_cls):
+        sub_parser = self.subparsers.add_parser(
+            command_cls.get_name(),
+            help=command_cls.get_help(),
+            epilog=command_cls.get_epilog())
+        sub_parser.set_defaults(command_cls=command_cls)
+        sub_parser.set_defaults(sub_parser=sub_parser)
+        command_cls.register_arguments(sub_parser)
 
     def dispatch(self, raw_args=None):
         args = self.parser.parse_args(raw_args)
@@ -64,7 +69,11 @@ class LavaDispatcher(object):
             command.reparse_arguments(args.sub_parser, raw_args)
         except NotImplementedError:
             pass
-        return command.invoke()
+        try:
+            return command.invoke()
+        except LavaCommandError as ex:
+            print >> sys.stderr, "ERROR: %s" % (ex,)
+            return 1
 
 
 def run_with_dispatcher_class(cls):
