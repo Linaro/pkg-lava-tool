@@ -48,6 +48,7 @@ setup(
     auth-add = lava_tool.commands.auth:auth_add
     auth-list = lava_tool.commands.auth:auth_list
     auth-remove = lava_tool.commands.auth:auth_remove
+    test-api = lava_tool.commands.auth:test_api
     """,
     classifiers=[
         "Development Status :: 4 - Beta",
