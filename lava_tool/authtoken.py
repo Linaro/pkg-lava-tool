@@ -7,7 +7,7 @@ from lava_tool.interface import LavaCommandError
 
 class AuthBackend(object):
 
-    def add_token(self, scheme, username, hostname, token):
+    def add_token(self, username, hostname, token):
         raise NotImplementedError
 
     def get_token_for_host(self, user, host):
@@ -16,12 +16,22 @@ class AuthBackend(object):
 
 class KeyringAuthBackend(AuthBackend):
 
-    def add_token(self, scheme, username, hostname, token):
-        print username, hostname, token
+    def add_token(self, username, hostname, token):
         keyring.core.set_password("lava-tool-%s" % hostname, username, token)
 
     def get_token_for_host(self, username, hostname):
         return keyring.core.get_password("lava-tool-%s" % hostname, username)
+
+
+class MemoryAuthBackend(AuthBackend):
+
+    def __init__(self, user_host_token_list):
+        self._tokens = {}
+        for user, host, token in user_host_token_list:
+            self._tokens[(user, host)] = token
+
+    def get_token_for_host(self, username, host):
+        return self._tokens.get((username, host))
 
 
 def add_token_to_uri(uri, auth_backend):
@@ -31,7 +41,9 @@ def add_token_to_uri(uri, auth_backend):
     user, host = urllib.splituser(host)
     if not user:
         return orig_uri
-    token = auth_backend.get_token_for_host(user, host)
+    user, token = urllib.splitpasswd(user)
+    if token is None:
+        token = auth_backend.get_token_for_host(user, host)
     if token is None:
         raise LavaCommandError("username provided but no token found")
     return "%s://%s:%s@%s%s" % (type, user, token, host, handler)

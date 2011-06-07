@@ -4,8 +4,12 @@ import urlparse
 import sys
 import xmlrpclib
 
-from lava_tool.authtoken import add_token_to_uri, KeyringAuthBackend
-from lava_tool.interface import Command
+from lava_tool.authtoken import (
+    AuthenticatingServerProxy,
+    KeyringAuthBackend,
+    MemoryAuthBackend,
+    )
+from lava_tool.interface import Command, LavaCommandError
 
 
 class auth_add(Command):
@@ -33,24 +37,46 @@ class auth_add(Command):
             help="XXX.")
 
     def invoke(self):
-        parsed_host = urlparse.urlparse(self.args.HOST)
-        if parsed_host.scheme != 'https':
-            print >> sys.stderr, "oi!"
-            return 1
+        uri = self.args.HOST
+        if '://' not in uri:
+            uri = 'http://' + uri
+        parsed_host = urlparse.urlparse(uri)
         if parsed_host.username:
             username = parsed_host.username
         else:
             username = getpass.getuser()
         if self.args.token_file:
-            token = self.args.token_file.read()
+            if parsed_host.password:
+                raise LavaCommandError(
+                    "token specified in url but --token-file also passed")
+            else:
+                token = self.args.token_file.read()
         else:
-            token = getpass.getpass("Paste token for %s: " % self.args.HOST)
+            if parsed_host.password:
+                token = parsed_host.password
+            else:
+                token = getpass.getpass("Paste token for %s: " % uri)
         host = parsed_host.hostname
         if parsed_host.port:
             host += ':' + str(parsed_host.port)
-        self.auth_backend.add_token(parsed_host.scheme, username, host, token)
         if not self.args.no_check:
-            print 'check'
+            if not uri.endswith('/'):
+                uri += '/'
+            uri += 'RPC2/'
+            sp = AuthenticatingServerProxy(
+                uri, auth_backend=MemoryAuthBackend(
+                    [(username, host, token)]))
+            try:
+                token_user = sp.system.whoami()
+            except xmlrpclib.ProtocolError as ex:
+                if ex.errcode == 401:
+                    raise LavaCommandError("token rejected by server")
+                else:
+                    raise
+            if token_user is None or token_user != username:
+                raise LavaCommandError("???")
+        self.auth_backend.add_token(username, host, token)
+        print 'token added successfully'
 
 
 class auth_list(Command):
@@ -70,8 +96,8 @@ class auth_remove(Command):
 class test_api(Command):
 
     def get_authenticated_server_proxy(self, uri):
-        uri = add_token_to_uri(uri, KeyringAuthBackend())
-        return xmlrpclib.ServerProxy(uri)
+        return AuthenticatingServerProxy(
+            uri, auth_backend=KeyringAuthBackend())
 
     @classmethod
     def register_arguments(cls, parser):
