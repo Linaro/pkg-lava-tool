@@ -57,6 +57,7 @@ setup(
     ],
     install_requires = [
         'argparse >= 1.1',
+        'keyring',
     ],
     setup_requires = [
         'versiontools >= 1.1',
