@@ -68,3 +68,11 @@ class AuthAddTests(MockerTestCase):
             auth_backend, HOST='http://user:TOKEN@example.com', no_check=True,
             token_file=StringIO.StringIO('TOKEN'))
         self.assertRaises(LavaCommandError, cmd.invoke)
+
+    def test_port_included(self):
+        auth_backend = MemoryAuthBackend([])
+        cmd = self.make_command(
+            auth_backend, HOST='http://user:TOKEN@example.com:1234', no_check=True)
+        cmd.invoke()
+        self.assertEqual(
+            'TOKEN', auth_backend.get_token_for_host('user', 'example.com:1234'))
