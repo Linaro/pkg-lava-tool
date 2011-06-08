@@ -5,7 +5,7 @@ import StringIO
 import sys
 
 from lava_tool.authtoken import MemoryAuthBackend
-from lava_tool.mocker import CONTAINS, MockerTestCase
+from lava_tool.mocker import *#ARGS, KWARGS, CONTAINS, MockerTestCase
 from lava_tool.interface import LavaCommandError
 from lava_tool.commands.auth import auth_add
 
@@ -73,6 +73,23 @@ class AuthAddTests(MockerTestCase):
         auth_backend = MemoryAuthBackend([])
         cmd = self.make_command(
             auth_backend, HOST='http://user:TOKEN@example.com:1234', no_check=True)
+        cmd.invoke()
+        self.assertEqual(
+            'TOKEN', auth_backend.get_token_for_host('user', 'example.com:1234'))
+
+    def test_check_made(self):
+        mocked_AuthenticatingServerProxy = self.mocker.replace(
+            'lava_tool.authtoken.AuthenticatingServerProxy', passthrough=False)
+        mocked_sp = mocked_AuthenticatingServerProxy(ARGS, KWARGS)
+        # nospec() is required because of
+        # https://bugs.launchpad.net/mocker/+bug/794351
+        self.mocker.nospec()
+        mocked_sp.system.whoami()
+        self.mocker.result('user')
+        self.mocker.replay()
+        auth_backend = MemoryAuthBackend([])
+        cmd = self.make_command(
+            auth_backend, HOST='http://user:TOKEN@example.com:1234', no_check=False)
         cmd.invoke()
         self.assertEqual(
             'TOKEN', auth_backend.get_token_for_host('user', 'example.com:1234'))
