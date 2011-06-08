@@ -34,25 +34,55 @@ class MemoryAuthBackend(AuthBackend):
         return self._tokens.get((username, host))
 
 
-def add_token_to_uri(uri, auth_backend):
-    orig_uri = uri
-    type, uri = urllib.splittype(uri)
-    host, handler = urllib.splithost(uri)
-    user, host = urllib.splituser(host)
-    if not user:
-        return orig_uri
-    user, token = urllib.splitpasswd(user)
-    if token is None:
-        token = auth_backend.get_token_for_host(user, host)
-    if token is None:
-        raise LavaCommandError("username provided but no token found")
-    return "%s://%s:%s@%s%s" % (type, user, token, host, handler)
+class AuthenticatingTransportMixin:
+
+    def get_host_info(self, host):
+
+        x509 = {}
+        if isinstance(host, tuple):
+            host, x509 = host
+
+        auth, host = urllib.splituser(host)
+
+        if auth:
+            import base64
+            user, token = urllib.splitpasswd(auth)
+            if token is None:
+                token = self.auth_backend.get_token_for_host(user, host)
+            auth = ''.join(base64.encodestring(urllib.unquote(user + ':' + token)).split())
+            extra_headers = [
+                ("Authorization", "Basic " + auth)
+                ]
+        else:
+            extra_headers = None
+
+        return host, extra_headers, x509
+
+
+class AuthenticatingTransport(
+        AuthenticatingTransportMixin, xmlrpclib.Transport):
+    def __init__(self, use_datetime=0, auth_backend=None):
+        xmlrpclib.Transport.__init__(self, use_datetime)
+        self.auth_backend = auth_backend
+
+
+class AuthenticatingSafeTransport(
+        AuthenticatingTransportMixin, xmlrpclib.SafeTransport):
+    def __init__(self, use_datetime=0, auth_backend=None):
+        xmlrpclib.SafeTransport.__init__(self, use_datetime)
+        self.auth_backend = auth_backend
 
 
 class AuthenticatingServerProxy(xmlrpclib.ServerProxy):
 
     def __init__(self, uri, transport=None, encoding=None, verbose=0,
                  allow_none=0, use_datetime=0, auth_backend=None):
+        if transport is None:
+            if urllib.splittype(uri) == "https":
+                transport = AuthenticatingSafeTransport(
+                    use_datetime=use_datetime, auth_backend=auth_backend)
+            else:
+                transport = AuthenticatingTransport(
+                    use_datetime=use_datetime, auth_backend=auth_backend)
         xmlrpclib.ServerProxy.__init__(
-            self, add_token_to_uri(uri, auth_backend), transport, encoding,
-            verbose, allow_none, use_datetime)
+            self, uri, transport, encoding, verbose, allow_none, use_datetime)
