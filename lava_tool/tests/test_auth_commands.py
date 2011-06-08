@@ -4,8 +4,9 @@
 import StringIO
 import sys
 
-from lava_tool.mocker import CONTAINS, MockerTestCase
 from lava_tool.authtoken import MemoryAuthBackend
+from lava_tool.mocker import CONTAINS, MockerTestCase
+from lava_tool.interface import LavaCommandError
 from lava_tool.commands.auth import auth_add
 
 
@@ -51,3 +52,19 @@ class AuthAddTests(MockerTestCase):
         cmd.invoke()
         self.assertEqual(
             'TOKEN', auth_backend.get_token_for_host('user', 'example.com'))
+
+    def test_token_taken_from_file(self):
+        auth_backend = MemoryAuthBackend([])
+        cmd = self.make_command(
+            auth_backend, HOST='http://user@example.com', no_check=True,
+            token_file=StringIO.StringIO('TOKEN'))
+        cmd.invoke()
+        self.assertEqual(
+            'TOKEN', auth_backend.get_token_for_host('user', 'example.com'))
+
+    def test_token_file_and_in_url_conflict(self):
+        auth_backend = MemoryAuthBackend([])
+        cmd = self.make_command(
+            auth_backend, HOST='http://user:TOKEN@example.com', no_check=True,
+            token_file=StringIO.StringIO('TOKEN'))
+        self.assertRaises(LavaCommandError, cmd.invoke)
