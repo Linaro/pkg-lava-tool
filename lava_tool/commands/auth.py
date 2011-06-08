@@ -12,6 +12,16 @@ from lava_tool.authtoken import (
 from lava_tool.interface import Command, LavaCommandError
 
 
+def normalize_xmlrpc_url(uri):
+    if '://' not in uri:
+        uri = 'http://' + uri
+    if not uri.endswith('/'):
+        uri += '/'
+    if not uri.endswith('/RPC2/'):
+        uri += 'RPC2/'
+    return uri
+
+
 class auth_add(Command):
     """
     """
@@ -37,14 +47,20 @@ class auth_add(Command):
             help="XXX.")
 
     def invoke(self):
-        uri = self.args.HOST
-        if '://' not in uri:
-            uri = 'http://' + uri
+        uri = normalize_xmlrpc_url(self.args.HOST)
         parsed_host = urlparse.urlparse(uri)
+
         if parsed_host.username:
             username = parsed_host.username
         else:
             username = getpass.getuser()
+
+        host = parsed_host.hostname
+        if parsed_host.port:
+            host += ':' + str(parsed_host.port)
+
+        uri = '%s://%s@%s/RPC2/' % (parsed_host.scheme, username, host)
+
         if self.args.token_file:
             if parsed_host.password:
                 raise LavaCommandError(
@@ -56,28 +72,24 @@ class auth_add(Command):
                 token = parsed_host.password
             else:
                 token = getpass.getpass("Paste token for %s: " % uri)
-        host = parsed_host.hostname
-        if parsed_host.port:
-            host += ':' + str(parsed_host.port)
+
         if not self.args.no_check:
-            if not uri.endswith('/'):
-                uri += '/'
-            uri += 'RPC2/'
             sp = AuthenticatingServerProxy(
                 uri, auth_backend=MemoryAuthBackend(
                     [(username, host, token)]))
             try:
                 token_user = sp.system.whoami()
             except xmlrpclib.ProtocolError as ex:
-                raise
                 if ex.errcode == 401:
-                    raise LavaCommandError("token rejected by server")
+                    raise LavaCommandError("token rejected by server for user %s" % username)
                 else:
                     raise
             if token_user is None or token_user != username:
                 raise LavaCommandError("???")
+
         self.auth_backend.add_token(username, host, token)
-        print 'token added successfully'
+
+        print 'token added successfully for user %s' % username
 
 
 class auth_list(Command):
@@ -105,9 +117,7 @@ class test_api(Command):
         super(test_api, cls).register_arguments(parser)
         parser.add_argument(
             "HOST",
-            help=("Endpoint to add token for, in the form "
-                  "scheme://username@host.  The username will default to "
-                  "the currently logged in user."))
+            help=("XXX."))
 
     def invoke(self):
         print self.get_authenticated_server_proxy(self.args.HOST).scheduler.test()

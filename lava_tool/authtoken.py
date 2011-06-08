@@ -49,6 +49,8 @@ class AuthenticatingTransportMixin:
             user, token = urllib.splitpasswd(auth)
             if token is None:
                 token = self.auth_backend.get_token_for_host(user, host)
+                if token is None:
+                    raise LavaCommandError("username provided but no token found")
             auth = ''.join(base64.encodestring(urllib.unquote(user + ':' + token)).split())
             extra_headers = [
                 ("Authorization", "Basic " + auth)
