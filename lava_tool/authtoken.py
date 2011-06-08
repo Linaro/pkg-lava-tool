@@ -31,6 +31,9 @@ class MemoryAuthBackend(AuthBackend):
         for user, host, token in user_host_token_list:
             self._tokens[(user, host)] = token
 
+    def add_token(self, username, hostname, token):
+        self._tokens[(username, hostname)] = token
+
     def get_token_for_host(self, username, host):
         return self._tokens.get((username, host))
 

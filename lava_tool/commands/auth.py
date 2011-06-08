@@ -29,7 +29,8 @@ class auth_add(Command):
     def __init__(self, parser, args, auth_backend=None):
         super(auth_add, self).__init__(parser, args)
         if auth_backend is None:
-            self.auth_backend = KeyringAuthBackend()
+            auth_backend = KeyringAuthBackend()
+        self.auth_backend = auth_backend
 
     @classmethod
     def register_arguments(cls, parser):
