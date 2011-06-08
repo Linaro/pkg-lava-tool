@@ -102,7 +102,7 @@ class AuthenticatingServerProxy(xmlrpclib.ServerProxy):
     def __init__(self, uri, transport=None, encoding=None, verbose=0,
                  allow_none=0, use_datetime=0, auth_backend=None):
         if transport is None:
-            if urllib.splittype(uri) == "https":
+            if urllib.splittype(uri)[0] == "https":
                 transport = AuthenticatingSafeTransport(
                     use_datetime=use_datetime, auth_backend=auth_backend)
             else:
