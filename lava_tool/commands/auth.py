@@ -69,6 +69,7 @@ class auth_add(Command):
             try:
                 token_user = sp.system.whoami()
             except xmlrpclib.ProtocolError as ex:
+                raise
                 if ex.errcode == 401:
                     raise LavaCommandError("token rejected by server")
                 else:
