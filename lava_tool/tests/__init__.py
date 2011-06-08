@@ -36,6 +36,7 @@ def app_modules():
 def test_modules():
     return [
             'lava_tool.tests.test_authtoken',
+            'lava_tool.tests.test_auth_commands',
             'lava_tool.tests.test_commands',
             ]
 
