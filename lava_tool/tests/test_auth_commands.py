@@ -11,6 +11,7 @@ from lava_tool.commands.auth import auth_add
 
 class FakeArgs:
     token_file = None
+    no_check = False
 
 class AuthAddTests(MockerTestCase):
 
@@ -26,16 +27,15 @@ class AuthAddTests(MockerTestCase):
         sys.stdout = self.saved_stdout
         sys.stderr = self.saved_stderr
 
-    def make_command(self, host, no_check, auth_backend):
+    def make_command(self, auth_backend, **kwargs):
         args = FakeArgs()
-        args.HOST = host
-        args.no_check = no_check
+        args.__dict__.update(kwargs)
         return auth_add(None, args, auth_backend)
 
     def test_token_taken_from_argument(self):
         auth_backend = MemoryAuthBackend([])
         cmd = self.make_command(
-            'http://user:TOKEN@example.com', True, auth_backend)
+            auth_backend, HOST='http://user:TOKEN@example.com', no_check=True)
         cmd.invoke()
         self.assertEqual(
             'TOKEN', auth_backend.get_token_for_host('user', 'example.com'))
@@ -47,7 +47,7 @@ class AuthAddTests(MockerTestCase):
         self.mocker.replay()
         auth_backend = MemoryAuthBackend([])
         cmd = self.make_command(
-            'http://user@example.com', True, auth_backend)
+            auth_backend, HOST='http://user@example.com', no_check=True)
         cmd.invoke()
         self.assertEqual(
             'TOKEN', auth_backend.get_token_for_host('user', 'example.com'))
