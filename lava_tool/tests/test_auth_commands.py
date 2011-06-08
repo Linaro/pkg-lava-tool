@@ -4,7 +4,7 @@
 import StringIO
 import sys
 
-from lava_tool.mocker import MockerTestCase
+from lava_tool.mocker import CONTAINS, MockerTestCase
 from lava_tool.authtoken import MemoryAuthBackend
 from lava_tool.commands.auth import auth_add
 
@@ -42,7 +42,7 @@ class AuthAddTests(MockerTestCase):
 
     def test_token_taken_from_getpass(self):
         mocked_getpass = self.mocker.replace('getpass.getpass', passthrough=False)
-        mocked_getpass('Paste token for http://user@example.com/RPC2/: ')
+        mocked_getpass(CONTAINS('Paste token'))
         self.mocker.result("TOKEN")
         self.mocker.replay()
         auth_backend = MemoryAuthBackend([])
