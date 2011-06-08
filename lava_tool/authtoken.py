@@ -1,3 +1,4 @@
+import base64
 import urllib
 import xmlrpclib
 
@@ -45,13 +46,13 @@ class AuthenticatingTransportMixin:
         auth, host = urllib.splituser(host)
 
         if auth:
-            import base64
             user, token = urllib.splitpasswd(auth)
             if token is None:
                 token = self.auth_backend.get_token_for_host(user, host)
                 if token is None:
-                    raise LavaCommandError("username provided but no token found")
-            auth = ''.join(base64.encodestring(urllib.unquote(user + ':' + token)).split())
+                    raise LavaCommandError(
+                        "Username provided but no token found.")
+            auth = base64.b64encode(urllib.unquote(user + ':' + token))
             extra_headers = [
                 ("Authorization", "Basic " + auth)
                 ]
