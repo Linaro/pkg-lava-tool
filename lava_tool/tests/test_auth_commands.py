@@ -125,8 +125,23 @@ class AuthAddTests(MockerTestCase):
         self.mocker.replay()
         auth_backend = MemoryAuthBackend([])
         cmd = self.make_command(
-            auth_backend, HOST='http://user:TOKEN@example.com:1234', no_check=False)
+            auth_backend, HOST='http://user:TOKEN@example.com', no_check=False)
         self.assertRaises(LavaCommandError, cmd.invoke)
+
+    def test_check_fails_token_not_recorded(self):
+        mocked_AuthenticatingServerProxy = self.mocker.replace(
+            'lava_tool.authtoken.AuthenticatingServerProxy', passthrough=False)
+        mocked_sp = mocked_AuthenticatingServerProxy(ARGS, KWARGS)
+        self.mocker.nospec()
+        mocked_sp.system.whoami()
+        self.mocker.throw(xmlrpclib.ProtocolError('', 401, '', []))
+        self.mocker.replay()
+        auth_backend = MemoryAuthBackend([])
+        cmd = self.make_command(
+            auth_backend, HOST='http://user:TOKEN@example.com', no_check=False)
+        self.assertRaises(LavaCommandError, cmd.invoke)
+        self.assertEqual(
+            None, auth_backend.get_token_for_host('user', 'example.com'))
 
     def test_check_other_failure_just_raised(self):
         mocked_AuthenticatingServerProxy = self.mocker.replace(
@@ -140,5 +155,5 @@ class AuthAddTests(MockerTestCase):
         self.mocker.replay()
         auth_backend = MemoryAuthBackend([])
         cmd = self.make_command(
-            auth_backend, HOST='http://user:TOKEN@example.com:1234', no_check=False)
+            auth_backend, HOST='http://user:TOKEN@example.com', no_check=False)
         self.assertRaises(xmlrpclib.ProtocolError, cmd.invoke)
