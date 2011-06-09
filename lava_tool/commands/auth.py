@@ -59,7 +59,7 @@ class auth_add(Command):
                   "scheme://username@host.  The username will default to "
                   "the currently logged in user."))
         parser.add_argument(
-            "--token-file", default=None, type=argparse.FileType("rb"),
+            "--token-file", default=None,
             help="Read the secret from here rather than prompting for it.")
         parser.add_argument(
             "--no-check", action='store_true',
@@ -87,7 +87,11 @@ class auth_add(Command):
                 raise LavaCommandError(
                     "Token specified in url but --token-file also passed.")
             else:
-                token = self.args.token_file.read()
+                try:
+                    token_file = open(self.args.token_file)
+                except IOError as ex:
+                    raise LavaCommandError("opening %r failed: %s" % (self.args.token_file, ex))
+                token = token_file.read()
         else:
             if parsed_host.password:
                 token = parsed_host.password

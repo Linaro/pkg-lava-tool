@@ -16,8 +16,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Unit tests for the lava_tool.commands.auth package
+"""
+
 import StringIO
 import sys
+import tempfile
 import xmlrpclib
 
 from lava_tool.authtoken import MemoryAuthBackend
@@ -71,34 +76,42 @@ class AuthAddTests(MockerTestCase):
 
     def test_token_taken_from_file(self):
         auth_backend = MemoryAuthBackend([])
+        token_file = tempfile.NamedTemporaryFile('w')
+        token_file.write("TOKEN")
+        token_file.flush()
         cmd = self.make_command(
             auth_backend, HOST='http://user@example.com', no_check=True,
-            token_file=StringIO.StringIO('TOKEN'))
+            token_file=token_file.name)
         cmd.invoke()
         self.assertEqual(
             'TOKEN', auth_backend.get_token_for_host('user', 'example.com'))
 
     def test_token_file_and_in_url_conflict(self):
+        auth_backend = MemoryAuthBackend([])
+        cmd = self.make_command(
+            auth_backend, HOST='http://user:TOKEN@example.com', no_check=True,
+            token_file='some-file-name')
+        self.assertRaises(LavaCommandError, cmd.invoke)
+
+    def test_non_existent_token_reported(self):
+        auth_backend = MemoryAuthBackend([])
+        cmd = self.make_command(
+            auth_backend, HOST='http://user:TOKEN@example.com', no_check=True,
+            token_file='does-not-exist')
+        self.assertRaises(LavaCommandError, cmd.invoke)
+
+    def test_user_taken_from_getuser(self):
         mocked_getuser = self.mocker.replace('getpass.getuser', passthrough=False)
         mocked_getuser()
         self.mocker.result("user")
         self.mocker.replay()
         auth_backend = MemoryAuthBackend([])
+        token_file = tempfile.NamedTemporaryFile('w')
+        token_file.write("TOKEN")
+        token_file.flush()
         cmd = self.make_command(
             auth_backend, HOST='http://example.com', no_check=True,
-            token_file=StringIO.StringIO('TOKEN'))
-        cmd.invoke()
-        self.assertEqual(
-            'TOKEN', auth_backend.get_token_for_host('user', 'example.com'))
-
-    def test_user_taken_from_getpass(self):
-        mocked_getpass = self.mocker.replace('getpass.getpass', passthrough=False)
-        mocked_getpass(CONTAINS('Paste token'))
-        self.mocker.result("TOKEN")
-        self.mocker.replay()
-        auth_backend = MemoryAuthBackend([])
-        cmd = self.make_command(
-            auth_backend, HOST='http://user@example.com', no_check=True)
+            token_file=token_file.name)
         cmd.invoke()
         self.assertEqual(
             'TOKEN', auth_backend.get_token_for_host('user', 'example.com'))
