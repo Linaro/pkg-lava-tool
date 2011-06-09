@@ -16,6 +16,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Unit tests for the lava_tool.authtoken package
+"""
+
 import base64
 from unittest import TestCase
 
