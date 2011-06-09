@@ -110,6 +110,9 @@ class auth_add(Command):
                         "Token rejected by server for user %s." % username)
                 else:
                     raise
+            except xmlrpclib.Fault as ex:
+                raise LavaCommandError(
+                    "Server reported error during check: %s." % ex)
             if token_user != username:
                 raise LavaCommandError(
                     "whoami() returned %s rather than expected %s -- this is "
