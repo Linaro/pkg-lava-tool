@@ -45,6 +45,7 @@ setup(
     lava-tool = lava_tool.dispatcher:main
     [lava_tool.commands]
     help = lava_tool.commands.misc:help
+    auth-add = lava_tool.commands.auth:auth_add
     """,
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -55,7 +56,8 @@ setup(
         "Topic :: Software Development :: Testing",
     ],
     install_requires = [
-        'argparse >= 1.1'
+        'argparse >= 1.1',
+        'keyring',
     ],
     setup_requires = [
         'versiontools >= 1.1',
