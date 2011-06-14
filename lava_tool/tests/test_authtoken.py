@@ -38,7 +38,7 @@ class TestAuthenticatingServerProxy(TestCase):
     def auth_headers_for_method_call(self, server_proxy):
         mocker = Mocker()
         mocked_HTTPConnection = mocker.replace(
-            'httplib.HTTPConnection', passthrough=False)
+            'httplib.HTTPConnection', passthrough=True)
         mocked_connection = mocked_HTTPConnection(ARGS, KWARGS)
         # nospec() is required because of
         # https://bugs.launchpad.net/mocker/+bug/794351
