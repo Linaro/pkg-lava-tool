@@ -35,10 +35,15 @@ from lava_tool.mocker import ARGS, KWARGS, Mocker
 
 class TestAuthenticatingServerProxy(TestCase):
 
-    def auth_headers_for_method_call(self, server_proxy):
+    def auth_headers_for_method_call_on(self, url, auth_backend):
+        server_proxy = AuthenticatingServerProxy(
+            url, auth_backend=auth_backend)
         mocker = Mocker()
-        mocked_HTTPConnection = mocker.replace(
-            'httplib.HTTPConnection', passthrough=True)
+        if url.startswith('https'):
+            cls_name = 'httplib.HTTPSConnection'
+        else:
+            cls_name = 'httplib.HTTPConnection'
+        mocked_HTTPConnection = mocker.replace(cls_name, passthrough=False)
         mocked_connection = mocked_HTTPConnection(ARGS, KWARGS)
         # nospec() is required because of
         # https://bugs.launchpad.net/mocker/+bug/794351
@@ -89,18 +94,31 @@ class TestAuthenticatingServerProxy(TestCase):
             return (auth, None)
 
     def test_no_user_no_auth(self):
-        auth_headers = self.auth_headers_for_method_call(
-            AuthenticatingServerProxy(
-                'http://localhost/RPC2/',
-                auth_backend=MemoryAuthBackend([])))
+        auth_headers = self.auth_headers_for_method_call_on(
+            'http://localhost/RPC2/', MemoryAuthBackend([]))
         self.assertEqual([], auth_headers)
 
-    def test_token_used_for_auth(self):
-        auth_headers = self.auth_headers_for_method_call(
-            AuthenticatingServerProxy(
-                'http://user@localhost/RPC2/',
-                auth_backend=MemoryAuthBackend(
-                    [('user', 'http://localhost/RPC2/', 'TOKEN')])))
+    def test_token_used_for_auth_http(self):
+        auth_headers = self.auth_headers_for_method_call_on(
+            'http://user@localhost/RPC2/',
+            MemoryAuthBackend([('user', 'http://localhost/RPC2/', 'TOKEN')]))
+        self.assertEqual(
+            ('user', 'TOKEN'),
+            self.user_and_password_from_auth_data(auth_headers))
+
+    def test_token_used_for_auth_https(self):
+        auth_headers = self.auth_headers_for_method_call_on(
+            'https://user@localhost/RPC2/',
+            MemoryAuthBackend([('user', 'https://localhost/RPC2/', 'TOKEN')]))
+        self.assertEqual(
+            ('user', 'TOKEN'),
+            self.user_and_password_from_auth_data(auth_headers))
+
+    def test_port_included(self):
+        auth_headers = self.auth_headers_for_method_call_on(
+            'http://user@localhost:1234/RPC2/',
+            MemoryAuthBackend(
+                [('user', 'http://localhost:1234/RPC2/', 'TOKEN')]))
         self.assertEqual(
             ('user', 'TOKEN'),
             self.user_and_password_from_auth_data(auth_headers))
@@ -108,7 +126,6 @@ class TestAuthenticatingServerProxy(TestCase):
     def test_error_when_user_but_no_token(self):
         self.assertRaises(
             LavaCommandError,
-            self.auth_headers_for_method_call,
-            AuthenticatingServerProxy(
-                'http://user@localhost/RPC2/',
-                auth_backend=MemoryAuthBackend([])))
+            self.auth_headers_for_method_call_on,
+            'http://user@localhost/RPC2/',
+            MemoryAuthBackend([]))
