@@ -89,11 +89,10 @@ class AuthenticatingTransportMixin:
         connection.putheader("Authorization", "Basic " + auth)
 
     def get_host_info(self, host):
-
         x509 = {}
         if isinstance(host, tuple):
             host, x509 = host
-
+        auth, host = urllib.splituser(host)
         return host, None, x509
 
 

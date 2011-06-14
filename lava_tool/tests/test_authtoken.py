@@ -23,6 +23,7 @@ Unit tests for the lava_tool.authtoken package
 import base64
 import StringIO
 from unittest import TestCase
+import urlparse
 import xmlrpclib
 
 from lava_tool.authtoken import (
@@ -36,15 +37,21 @@ from lava_tool.mocker import ARGS, KWARGS, Mocker
 class TestAuthenticatingServerProxy(TestCase):
 
     def auth_headers_for_method_call_on(self, url, auth_backend):
+        parsed = urlparse.urlparse(url)
+        expected_host = parsed.hostname
+        if parsed.port:
+            expected_host += ':' + str(parsed.port)
         server_proxy = AuthenticatingServerProxy(
             url, auth_backend=auth_backend)
         mocker = Mocker()
         if url.startswith('https'):
             cls_name = 'httplib.HTTPSConnection'
+            expected_constructor_args = (expected_host, None)
         else:
             cls_name = 'httplib.HTTPConnection'
+            expected_constructor_args = (expected_host,)
         mocked_HTTPConnection = mocker.replace(cls_name, passthrough=False)
-        mocked_connection = mocked_HTTPConnection(ARGS, KWARGS)
+        mocked_connection = mocked_HTTPConnection(*expected_constructor_args)
         # nospec() is required because of
         # https://bugs.launchpad.net/mocker/+bug/794351
         mocker.nospec()
