@@ -64,16 +64,6 @@ class AuthenticatingTransportMixin:
     def send_request(self, connection, handler, request_body):
         xmlrpclib.Transport.send_request(
             self, connection, handler, request_body)
-        if self._extra_headers:
-            extra_headers = self._extra_headers
-            if isinstance(extra_headers, dict):
-                extra_headers = extra_headers.items()
-            if [1 for eh in extra_headers if eh[0].lower() == "authorization"]:
-                return
-        ## host = connection.host
-        ## port = ''
-        ## if connection.port != connection.default_port:
-        ##     port = ':' + int(connection.port)
         auth, host = urllib.splituser(self._connection[0])
         if auth is None:
             return
@@ -89,6 +79,8 @@ class AuthenticatingTransportMixin:
         connection.putheader("Authorization", "Basic " + auth)
 
     def get_host_info(self, host):
+        # We override to never send any authorization header based soley on
+        # the host; we do all that in send_request above.
         x509 = {}
         if isinstance(host, tuple):
             host, x509 = host
