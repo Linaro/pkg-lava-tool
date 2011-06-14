@@ -57,10 +57,49 @@ class AuthAddTests(MockerTestCase):
     def test_token_taken_from_argument(self):
         auth_backend = MemoryAuthBackend([])
         cmd = self.make_command(
+            auth_backend, HOST='http://user:TOKEN@example.com/RPC2/',
+            no_check=True)
+        cmd.invoke()
+        self.assertEqual(
+            'TOKEN',
+            auth_backend.get_token_for_endpoint(
+                'user', 'http://example.com/RPC2/'))
+
+    def test_RPC2_implied(self):
+        auth_backend = MemoryAuthBackend([])
+        cmd = self.make_command(
             auth_backend, HOST='http://user:TOKEN@example.com', no_check=True)
         cmd.invoke()
         self.assertEqual(
-            'TOKEN', auth_backend.get_token_for_host('user', 'example.com'))
+            'TOKEN',
+            auth_backend.get_token_for_endpoint(
+                'user', 'http://example.com/RPC2/'))
+
+    def test_scheme_recorded(self):
+        auth_backend = MemoryAuthBackend([])
+        cmd = self.make_command(
+            auth_backend, HOST='https://user:TOKEN@example.com/RPC2/',
+            no_check=True)
+        cmd.invoke()
+        self.assertEqual(
+            None,
+            auth_backend.get_token_for_endpoint(
+                'user', 'http://example.com/RPC2/'))
+        self.assertEqual(
+            'TOKEN',
+            auth_backend.get_token_for_endpoint(
+                'user', 'https://example.com/RPC2/'))
+
+    def test_path_on_server_recorded(self):
+        auth_backend = MemoryAuthBackend([])
+        cmd = self.make_command(
+            auth_backend, HOST='https://user:TOKEN@example.com/path',
+            no_check=True)
+        cmd.invoke()
+        self.assertEqual(
+            'TOKEN',
+            auth_backend.get_token_for_endpoint(
+                'user', 'https://example.com/path/RPC2/'))
 
     def test_token_taken_from_getpass(self):
         mocked_getpass = self.mocker.replace('getpass.getpass', passthrough=False)
@@ -72,7 +111,9 @@ class AuthAddTests(MockerTestCase):
             auth_backend, HOST='http://user@example.com', no_check=True)
         cmd.invoke()
         self.assertEqual(
-            'TOKEN', auth_backend.get_token_for_host('user', 'example.com'))
+            'TOKEN',
+            auth_backend.get_token_for_endpoint(
+                'user', 'http://example.com/RPC2/'))
 
     def test_token_taken_from_file(self):
         auth_backend = MemoryAuthBackend([])
@@ -84,7 +125,9 @@ class AuthAddTests(MockerTestCase):
             token_file=token_file.name)
         cmd.invoke()
         self.assertEqual(
-            'TOKEN', auth_backend.get_token_for_host('user', 'example.com'))
+            'TOKEN',
+            auth_backend.get_token_for_endpoint(
+                'user', 'http://example.com/RPC2/'))
 
     def test_token_file_and_in_url_conflict(self):
         auth_backend = MemoryAuthBackend([])
@@ -114,7 +157,9 @@ class AuthAddTests(MockerTestCase):
             token_file=token_file.name)
         cmd.invoke()
         self.assertEqual(
-            'TOKEN', auth_backend.get_token_for_host('user', 'example.com'))
+            'TOKEN',
+            auth_backend.get_token_for_endpoint(
+                'user', 'http://example.com/RPC2/'))
 
     def test_port_included(self):
         auth_backend = MemoryAuthBackend([])
@@ -122,7 +167,9 @@ class AuthAddTests(MockerTestCase):
             auth_backend, HOST='http://user:TOKEN@example.com:1234', no_check=True)
         cmd.invoke()
         self.assertEqual(
-            'TOKEN', auth_backend.get_token_for_host('user', 'example.com:1234'))
+            'TOKEN',
+            auth_backend.get_token_for_endpoint(
+                'user', 'http://example.com:1234/RPC2/'))
 
     def test_check_made(self):
         mocked_AuthenticatingServerProxy = self.mocker.replace(
@@ -136,10 +183,12 @@ class AuthAddTests(MockerTestCase):
         self.mocker.replay()
         auth_backend = MemoryAuthBackend([])
         cmd = self.make_command(
-            auth_backend, HOST='http://user:TOKEN@example.com:1234', no_check=False)
+            auth_backend, HOST='http://user:TOKEN@example.com', no_check=False)
         cmd.invoke()
         self.assertEqual(
-            'TOKEN', auth_backend.get_token_for_host('user', 'example.com:1234'))
+            'TOKEN',
+            auth_backend.get_token_for_endpoint(
+                'user', 'http://example.com/RPC2/'))
 
     def test_check_auth_failure_reported_nicely(self):
         mocked_AuthenticatingServerProxy = self.mocker.replace(
@@ -169,7 +218,9 @@ class AuthAddTests(MockerTestCase):
             auth_backend, HOST='http://user:TOKEN@example.com', no_check=False)
         self.assertRaises(LavaCommandError, cmd.invoke)
         self.assertEqual(
-            None, auth_backend.get_token_for_host('user', 'example.com'))
+            None,
+            auth_backend.get_token_for_endpoint(
+                'user', 'http://example.com/RPC2/'))
 
     def test_check_other_http_failure_just_raised(self):
         mocked_AuthenticatingServerProxy = self.mocker.replace(

@@ -24,36 +24,39 @@ import keyring.core
 
 from lava_tool.interface import LavaCommandError
 
+
 class AuthBackend(object):
 
-    def add_token(self, username, hostname, token):
+    def add_token(self, username, endpoint_url, token):
         raise NotImplementedError
 
-    def get_token_for_host(self, user, host):
+    def get_token_for_endpoint(self, user, endpoint_url):
         raise NotImplementedError
 
 
 class KeyringAuthBackend(AuthBackend):
 
-    def add_token(self, username, hostname, token):
-        keyring.core.set_password("lava-tool-%s" % hostname, username, token)
+    def add_token(self, username, endpoint_url, token):
+        keyring.core.set_password(
+            "lava-tool-%s" % endpoint_url, username, token)
 
-    def get_token_for_host(self, username, hostname):
-        return keyring.core.get_password("lava-tool-%s" % hostname, username)
+    def get_token_for_host(self, username, endpoint_url):
+        return keyring.core.get_password(
+            "lava-tool-%s" % endpoint_url, username)
 
 
 class MemoryAuthBackend(AuthBackend):
 
-    def __init__(self, user_host_token_list):
+    def __init__(self, user_endpoint_token_list):
         self._tokens = {}
-        for user, host, token in user_host_token_list:
-            self._tokens[(user, host)] = token
+        for user, endpoint, token in user_endpoint_token_list:
+            self._tokens[(user, endpoint)] = token
 
-    def add_token(self, username, hostname, token):
-        self._tokens[(username, hostname)] = token
+    def add_token(self, username, endpoint_url, token):
+        self._tokens[(username, endpoint_url)] = token
 
-    def get_token_for_host(self, username, host):
-        return self._tokens.get((username, host))
+    def get_token_for_endpoint(self, username, endpoint_url):
+        return self._tokens.get((username, endpoint_url))
 
 
 class AuthenticatingTransportMixin:
