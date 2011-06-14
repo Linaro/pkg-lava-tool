@@ -80,7 +80,8 @@ class auth_add(Command):
         if parsed_host.port:
             host += ':' + str(parsed_host.port)
 
-        uri = '%s://%s@%s/RPC2/' % (parsed_host.scheme, username, host)
+        uri = '%s://%s@%s%s' % (
+            parsed_host.scheme, username, host, parsed_host.path)
 
         if self.args.token_file:
             if parsed_host.password:
@@ -118,6 +119,7 @@ class auth_add(Command):
                     "whoami() returned %s rather than expected %s -- this is "
                     "a bug." % (token_user, username))
 
-        self.auth_backend.add_token(username, host, token)
+        userless_uri = '%s://%s%s' % (parsed_host.scheme, host, parsed_host.path)
+        self.auth_backend.add_token(username, userless_uri, token)
 
         print 'Token added successfully for user %s.' % username
