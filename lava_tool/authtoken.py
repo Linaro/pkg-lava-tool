@@ -24,67 +24,73 @@ import keyring.core
 
 from lava_tool.interface import LavaCommandError
 
+
 class AuthBackend(object):
 
-    def add_token(self, username, hostname, token):
+    def add_token(self, username, endpoint_url, token):
         raise NotImplementedError
 
-    def get_token_for_host(self, user, host):
+    def get_token_for_endpoint(self, user, endpoint_url):
         raise NotImplementedError
 
 
 class KeyringAuthBackend(AuthBackend):
 
-    def add_token(self, username, hostname, token):
-        keyring.core.set_password("lava-tool-%s" % hostname, username, token)
+    def add_token(self, username, endpoint_url, token):
+        keyring.core.set_password(
+            "lava-tool-%s" % endpoint_url, username, token)
 
-    def get_token_for_host(self, username, hostname):
-        return keyring.core.get_password("lava-tool-%s" % hostname, username)
+    def get_token_for_host(self, username, endpoint_url):
+        return keyring.core.get_password(
+            "lava-tool-%s" % endpoint_url, username)
 
 
 class MemoryAuthBackend(AuthBackend):
 
-    def __init__(self, user_host_token_list):
+    def __init__(self, user_endpoint_token_list):
         self._tokens = {}
-        for user, host, token in user_host_token_list:
-            self._tokens[(user, host)] = token
+        for user, endpoint, token in user_endpoint_token_list:
+            self._tokens[(user, endpoint)] = token
 
-    def add_token(self, username, hostname, token):
-        self._tokens[(username, hostname)] = token
+    def add_token(self, username, endpoint_url, token):
+        self._tokens[(username, endpoint_url)] = token
 
-    def get_token_for_host(self, username, host):
-        return self._tokens.get((username, host))
+    def get_token_for_endpoint(self, username, endpoint_url):
+        return self._tokens.get((username, endpoint_url))
 
 
 class AuthenticatingTransportMixin:
 
-    def get_host_info(self, host):
+    def send_request(self, connection, handler, request_body):
+        xmlrpclib.Transport.send_request(
+            self, connection, handler, request_body)
+        auth, host = urllib.splituser(self._connection[0])
+        if auth is None:
+            return
+        user, token = urllib.splitpasswd(auth)
+        if token is None:
+            endpoint_url = '%s://%s%s' % (self._scheme, host, handler)
+            token = self.auth_backend.get_token_for_endpoint(
+                user, endpoint_url)
+            if token is None:
+                raise LavaCommandError(
+                    "Username provided but no token found.")
+        auth = base64.b64encode(urllib.unquote(user + ':' + token))
+        connection.putheader("Authorization", "Basic " + auth)
 
+    def get_host_info(self, host):
+        # We override to never send any authorization header based soley on
+        # the host; we do all that in send_request above.
         x509 = {}
         if isinstance(host, tuple):
             host, x509 = host
-
         auth, host = urllib.splituser(host)
-
-        if auth:
-            user, token = urllib.splitpasswd(auth)
-            if token is None:
-                token = self.auth_backend.get_token_for_host(user, host)
-                if token is None:
-                    raise LavaCommandError(
-                        "Username provided but no token found.")
-            auth = base64.b64encode(urllib.unquote(user + ':' + token))
-            extra_headers = [
-                ("Authorization", "Basic " + auth)
-                ]
-        else:
-            extra_headers = None
-
-        return host, extra_headers, x509
+        return host, None, x509
 
 
 class AuthenticatingTransport(
         AuthenticatingTransportMixin, xmlrpclib.Transport):
+    _scheme = 'http'
     def __init__(self, use_datetime=0, auth_backend=None):
         xmlrpclib.Transport.__init__(self, use_datetime)
         self.auth_backend = auth_backend
@@ -92,6 +98,7 @@ class AuthenticatingTransport(
 
 class AuthenticatingSafeTransport(
         AuthenticatingTransportMixin, xmlrpclib.SafeTransport):
+    _scheme = 'https'
     def __init__(self, use_datetime=0, auth_backend=None):
         xmlrpclib.SafeTransport.__init__(self, use_datetime)
         self.auth_backend = auth_backend
