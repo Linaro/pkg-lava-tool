@@ -61,33 +61,45 @@ class MemoryAuthBackend(AuthBackend):
 
 class AuthenticatingTransportMixin:
 
+    def send_request(self, connection, handler, request_body):
+        xmlrpclib.Transport.send_request(
+            self, connection, handler, request_body)
+        if self._extra_headers:
+            extra_headers = self._extra_headers
+            if isinstance(extra_headers, dict):
+                extra_headers = extra_headers.items()
+            if [1 for eh in extra_headers if eh[0].lower() == "authorization"]:
+                return
+        ## host = connection.host
+        ## port = ''
+        ## if connection.port != connection.default_port:
+        ##     port = ':' + int(connection.port)
+        auth, host = urllib.splituser(self._connection[0])
+        if auth is None:
+            return
+        user, token = urllib.splitpasswd(auth)
+        if token is None:
+            endpoint_url = '%s://%s%s' % (self._scheme, host, handler)
+            token = self.auth_backend.get_token_for_endpoint(
+                user, endpoint_url)
+            if token is None:
+                raise LavaCommandError(
+                    "Username provided but no token found.")
+        auth = base64.b64encode(urllib.unquote(user + ':' + token))
+        connection.putheader("Authorization", "Basic " + auth)
+
     def get_host_info(self, host):
 
         x509 = {}
         if isinstance(host, tuple):
             host, x509 = host
 
-        auth, host = urllib.splituser(host)
-
-        if auth:
-            user, token = urllib.splitpasswd(auth)
-            if token is None:
-                token = self.auth_backend.get_token_for_host(user, host)
-                if token is None:
-                    raise LavaCommandError(
-                        "Username provided but no token found.")
-            auth = base64.b64encode(urllib.unquote(user + ':' + token))
-            extra_headers = [
-                ("Authorization", "Basic " + auth)
-                ]
-        else:
-            extra_headers = None
-
-        return host, extra_headers, x509
+        return host, None, x509
 
 
 class AuthenticatingTransport(
         AuthenticatingTransportMixin, xmlrpclib.Transport):
+    _scheme = 'http'
     def __init__(self, use_datetime=0, auth_backend=None):
         xmlrpclib.Transport.__init__(self, use_datetime)
         self.auth_backend = auth_backend
@@ -95,6 +107,7 @@ class AuthenticatingTransport(
 
 class AuthenticatingSafeTransport(
         AuthenticatingTransportMixin, xmlrpclib.SafeTransport):
+    _scheme = 'https'
     def __init__(self, use_datetime=0, auth_backend=None):
         xmlrpclib.SafeTransport.__init__(self, use_datetime)
         self.auth_backend = auth_backend
