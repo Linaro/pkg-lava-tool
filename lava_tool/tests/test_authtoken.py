@@ -79,12 +79,8 @@ class TestAuthenticatingServerProxy(TestCase):
         mocked_connection.close()
         mocker.count(0, 1)
 
-        mocker.replay()
-        try:
+        with mocker:
             server_proxy.method()
-        finally:
-            mocker.restore()
-        mocker.verify()
 
         return auth_data
 
