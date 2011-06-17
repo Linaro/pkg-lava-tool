@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
-import argparse
 import getpass
 import urlparse
 import xmlrpclib
