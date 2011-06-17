@@ -99,10 +99,12 @@ class auth_add(Command):
             else:
                 token = getpass.getpass("Paste token for %s: " % uri)
 
+        userless_uri = '%s://%s%s' % (parsed_host.scheme, host, parsed_host.path)
+
         if not self.args.no_check:
             sp = AuthenticatingServerProxy(
                 uri, auth_backend=MemoryAuthBackend(
-                    [(username, host, token)]))
+                    [(username, userless_uri, token)]))
             try:
                 token_user = sp.system.whoami()
             except xmlrpclib.ProtocolError as ex:
@@ -119,7 +121,6 @@ class auth_add(Command):
                     "whoami() returned %s rather than expected %s -- this is "
                     "a bug." % (token_user, username))
 
-        userless_uri = '%s://%s%s' % (parsed_host.scheme, host, parsed_host.path)
         self.auth_backend.add_token(username, userless_uri, token)
 
         print 'Token added successfully for user %s.' % username
