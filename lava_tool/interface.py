@@ -40,9 +40,9 @@ class Command(object):
         """
         Prepare instance for executing commands.
 
-        This method is called immediately after all arguments are parsed
-        and results are available. This gives subclasses a chance to
-        configure themselves.
+        This method is called immediately after all arguments are parsed and
+        results are available. This gives subclasses a chance to configure
+        themselves.
 
         The default implementation stores both arguments
         """
@@ -57,15 +57,14 @@ class Command(object):
 
     def reparse_arguments(self, parser, raw_args):
         """
-        Re-parse raw arguments into normal argments
-        
-        Parser is the same as in register_arguments (a sub-parser)
-        The true, topmost parser is in self.parser.
+        Re-parse raw arguments into normal arguments
 
-        This method is only needed for specific commands
-        that need to peek at the arguments before being
-        able to truly redefine the parser and reparse the
-        raw arguments again.
+        Parser is the same as in register_arguments (a sub-parser) The true,
+        topmost parser is in self.parser.
+
+        This method is only needed for specific commands that need to peek at
+        the arguments before being able to truly redefine the parser and
+        re-parse the raw arguments again.
         """
         raise NotImplementedError()
 
@@ -74,8 +73,8 @@ class Command(object):
         """
         Return the name of this command.
 
-        The default implementation strips any leading underscores
-        and replaces all other underscores with dashes.
+        The default implementation strips any leading underscores and replaces
+        all other underscores with dashes.
         """
         return cls.__name__.lstrip("_").replace("_", "-")
 
@@ -96,7 +95,7 @@ class Command(object):
         """
         doc = inspect.getdoc(cls)
         if doc is not None and "" in doc:
-            doc = doc[doc.index("")+1:].lstrip()
+            doc = doc[doc.index("") + 1:].lstrip()
         else:
             doc = None
         return doc
