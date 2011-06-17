@@ -66,11 +66,14 @@ class CommandTestCase(MockerTestCase):
         self.assertEqual(ASDF.get_help(), 'This command was named after the lisp package management system')
 
     def test_get_help_defaults_to_None(self):
-        class mysterious(Command): pass
+        class mysterious(Command):
+            pass
+
         self.assertEqual(mysterious.get_help(), None)
 
     def test_get_epilog_defaults_to_None(self):
-        class mysterious(Command): pass
+        class mysterious(Command):
+            pass
         self.assertEqual(mysterious.get_epilog(), None)
 
     def test_get_epilog_returns_data_after_carriage_L(self):
