@@ -25,8 +25,9 @@ import sys
 import tempfile
 import xmlrpclib
 
+from mocker import ARGS, KWARGS, CONTAINS, MockerTestCase
+
 from lava_tool.authtoken import MemoryAuthBackend
-from lava_tool.mocker import ARGS, KWARGS, CONTAINS, MockerTestCase
 from lava_tool.interface import LavaCommandError
 from lava_tool.commands.auth import auth_add
 
