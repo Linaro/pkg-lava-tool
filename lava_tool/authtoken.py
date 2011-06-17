@@ -40,7 +40,7 @@ class KeyringAuthBackend(AuthBackend):
         keyring.core.set_password(
             "lava-tool-%s" % endpoint_url, username, token)
 
-    def get_token_for_host(self, username, endpoint_url):
+    def get_token_for_endpoint(self, username, endpoint_url):
         return keyring.core.get_password(
             "lava-tool-%s" % endpoint_url, username)
 
