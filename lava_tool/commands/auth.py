@@ -90,7 +90,8 @@ class auth_add(Command):
                 try:
                     token_file = open(self.args.token_file)
                 except IOError as ex:
-                    raise LavaCommandError("opening %r failed: %s" % (self.args.token_file, ex))
+                    raise LavaCommandError(
+                        "opening %r failed: %s" % (self.args.token_file, ex))
                 token = token_file.read()
         else:
             if parsed_host.password:
@@ -98,7 +99,8 @@ class auth_add(Command):
             else:
                 token = getpass.getpass("Paste token for %s: " % uri)
 
-        userless_uri = '%s://%s%s' % (parsed_host.scheme, host, parsed_host.path)
+        userless_uri = '%s://%s%s' % (
+            parsed_host.scheme, host, parsed_host.path)
 
         if not self.args.no_check:
             sp = AuthenticatingServerProxy(

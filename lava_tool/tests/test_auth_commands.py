@@ -36,6 +36,7 @@ class FakeArgs:
     token_file = None
     no_check = False
 
+
 class AuthAddTests(MockerTestCase):
 
     def setUp(self):
@@ -103,7 +104,8 @@ class AuthAddTests(MockerTestCase):
                 'user', 'https://example.com/path/RPC2/'))
 
     def test_token_taken_from_getpass(self):
-        mocked_getpass = self.mocker.replace('getpass.getpass', passthrough=False)
+        mocked_getpass = self.mocker.replace(
+            'getpass.getpass', passthrough=False)
         mocked_getpass(CONTAINS('Paste token'))
         self.mocker.result("TOKEN")
         self.mocker.replay()
@@ -145,7 +147,8 @@ class AuthAddTests(MockerTestCase):
         self.assertRaises(LavaCommandError, cmd.invoke)
 
     def test_user_taken_from_getuser(self):
-        mocked_getuser = self.mocker.replace('getpass.getuser', passthrough=False)
+        mocked_getuser = self.mocker.replace(
+            'getpass.getuser', passthrough=False)
         mocked_getuser()
         self.mocker.result("user")
         self.mocker.replay()
@@ -165,7 +168,9 @@ class AuthAddTests(MockerTestCase):
     def test_port_included(self):
         auth_backend = MemoryAuthBackend([])
         cmd = self.make_command(
-            auth_backend, HOST='http://user:TOKEN@example.com:1234', no_check=True)
+            auth_backend,
+            HOST='http://user:TOKEN@example.com:1234',
+            no_check=True)
         cmd.invoke()
         self.assertEqual(
             'TOKEN',
