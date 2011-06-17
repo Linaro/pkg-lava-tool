@@ -62,7 +62,9 @@ class CommandTestCase(MockerTestCase):
             """
             This command was named after the lisp package management system
             """
-        self.assertEqual(ASDF.get_help(), 'This command was named after the lisp package management system')
+        self.assertEqual(
+            ASDF.get_help(),
+            'This command was named after the lisp package management system')
 
     def test_get_help_defaults_to_None(self):
         class mysterious(Command):
@@ -76,22 +78,24 @@ class CommandTestCase(MockerTestCase):
         self.assertEqual(mysterious.get_epilog(), None)
 
     def test_get_epilog_returns_data_after_carriage_L(self):
+        # The dot after 'before' is to make pep8 happy
         class help_with_epilog(Command):
             """
             before
-            
+            .
             after
             """
         self.assertEqual(help_with_epilog.get_epilog(), "after")
 
     def test_get_help_returns_data_before_carriage_L(self):
+        # The dot after 'before' is to make pep8 happy
         class help_with_epilog(Command):
             """
             before
-            
+            .
             after
             """
-        self.assertEqual(help_with_epilog.get_help(), "before")
+        self.assertEqual(help_with_epilog.get_help(), "before\n.")
 
 
 class DispatcherTestCase(MockerTestCase):
@@ -105,9 +109,12 @@ class DispatcherTestCase(MockerTestCase):
 
     def test_add_command_cls(self):
         test_calls = []
+
         class test(Command):
+
             def invoke(self):
                 test_calls.append(None)
+
         dispatcher = LavaDispatcher()
         dispatcher.add_command_cls(test)
         dispatcher.dispatch(raw_args=['test'])
@@ -118,9 +125,12 @@ class DispatcherTestCase(MockerTestCase):
         stderr.write("ERROR: error message")
         stderr.write("\n")
         self.mocker.replay()
+
         class error(Command):
+
             def invoke(self):
                 raise LavaCommandError("error message")
+
         dispatcher = LavaDispatcher()
         dispatcher.add_command_cls(error)
         exit_code = dispatcher.dispatch(raw_args=['error'])

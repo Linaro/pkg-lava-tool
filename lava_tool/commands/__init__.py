@@ -67,14 +67,17 @@ class ExperimentalCommandMixIn(object):
 
     @classmethod
     def register_arguments(cls, parser):
-        retval = super(ExperimentalCommandMixIn, cls).register_arguments(parser)
-        parser.register("action", "experimental_notice", ExperimentalNoticeAction)
+        retval = super(ExperimentalCommandMixIn,
+                       cls).register_arguments(parser)
+        parser.register("action", "experimental_notice",
+                        ExperimentalNoticeAction)
         group = parser.add_argument_group("experimental commands")
         group.add_argument("--experimental-notice",
                             action="experimental_notice",
                             default=argparse.SUPPRESS,
                             help="Explain the nature of experimental commands")
         return retval
-    
+
     def print_experimental_notice(self):
-        print "EXPERIMENTAL - SUBJECT TO CHANGE (See --experimental-notice for more info)"
+        print ("EXPERIMENTAL - SUBJECT TO CHANGE"
+               " (See --experimental-notice for more info)")
