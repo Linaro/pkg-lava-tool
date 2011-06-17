@@ -26,12 +26,13 @@ from unittest import TestCase
 import urlparse
 import xmlrpclib
 
+from mocker import ARGS, KWARGS, Mocker
+
 from lava_tool.authtoken import (
     AuthenticatingServerProxy,
     MemoryAuthBackend,
     )
 from lava_tool.interface import LavaCommandError
-from lava_tool.mocker import ARGS, KWARGS, Mocker
 
 
 class TestAuthenticatingServerProxy(TestCase):

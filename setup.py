@@ -61,5 +61,6 @@ setup(
         'keyring'],
     setup_requires=[
         'versiontools >= 1.1'],
-    tests_require=[],
+    tests_require=[
+        'mocker >= 1.0'],
     zip_safe=True)

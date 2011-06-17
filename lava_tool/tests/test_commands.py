@@ -20,6 +20,8 @@
 Unit tests for the launch_control.commands package
 """
 
+from mocker import MockerTestCase
+
 from lava_tool.interface import (
     Command,
     LavaCommandError,
@@ -27,9 +29,6 @@ from lava_tool.interface import (
 from lava_tool.dispatcher import (
     LavaDispatcher,
     main,
-    )
-from lava_tool.mocker import (
-    MockerTestCase,
     )
 
 
