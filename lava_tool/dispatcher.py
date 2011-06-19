@@ -50,7 +50,8 @@ class LavaDispatcher(object):
         if self.toolname is not None:
             prefixes.append(self.toolname)
         for prefix in prefixes:
-            for entrypoint in pkg_resources.iter_entry_points("%s.commands" % prefix):
+            for entrypoint in pkg_resources.iter_entry_points(
+                "%s.commands" % prefix):
                 self.add_command_cls(entrypoint.load())
 
     def add_command_cls(self, command_cls):
