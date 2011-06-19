@@ -90,7 +90,9 @@ class AuthenticatingTransportMixin:
 
 class AuthenticatingTransport(
         AuthenticatingTransportMixin, xmlrpclib.Transport):
+
     _scheme = 'http'
+
     def __init__(self, use_datetime=0, auth_backend=None):
         xmlrpclib.Transport.__init__(self, use_datetime)
         self.auth_backend = auth_backend
@@ -98,7 +100,9 @@ class AuthenticatingTransport(
 
 class AuthenticatingSafeTransport(
         AuthenticatingTransportMixin, xmlrpclib.SafeTransport):
+
     _scheme = 'https'
+
     def __init__(self, use_datetime=0, auth_backend=None):
         xmlrpclib.SafeTransport.__init__(self, use_datetime)
         self.auth_backend = auth_backend

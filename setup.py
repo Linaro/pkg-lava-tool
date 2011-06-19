@@ -31,16 +31,16 @@ import lava_tool
 
 
 setup(
-    name = 'lava-tool',
-    version = versiontools.format_version(lava_tool.__version__),
-    author = "Zygmunt Krynicki",
-    author_email = "zygmunt.krynicki@linaro.org",
-    packages = find_packages(),
-    description = "Command line utility for Linaro validation services",
+    name='lava-tool',
+    version=versiontools.format_version(lava_tool.__version__),
+    author="Zygmunt Krynicki",
+    author_email="zygmunt.krynicki@linaro.org",
+    packages=find_packages(),
+    description="Command line utility for Linaro validation services",
     url='https://launchpad.net/lava-tool',
     test_suite='lava_tool.tests.test_suite',
     license="LGPLv3",
-    entry_points = """
+    entry_points="""
     [console_scripts]
     lava-tool = lava_tool.dispatcher:main
     [lava_tool.commands]
@@ -50,19 +50,17 @@ setup(
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
+        ("License :: OSI Approved :: GNU Library or Lesser General Public"
+         " License (LGPL)"),
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2.6",
         "Topic :: Software Development :: Testing",
     ],
-    install_requires = [
+    install_requires=[
         'argparse >= 1.1',
-        'keyring',
-    ],
-    setup_requires = [
-        'versiontools >= 1.1',
-    ],
-    tests_require = [
-    ],
-    zip_safe = True,
-)
+        'keyring'],
+    setup_requires=[
+        'versiontools >= 1.1'],
+    tests_require=[
+        'mocker >= 1.0'],
+    zip_safe=True)
