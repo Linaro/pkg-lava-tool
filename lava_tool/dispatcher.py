@@ -38,7 +38,7 @@ class LavaDispatcher(object):
 
     def __init__(self):
         # XXX The below needs to allow some customization.
-        parser_args = dict(add_help=False)
+        parser_args = dict(add_help=True)
         if self.description is not None:
             parser_args['description'] = self.description
         if self.epilog is not None:
