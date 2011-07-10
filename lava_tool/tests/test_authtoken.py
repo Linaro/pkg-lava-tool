@@ -46,11 +46,11 @@ class TestAuthenticatingServerProxy(TestCase):
             url, auth_backend=auth_backend)
         mocker = Mocker()
         if url.startswith('https'):
-            cls_name = 'httplib.HTTPSConnection'
-            expected_constructor_args = (expected_host, None)
+            cls_name = 'httplib.HTTPS'
+            expected_constructor_args = (expected_host, ARGS)
         else:
-            cls_name = 'httplib.HTTPConnection'
-            expected_constructor_args = (expected_host,)
+            cls_name = 'httplib.HTTP'
+            expected_constructor_args = (expected_host, ARGS)
         mocked_HTTPConnection = mocker.replace(cls_name, passthrough=False)
         mocked_connection = mocked_HTTPConnection(*expected_constructor_args)
         # nospec() is required because of
@@ -58,6 +58,7 @@ class TestAuthenticatingServerProxy(TestCase):
         mocker.nospec()
         auth_data = []
         mocked_connection.putrequest(ARGS, KWARGS)
+        mocked_connection.send(ARGS, KWARGS)
 
         def match_header(header, *values):
             if header.lower() == 'authorization':
@@ -72,10 +73,17 @@ class TestAuthenticatingServerProxy(TestCase):
 
         mocked_connection.endheaders(ARGS, KWARGS)
 
-        mocked_connection.getresponse(ARGS, KWARGS)
+        #mocked_connection.getresponse(ARGS, KWARGS)
+        #s = StringIO.StringIO(xmlrpclib.dumps((1,), methodresponse=True))
+        #s.status = 200
+        #mocker.result(s)
+        mocked_connection.getreply(ARGS, KWARGS)
+        mocker.result((200, None, None))
         s = StringIO.StringIO(xmlrpclib.dumps((1,), methodresponse=True))
-        s.status = 200
+        mocked_connection.getfile()
         mocker.result(s)
+        mocked_connection._conn
+        mocker.result(None)
 
         mocked_connection.close()
         mocker.count(0, 1)
