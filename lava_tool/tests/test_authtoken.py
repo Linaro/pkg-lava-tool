@@ -24,6 +24,7 @@ import base64
 import StringIO
 from unittest import TestCase
 import urlparse
+import sys
 import xmlrpclib
 
 from mocker import ARGS, KWARGS, Mocker
@@ -34,6 +35,10 @@ from lava_tool.authtoken import (
     )
 from lava_tool.interface import LavaCommandError
 
+if sys.version_info[:2] <= (2, 6):
+    TWO_SIX = True
+else:
+    TWO_SIX = False
 
 class TestAuthenticatingServerProxy(TestCase):
 
@@ -51,6 +56,8 @@ class TestAuthenticatingServerProxy(TestCase):
         else:
             cls_name = 'httplib.HTTP'
             expected_constructor_args = (expected_host, ARGS)
+        if not TWO_SIX:
+            cls_name += 'Connection'
         mocked_HTTPConnection = mocker.replace(cls_name, passthrough=False)
         mocked_connection = mocked_HTTPConnection(*expected_constructor_args)
         # nospec() is required because of
@@ -58,7 +65,8 @@ class TestAuthenticatingServerProxy(TestCase):
         mocker.nospec()
         auth_data = []
         mocked_connection.putrequest(ARGS, KWARGS)
-        mocked_connection.send(ARGS, KWARGS)
+        if TWO_SIX:
+            mocked_connection.send(ARGS, KWARGS)
 
         def match_header(header, *values):
             if header.lower() == 'authorization':
@@ -73,17 +81,19 @@ class TestAuthenticatingServerProxy(TestCase):
 
         mocked_connection.endheaders(ARGS, KWARGS)
 
-        #mocked_connection.getresponse(ARGS, KWARGS)
-        #s = StringIO.StringIO(xmlrpclib.dumps((1,), methodresponse=True))
-        #s.status = 200
-        #mocker.result(s)
-        mocked_connection.getreply(ARGS, KWARGS)
-        mocker.result((200, None, None))
-        s = StringIO.StringIO(xmlrpclib.dumps((1,), methodresponse=True))
-        mocked_connection.getfile()
-        mocker.result(s)
-        mocked_connection._conn
-        mocker.result(None)
+        if TWO_SIX:
+            mocked_connection.getreply(ARGS, KWARGS)
+            mocker.result((200, None, None))
+            s = StringIO.StringIO(xmlrpclib.dumps((1,), methodresponse=True))
+            mocked_connection.getfile()
+            mocker.result(s)
+            mocked_connection._conn
+            mocker.result(None)
+        else:
+            mocked_connection.getresponse(ARGS, KWARGS)
+            s = StringIO.StringIO(xmlrpclib.dumps((1,), methodresponse=True))
+            s.status = 200
+            mocker.result(s)
 
         mocked_connection.close()
         mocker.count(0, 1)
