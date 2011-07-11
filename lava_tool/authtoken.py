@@ -64,12 +64,11 @@ class AuthenticatingTransportMixin:
     def send_request(self, connection, handler, request_body):
         xmlrpclib.Transport.send_request(
             self, connection, handler, request_body)
-        auth, host = urllib.splituser(self._connection[0])
-        if auth is None:
+        if self._auth is None:
             return
-        user, token = urllib.splitpasswd(auth)
+        user, token = urllib.splitpasswd(self._auth)
         if token is None:
-            endpoint_url = '%s://%s%s' % (self._scheme, host, handler)
+            endpoint_url = '%s://%s%s' % (self._scheme, self._host, handler)
             token = self.auth_backend.get_token_for_endpoint(
                 user, endpoint_url)
             if token is None:
@@ -79,13 +78,14 @@ class AuthenticatingTransportMixin:
         connection.putheader("Authorization", "Basic " + auth)
 
     def get_host_info(self, host):
-        # We override to never send any authorization header based soley on
-        # the host; we do all that in send_request above.
+        # We override stash the auth part away and never send any
+        # authorization header based soley on the host; we do all that in
+        # send_request above.
         x509 = {}
         if isinstance(host, tuple):
             host, x509 = host
-        auth, host = urllib.splituser(host)
-        return host, None, x509
+        self._auth, self._host = urllib.splituser(host)
+        return self._host, None, x509
 
 
 class AuthenticatingTransport(
