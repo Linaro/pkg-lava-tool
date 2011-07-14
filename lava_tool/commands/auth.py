@@ -92,7 +92,7 @@ class auth_add(Command):
                 except IOError as ex:
                     raise LavaCommandError(
                         "opening %r failed: %s" % (self.args.token_file, ex))
-                token = token_file.read()
+                token = token_file.read().strip()
         else:
             if parsed_host.password:
                 token = parsed_host.password
