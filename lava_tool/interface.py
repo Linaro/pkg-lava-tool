@@ -46,9 +46,11 @@ class Command(object):
 
         This method is called immediately after all arguments are parsed and
         results are available. This gives subclasses a chance to configure
-        themselves.
+        themselves. The provided parser is an instance of
+        argparse.ArgumentParser but it may not be the top-level parser (it will
+        be a parser specific for this command)
 
-        The default implementation stores both arguments
+        The default implementation stores both arguments as instance attributes.
         """
         self.parser = parser
         self.args = args
