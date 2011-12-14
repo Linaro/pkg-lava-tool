@@ -34,6 +34,9 @@ setup(
     entry_points="""
     [console_scripts]
     lava-tool = lava_tool.dispatcher:main
+    lava = lava_tool.dispatcher:main_nonlegacy
+    [lava.commands]
+    help = lava_tool.commands.misc:help
     [lava_tool.commands]
     help = lava_tool.commands.misc:help
     auth-add = lava_tool.commands.auth:auth_add
