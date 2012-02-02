@@ -58,8 +58,86 @@ class LavaNonLegacyDispatcher(BaseDispatcher):
     """
 
     def __init__(self):
+        # Call this early so that we don't get logging.basicConfig
+        # being called by accident. Otherwise we'd have to
+        # purge all loggers from the root logger and that sucks
+        self.setup_logging()
+        # Initialize the base dispatcher
         super(LavaNonLegacyDispatcher, self).__init__()
+        # And import the non-flat namespace commands
         self.import_commands('lava.commands')
+
+    def setup_logging(self):
+        """
+        Setup logging for the root dispatcher
+        """
+        class OnlyProblemsFilter(logging.Filterer):
+            def filter(self, record):
+                if record.levelno >= logging.WARN:
+                    return 1
+                return 0
+        class DebugFilter(logging.Filter):
+            def filter(self, record):
+                if record.levelno == logging.DEBUG:
+                    return 1
+                return 0
+        class OnlyInfoFilter(logging.Filterer):
+            def filter(self, record):
+                if record.levelno == logging.INFO:
+                    return 1
+                return 0
+        # Enable warning/error message handler
+        err_handler = logging.StreamHandler(sys.stderr)
+        err_handler.setLevel(logging.WARN)
+        err_handler.setFormatter(
+            logging.Formatter("%(levelname)s: %(message)s"))
+        #err_handler.addFilter(OnlyProblemsFilter())
+        logging.getLogger().addHandler(err_handler)
+        # Enable the debug handler
+        dbg_handler = logging.StreamHandler(sys.stderr)
+        dbg_handler.setLevel(logging.DEBUG)
+        dbg_handler.setFormatter(
+            logging.Formatter("%(levelname)s %(name)s: %(message)s"))
+        dbg_handler.addFilter(DebugFilter())
+        logging.getLogger().addHandler(dbg_handler)
+        # Enable standard message handler
+        msg_handler = logging.StreamHandler(sys.stdout)
+        msg_handler.setLevel(logging.INFO)
+        msg_handler.setFormatter(
+            logging.Formatter("%(message)s"))
+        msg_handler.addFilter(OnlyInfoFilter())
+        logging.getLogger().addHandler(msg_handler)
+
+    def _adjust_logging_level(self, args):
+        # Enable debugging
+        for name in args.debug:
+            logging.getLogger(name).setLevel(logging.DEBUG)
+
+    @classmethod
+    def construct_parser(cls):
+        """
+        Construct a parser for this dispatcher.
+
+        This is only used if the parser is not provided by the parent
+        dispatcher instance.
+        """
+        # Construct a basic parser
+        parser = super(LavaNonLegacyDispatcher, cls).construct_parser()
+        # Add the --verbose flag
+        parser.add_argument(
+            "-v", "--verbose",
+            default=False,
+            action="store_true",
+            help="Be more verbose (displays more messages globally)")
+        # Add the --debug flag
+        parser.add_argument(
+            "-D", "--debug",
+            metavar="LOGGER",
+            action="append",
+            default=[],
+            help="Enable debugging of the specified logger, can be specified multiple times")
+        # Return the improved parser
+        return parser 
 
 
 def run_with_dispatcher_class(cls):

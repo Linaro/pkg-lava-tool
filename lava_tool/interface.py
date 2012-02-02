@@ -238,6 +238,11 @@ class BaseDispatcher(object):
                 command_cls=command_cls,
                 parser=sub_parser)
 
+    def _adjust_logging_level(self, args):
+        """
+        Adjust logging level after seeing the initial arguments
+        """
+
     def dispatch(self, raw_args=None):
         """
         Dispatch a command with the specified arguments.
@@ -246,6 +251,8 @@ class BaseDispatcher(object):
         """
         # First parse whatever input arguments we've got 
         args = self.parser.parse_args(raw_args)
+        # Adjust logging level after seeing arguments
+        self._adjust_logging_level(args)
         # Then look up the command class and construct it with the parser it
         # belongs to and the parsed arguments.
         command = args.command_cls(args.parser, args)
