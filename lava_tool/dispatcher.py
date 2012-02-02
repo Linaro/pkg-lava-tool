@@ -20,12 +20,22 @@
 Module with LavaDispatcher - the command dispatcher
 """
 
+import logging
+import sys
+
 from lava_tool.interface import LavaCommandError, BaseDispatcher 
 
 
 class LavaDispatcher(BaseDispatcher):
     """
-    Class implementing command line interface for launch control
+    Class implementing command line interface for lava-tool
+    
+    .. note::
+    
+        This class is the legacy dispatcher. It imports all commands in a flat namespace.
+        Instead of using it in new tools please use the LavaNonLegacyDispatcher. It has
+        support for sub-sub commands. Ideally we want all commands to be available as
+        ``lava {command} [{subcommand}]``.
     """
 
     toolname = None
