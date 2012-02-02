@@ -169,7 +169,7 @@ class SubCommand(Command):
 
 class BaseDispatcher(object):
     """
-    Class implementing command line interface for launch control
+    Class implementing command line interface for lava
     """
 
     description = None
@@ -193,10 +193,13 @@ class BaseDispatcher(object):
         dispatcher instance.
         """
         parser_args = dict(add_help=True)
+        # Set description based on class description
         if cls.description is not None:
             parser_args['description'] = cls.description
+        # Set the epilog based on class epilog
         if cls.epilog is not None:
             parser_args['epilog'] = cls.epilog
+        # Return the fresh parser
         return argparse.ArgumentParser(**parser_args)
 
     def import_commands(self, entrypoint_name):
