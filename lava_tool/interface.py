@@ -263,6 +263,11 @@ class BaseDispatcher(object):
             pass
         try:
             return command.invoke()
-        except LavaCommandError as ex:
-            print >> sys.stderr, "ERROR: %s" % (ex,)
+        except LavaCommandError as exc:
+            logging.error("%s", exc)
             return 1
+        except KeyboardInterrupt:
+            # XXX: Should we silently consume keyboard interrupts?
+            pass
+        except:
+            logging.exception("An unhanded exception has propagated up the stack")
