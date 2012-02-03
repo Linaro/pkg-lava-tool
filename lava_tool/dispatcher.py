@@ -67,52 +67,6 @@ class LavaNonLegacyDispatcher(BaseDispatcher):
         # And import the non-flat namespace commands
         self.import_commands('lava.commands')
 
-    def setup_logging(self):
-        """
-        Setup logging for the root dispatcher
-        """
-        class OnlyProblemsFilter(logging.Filterer):
-            def filter(self, record):
-                if record.levelno >= logging.WARN:
-                    return 1
-                return 0
-        class DebugFilter(logging.Filter):
-            def filter(self, record):
-                if record.levelno == logging.DEBUG:
-                    return 1
-                return 0
-        class OnlyInfoFilter(logging.Filterer):
-            def filter(self, record):
-                if record.levelno == logging.INFO:
-                    return 1
-                return 0
-        # Enable warning/error message handler
-        err_handler = logging.StreamHandler(sys.stderr)
-        err_handler.setLevel(logging.WARN)
-        err_handler.setFormatter(
-            logging.Formatter("%(levelname)s: %(message)s"))
-        #err_handler.addFilter(OnlyProblemsFilter())
-        logging.getLogger().addHandler(err_handler)
-        # Enable the debug handler
-        dbg_handler = logging.StreamHandler(sys.stderr)
-        dbg_handler.setLevel(logging.DEBUG)
-        dbg_handler.setFormatter(
-            logging.Formatter("%(levelname)s %(name)s: %(message)s"))
-        dbg_handler.addFilter(DebugFilter())
-        logging.getLogger().addHandler(dbg_handler)
-        # Enable standard message handler
-        msg_handler = logging.StreamHandler(sys.stdout)
-        msg_handler.setLevel(logging.INFO)
-        msg_handler.setFormatter(
-            logging.Formatter("%(message)s"))
-        msg_handler.addFilter(OnlyInfoFilter())
-        logging.getLogger().addHandler(msg_handler)
-
-    def _adjust_logging_level(self, args):
-        # Enable debugging
-        for name in args.debug:
-            logging.getLogger(name).setLevel(logging.DEBUG)
-
     @classmethod
     def construct_parser(cls):
         """
@@ -132,13 +86,68 @@ class LavaNonLegacyDispatcher(BaseDispatcher):
         # Add the --debug flag
         parser.add_argument(
             "-D", "--debug",
-            metavar="LOGGER",
+            action="store_true",
+            default=False,
+            help="Enable debugging on all loggers")
+        # Add the --trace flag
+        parser.add_argument(
+            "-T", "--trace",
             action="append",
             default=[],
             help="Enable debugging of the specified logger, can be specified multiple times")
         # Return the improved parser
         return parser 
 
+    def setup_logging(self):
+        """
+        Setup logging for the root dispatcher
+        """
+        # Enable warning/error message handler
+        class OnlyProblemsFilter(logging.Filterer):
+            def filter(self, record):
+                if record.levelno >= logging.WARN:
+                    return 1
+                return 0
+        err_handler = logging.StreamHandler(sys.stderr)
+        err_handler.setLevel(logging.WARN)
+        err_handler.setFormatter(
+            logging.Formatter("%(levelname)s: %(message)s"))
+        err_handler.addFilter(OnlyProblemsFilter())
+        logging.getLogger().addHandler(err_handler)
+        # Enable the debug handler
+        class DebugFilter(logging.Filter):
+            def filter(self, record):
+                if record.levelno == logging.DEBUG:
+                    return 1
+                return 0
+        dbg_handler = logging.StreamHandler(sys.stderr)
+        dbg_handler.setLevel(logging.DEBUG)
+        dbg_handler.setFormatter(
+            logging.Formatter("%(levelname)s %(name)s: %(message)s"))
+        dbg_handler.addFilter(DebugFilter())
+        logging.getLogger().addHandler(dbg_handler)
+
+    def _adjust_logging_level(self, args):
+        # Enable verbose message handler
+        if args.verbose:
+            logging.getLogger().setLevel(logging.INFO)
+            class OnlyInfoFilter(logging.Filterer):
+                def filter(self, record):
+                    if record.levelno == logging.INFO:
+                        return 1
+                    return 0
+            msg_handler = logging.StreamHandler(sys.stdout)
+            msg_handler.setLevel(logging.INFO)
+            msg_handler.setFormatter(
+                logging.Formatter("%(message)s"))
+            msg_handler.addFilter(OnlyInfoFilter())
+            logging.getLogger().addHandler(msg_handler)
+        # Enable debugging 
+        if args.debug:
+            logging.getLogger().setLevel(logging.DEBUG)
+        # Enable trace loggers
+        for name in args.trace:
+            logging.getLogger(name).setLevel(logging.DEBUG)
 
 def run_with_dispatcher_class(cls):
     raise SystemExit(cls().dispatch())
