@@ -117,7 +117,7 @@ class Command(object):
         pass
 
 
-class SubCommand(Command):
+class CommandGroup(Command):
     """
     Base class for all command sub-command hubs.
 
@@ -160,11 +160,16 @@ class SubCommand(Command):
         defaults. This is useful when one wants to access it later. To a final
         command instance it shall be available as self.args.dispatcher.
         """
-        dispatcher = BaseDispatcher(parser, name=cls.get_name())
         namespace = cls.get_namespace()
-        if namespace is not None:
-            dispatcher.import_commands(namespace)
+        if namespace is None:
+            raise TypeError(
+                "CommandGroup %r does not specify a namespace" % cls)
+        dispatcher = BaseDispatcher(parser, name=cls.get_name())
+        dispatcher.import_commands(namespace)
         parser.set_defaults(dispatcher=dispatcher)
+
+
+SubCommand = CommandGroup
 
 
 class BaseDispatcher(object):
@@ -178,7 +183,7 @@ class BaseDispatcher(object):
     def __init__(self, parser=None, name=None):
         self.parser = parser or self.construct_parser()
         self.subparsers = self.parser.add_subparsers(
-                title="Sub-command to invoke")
+            title="sub-command to invoke")
         self.name = name
 
     def __repr__(self):
@@ -208,13 +213,14 @@ class BaseDispatcher(object):
         """
         logging.debug("Loading commands in entry point %r", entrypoint_name)
         for entrypoint in pkg_resources.iter_entry_points(entrypoint_name):
-                self.add_command_cls(entrypoint.load())
+            command_cls = entrypoint.load()
+            self.add_command_cls(command_cls)
 
     def add_command_cls(self, command_cls):
         """
         Add a new command class to this dispatcher.
 
-        The command must be a subclass of Command or SubCommand.
+        The command must be a subclass of Command or CommandGroup.
         """
         logging.debug("Loading command class %r", command_cls)
         # Create a sub-parser where the command/sub-command can register things.
@@ -222,12 +228,15 @@ class BaseDispatcher(object):
             command_cls.get_name(),
             help=command_cls.get_help(),
             epilog=command_cls.get_epilog())
-        if issubclass(command_cls, SubCommand):
-            # Handle SubCommand somewhat different. Instead of calling
+        sub_parser.set_defaults(parser=sub_parser)
+        if issubclass(command_cls, CommandGroup):
+            # Handle CommandGroup somewhat different. Instead of calling
             # register_arguments we call register_subcommands
             command_cls.register_subcommands(sub_parser)
+            # Let's also call register arguments in case we need both
+            command_cls.register_arguments(sub_parser)
         else:
-            # Handle plain commands easily by recording their commands in the
+            # Handle plain commands by recording their commands in the
             # dedicated sub-parser we've crated for them.
             command_cls.register_arguments(sub_parser)
             # In addition, since we don't want to require all sub-classes of
