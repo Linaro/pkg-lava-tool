@@ -213,8 +213,12 @@ class BaseDispatcher(object):
         """
         logging.debug("Loading commands in entry point %r", entrypoint_name)
         for entrypoint in pkg_resources.iter_entry_points(entrypoint_name):
-            command_cls = entrypoint.load()
-            self.add_command_cls(command_cls)
+            try:
+                command_cls = entrypoint.load()
+            except:
+                logging.exception("Unable to import plugin: %r", entrypoint)
+            else:
+                self.add_command_cls(command_cls)
 
     def add_command_cls(self, command_cls):
         """
