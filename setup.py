@@ -40,7 +40,7 @@ setup(
     help = lava.tool.commands.help:help
     [lava_tool.commands]
     help = lava.tool.commands.help:help
-    auth-add = lava_tool.commands.auth:auth_add
+    auth-add = lava_tool.commands.auth:auth_add [auth]
     """,
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -52,11 +52,8 @@ setup(
         "Programming Language :: Python :: 2.7",
         "Topic :: Software Development :: Testing",
     ],
-    install_requires=[
-        'argparse >= 1.1',
-        'keyring'],
-    setup_requires=[
-        'versiontools >= 1.3.1'],
-    tests_require=[
-        'mocker >= 1.0'],
+    extras_require={'auth': ['keyring']},
+    install_requires=['argparse >= 1.1'],
+    setup_requires=['versiontools >= 1.3.1'],
+    tests_require=['mocker >= 1.0'],
     zip_safe=True)
