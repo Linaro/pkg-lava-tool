@@ -20,7 +20,9 @@
 Module with LavaDispatcher - the command dispatcher
 """
 
-from lava_tool.interface import LavaCommandError, BaseDispatcher 
+from lava.tool.dispatcher import BaseDispatcher
+from lava_tool.interface import LavaCommandError
+from lava.tool.dispatcher import LavaNonLegacyDispatcher
 
 
 class LavaDispatcher(BaseDispatcher):
@@ -37,19 +39,6 @@ class LavaDispatcher(BaseDispatcher):
             prefixes.append(self.toolname)
         for prefix in prefixes:
             self.import_commands("%s.commands" % prefix)
-
-
-class LavaNonLegacyDispatcher(BaseDispatcher):
-    """
-    A dispatcher that wants to load only top-level commands,
-    not everything-and-the-kitchen-sink into one flat namespace
-
-    Available as `lava` command from shell
-    """
-
-    def __init__(self):
-        super(LavaNonLegacyDispatcher, self).__init__()
-        self.import_commands('lava.commands')
 
 
 def run_with_dispatcher_class(cls):
