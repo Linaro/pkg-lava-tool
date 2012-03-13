@@ -22,7 +22,7 @@ Module with LavaDispatcher - the command dispatcher
 
 from lava.tool.dispatcher import BaseDispatcher
 from lava_tool.interface import LavaCommandError
-from lava.tool.dispatcher import LavaNonLegacyDispatcher
+from lava.tool.dispatcher import Dispatcher as LavaNonLegacyDispatcher
 
 
 class LavaDispatcher(BaseDispatcher):

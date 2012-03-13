@@ -121,7 +121,7 @@ class BaseDispatcher(object):
             return 1
 
 
-class LavaNonLegacyDispatcher(BaseDispatcher):
+class Dispatcher(BaseDispatcher):
     """
     A dispatcher that wants to load only top-level commands,
     not everything-and-the-kitchen-sink into one flat namespace
@@ -130,5 +130,5 @@ class LavaNonLegacyDispatcher(BaseDispatcher):
     """
 
     def __init__(self):
-        super(LavaNonLegacyDispatcher, self).__init__()
+        super(Dispatcher, self).__init__()
         self.import_commands('lava.commands')
