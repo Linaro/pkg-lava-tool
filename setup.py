@@ -37,9 +37,9 @@ setup(
     lava-tool = lava_tool.dispatcher:main
     lava = lava_tool.dispatcher:main_nonlegacy
     [lava.commands]
-    help = lava_tool.commands.misc:help
+    help = lava.tool.commands.help:help
     [lava_tool.commands]
-    help = lava_tool.commands.misc:help
+    help = lava.tool.commands.help:help
     auth-add = lava_tool.commands.auth:auth_add
     """,
     classifiers=[

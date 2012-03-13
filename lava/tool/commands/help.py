@@ -17,15 +17,19 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Module with miscellaneous commands (such as help and version)
+lava.tool.commands.help
+=======================
+
+Implementation of `lava help`
 """
 
-from lava_tool.interface import Command
+from lava.tool.command import Command
 
 
 class help(Command):
     """
     Show a summary of all available commands
     """
+
     def invoke(self):
         self.parser.print_help()
