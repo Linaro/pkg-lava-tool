@@ -25,8 +25,7 @@ import logging
 import pkg_resources
 import sys
 
-from lava_tool.interface import LavaCommandError
-from lava_tool.interface import SubCommand
+from lava.tool.errors import CommandError
 
 
 class BaseDispatcher(object):
@@ -82,6 +81,7 @@ class BaseDispatcher(object):
             command_cls.get_name(),
             help=command_cls.get_help(),
             epilog=command_cls.get_epilog())
+        from lava.tool.command import SubCommand
         if issubclass(command_cls, SubCommand):
             # Handle SubCommand somewhat different. Instead of calling
             # register_arguments we call register_subcommands
@@ -116,7 +116,7 @@ class BaseDispatcher(object):
             pass
         try:
             return command.invoke()
-        except LavaCommandError as ex:
+        except CommandError as ex:
             print >> sys.stderr, "ERROR: %s" % (ex,)
             return 1
 
