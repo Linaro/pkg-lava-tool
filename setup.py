@@ -26,6 +26,7 @@ setup(
     version=":versiontools:lava_tool:__version__",
     author="Zygmunt Krynicki",
     author_email="zygmunt.krynicki@linaro.org",
+    namespace_packages=['lava'],
     packages=find_packages(),
     description="Command line utility for Linaro validation services",
     url='https://launchpad.net/lava-tool',
