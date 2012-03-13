@@ -28,7 +28,7 @@ import sys
 from lava.tool.errors import CommandError
 
 
-class BaseDispatcher(object):
+class Dispatcher(object):
     """
     Class implementing command line interface for launch control
     """
@@ -120,15 +120,9 @@ class BaseDispatcher(object):
             print >> sys.stderr, "ERROR: %s" % (ex,)
             return 1
 
-
-class Dispatcher(BaseDispatcher):
-    """
-    A dispatcher that wants to load only top-level commands,
-    not everything-and-the-kitchen-sink into one flat namespace
-
-    Available as `lava` command from shell
-    """
-
-    def __init__(self):
-        super(Dispatcher, self).__init__()
-        self.import_commands('lava.commands')
+    @classmethod
+    def run(cls):
+        """
+        Dispatch commandsd and exit
+        """
+        raise SystemExit(cls().dispatch())

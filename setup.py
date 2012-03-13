@@ -35,7 +35,7 @@ setup(
     entry_points="""
     [console_scripts]
     lava-tool = lava_tool.dispatcher:main
-    lava = lava_tool.dispatcher:main_nonlegacy
+    lava = lava.tool.main:LavaDispatcher.run
     [lava.commands]
     help = lava.tool.commands.help:help
     [lava_tool.commands]

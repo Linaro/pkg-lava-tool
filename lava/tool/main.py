@@ -17,33 +17,25 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Module with LavaDispatcher - the command dispatcher
+lava.tool.main
+==============
+
+Implementation of the `lava` shell command.
 """
 
 from lava.tool.dispatcher import Dispatcher
-from lava.tool.main import LavaDispatcher as LavaNonLegacyDispatcher
-from lava_tool.interface import LavaCommandError
 
 
 class LavaDispatcher(Dispatcher):
     """
-    Class implementing command line interface for launch control
-    """
+    Dispatcher implementing the `lava` shell command
 
-    toolname = None
+    This dispatcher imports plugins from `lava.commands` pkg_resources
+    namespace. Additional plugins can be registered as either
+    :class:`lava.command.Command` or :class:`lava.command.SubCommand`
+    sub-classes.
+    """
 
     def __init__(self):
         super(LavaDispatcher, self).__init__()
-        prefixes = ['lava_tool']
-        if self.toolname is not None:
-            prefixes.append(self.toolname)
-        for prefix in prefixes:
-            self.import_commands("%s.commands" % prefix)
-
-
-def run_with_dispatcher_class(cls):
-    raise cls.run()
-
-
-def main():
-    LavaDispatcher.run()
+        self.import_commands('lava.commands')
