@@ -27,12 +27,8 @@ import pkg_resources
 import sys
 
 
-class LavaCommandError(Exception):
-    """
-    Raise this from a Command's invoke() method to display an error nicely.
+from lava.tool.errors import LavaCommandError
 
-    lava-tool will exit with a status of 1 if this is raised.
-    """
 
 
 class Command(object):
