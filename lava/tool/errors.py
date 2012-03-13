@@ -23,7 +23,7 @@ lava.tool.errors
 Error classes for LAVA Tool.
 """
 
-class LavaCommandError(Exception):
+class CommandError(Exception):
     """
     Raise this from a Command's invoke() method to display an error nicely.
 

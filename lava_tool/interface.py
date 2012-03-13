@@ -27,7 +27,7 @@ import pkg_resources
 import sys
 
 
-from lava.tool.errors import LavaCommandError
+from lava.tool.errors import CommandError as LavaCommandError
 
 
 
