@@ -23,7 +23,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='lava-tool',
-    version=":versiontools:lava_tool:__version__",
+    version=":versiontools:lava.tool:__version__",
     author="Zygmunt Krynicki",
     author_email="zygmunt.krynicki@linaro.org",
     namespace_packages=['lava'],

@@ -18,7 +18,7 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Lava Tool package
+Deprecated lava_tool package
 """
 
-__version__ = (0, 4, 0, "dev", 0)
+from lava.tool import __version__
