@@ -141,7 +141,7 @@ class SubCommand(Command):
         This method is called around the same time as register_arguments()
         would be called for the plain command classes. It loads commands from
         the entry point namespace returned by get_namespace() and registeres
-        them with a BaseDispatcher class. The parsers used by that dispatcher
+        them with a Dispatcher class. The parsers used by that dispatcher
         are linked to the calling dispatcher parser so the new commands enrich
         the top-level parser tree.
 
@@ -149,8 +149,8 @@ class SubCommand(Command):
         defaults. This is useful when one wants to access it later. To a final
         command instance it shall be available as self.args.dispatcher.
         """
-        from lava.tool.dispatcher import BaseDispatcher
-        dispatcher = BaseDispatcher(parser, name=cls.get_name())
+        from lava.tool.dispatcher import Dispatcher
+        dispatcher = Dispatcher(parser, name=cls.get_name())
         namespace = cls.get_namespace()
         if namespace is not None:
             dispatcher.import_commands(namespace)
