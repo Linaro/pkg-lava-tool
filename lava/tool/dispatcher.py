@@ -102,6 +102,8 @@ class Dispatcher(object):
             sub_parser.set_defaults(
                 command_cls=command_cls,
                 parser=sub_parser)
+        # Make sure the sub-parser knows about this dispatcher
+        sub_parser.set_defaults(dispatcher=self)
 
     def dispatch(self, raw_args=None):
         """
