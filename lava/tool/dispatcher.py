@@ -128,8 +128,16 @@ class Dispatcher(object):
             return 1
 
     @classmethod
-    def run(cls):
+    def run(cls, args=None):
         """
         Dispatch commandsd and exit
         """
-        raise SystemExit(cls().dispatch())
+        raise SystemExit(cls().dispatch(args))
+
+    def say(self, command, message, *args, **kwargs):
+        """
+        Handy wrapper for print + format
+        """
+        print "{0} >>> {1}".format(
+            command.get_name(),
+            message.format(*args, **kwargs))
