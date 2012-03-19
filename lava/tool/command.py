@@ -44,6 +44,12 @@ class Command(object):
         self.parser = parser
         self.args = args
 
+    def say(self, message, *args, **kwargs):
+        """
+        Handy wrapper for print + format
+        """
+        self.args.dispatcher.say(self, message, *args, **kwargs)
+
     def invoke(self):
         """
         Invoke command action.
