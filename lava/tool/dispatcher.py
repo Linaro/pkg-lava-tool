@@ -69,7 +69,7 @@ class Dispatcher(object):
             try:
                 command_cls = entrypoint.load()
             except (ImportError, pkg_resources.DistributionNotFound) as exc:
-                logging.debug("Unable to load %s: %r", entrypoint, exc)
+                logging.exception("Unable to load command: %s", entrypoint.name)
             else:
                 self.add_command_cls(command_cls)
 
