@@ -20,10 +20,12 @@
 Module with LavaDispatcher - the command dispatcher
 """
 
-from lava_tool.interface import LavaCommandError, BaseDispatcher 
+from lava.tool.dispatcher import Dispatcher
+from lava.tool.main import LavaDispatcher as LavaNonLegacyDispatcher
+from lava_tool.interface import LavaCommandError
 
 
-class LavaDispatcher(BaseDispatcher):
+class LavaDispatcher(Dispatcher):
     """
     Class implementing command line interface for launch control
     """
@@ -39,26 +41,9 @@ class LavaDispatcher(BaseDispatcher):
             self.import_commands("%s.commands" % prefix)
 
 
-class LavaNonLegacyDispatcher(BaseDispatcher):
-    """
-    A dispatcher that wants to load only top-level commands,
-    not everything-and-the-kitchen-sink into one flat namespace
-
-    Available as `lava` command from shell
-    """
-
-    def __init__(self):
-        super(LavaNonLegacyDispatcher, self).__init__()
-        self.import_commands('lava.commands')
-
-
 def run_with_dispatcher_class(cls):
-    raise SystemExit(cls().dispatch())
+    raise cls.run()
 
 
 def main():
-    run_with_dispatcher_class(LavaDispatcher)
-
-
-def main_nonlegacy():
-    run_with_dispatcher_class(LavaNonLegacyDispatcher)
+    LavaDispatcher.run()

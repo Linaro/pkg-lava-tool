@@ -1,7 +1,6 @@
-# Copyright (C) 2010, 2011 Linaro Limited
+# Copyright (C) 2010, 2011, 2012 Linaro Limited
 #
 # Author: Zygmunt Krynicki <zygmunt.krynicki@linaro.org>
-# Author: Michael Hudson-Doyle <michael.hudson@linaro.org>
 #
 # This file is part of lava-tool.
 #
@@ -18,7 +17,15 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Deprecated lava_tool package
+lava.tool.errors
+================
+
+Error classes for LAVA Tool.
 """
 
-from lava.tool import __version__
+class CommandError(Exception):
+    """
+    Raise this from a Command's invoke() method to display an error nicely.
+
+    lava-tool will exit with a status of 1 if this is raised.
+    """

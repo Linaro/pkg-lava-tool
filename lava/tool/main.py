@@ -1,7 +1,6 @@
 # Copyright (C) 2010, 2011 Linaro Limited
 #
 # Author: Zygmunt Krynicki <zygmunt.krynicki@linaro.org>
-# Author: Michael Hudson-Doyle <michael.hudson@linaro.org>
 #
 # This file is part of lava-tool.
 #
@@ -18,7 +17,25 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Deprecated lava_tool package
+lava.tool.main
+==============
+
+Implementation of the `lava` shell command.
 """
 
-from lava.tool import __version__
+from lava.tool.dispatcher import Dispatcher
+
+
+class LavaDispatcher(Dispatcher):
+    """
+    Dispatcher implementing the `lava` shell command
+
+    This dispatcher imports plugins from `lava.commands` pkg_resources
+    namespace. Additional plugins can be registered as either
+    :class:`lava.command.Command` or :class:`lava.command.SubCommand`
+    sub-classes.
+    """
+
+    def __init__(self):
+        super(LavaDispatcher, self).__init__()
+        self.import_commands('lava.commands')
