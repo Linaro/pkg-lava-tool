@@ -54,10 +54,13 @@ class Dispatcher(object):
         dispatcher instance.
         """
         parser_args = dict(add_help=True)
+        # Set description based on class description
         if cls.description is not None:
             parser_args['description'] = cls.description
+        # Set the epilog based on class epilog
         if cls.epilog is not None:
             parser_args['epilog'] = cls.epilog
+        # Return the fresh parser
         return argparse.ArgumentParser(**parser_args)
 
     def import_commands(self, entrypoint_name):
@@ -86,13 +89,15 @@ class Dispatcher(object):
             command_cls.get_name(),
             help=command_cls.get_help(),
             epilog=command_cls.get_epilog())
-        from lava.tool.command import SubCommand
-        if issubclass(command_cls, SubCommand):
-            # Handle SubCommand somewhat different. Instead of calling
+        from lava.tool.command import CommandGroup 
+        if issubclass(command_cls, CommandGroup):
+            # Handle CommandGroup somewhat different. Instead of calling
             # register_arguments we call register_subcommands
             command_cls.register_subcommands(sub_parser)
+            # Let's also call register arguments in case we need both
+            command_cls.register_arguments(sub_parser)
         else:
-            # Handle plain commands easily by recording their commands in the
+            # Handle plain commands by recording their commands in the
             # dedicated sub-parser we've crated for them.
             command_cls.register_arguments(sub_parser)
             # In addition, since we don't want to require all sub-classes of
@@ -105,6 +110,11 @@ class Dispatcher(object):
         # Make sure the sub-parser knows about this dispatcher
         sub_parser.set_defaults(dispatcher=self)
 
+    def _adjust_logging_level(self, args):
+        """
+        Adjust logging level after seeing the initial arguments
+        """
+
     def dispatch(self, raw_args=None):
         """
         Dispatch a command with the specified arguments.
@@ -113,6 +123,8 @@ class Dispatcher(object):
         """
         # First parse whatever input arguments we've got
         args = self.parser.parse_args(raw_args)
+        # Adjust logging level after seeing arguments
+        self._adjust_logging_level(args)
         # Then look up the command class and construct it with the parser it
         # belongs to and the parsed arguments.
         command = args.command_cls(args.parser, args)

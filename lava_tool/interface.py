@@ -21,4 +21,4 @@ Interface for all lava-tool commands
 """
 
 from lava.tool.errors import CommandError as LavaCommandError
-from lava.tool.command import Command, SubCommand
+from lava.tool.command import Command, CommandGroup as SubCommand

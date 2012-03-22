@@ -112,7 +112,7 @@ class Command(object):
         pass
 
 
-class SubCommand(Command):
+class CommandGroup(Command):
     """
     Base class for all command sub-command hubs.
 
@@ -120,7 +120,7 @@ class SubCommand(Command):
     options that can be freely extended, just like the top-level lava-tool
     command.
 
-    For example, a SubCommand 'actions' will load additional commands from a
+    For example, a CommandGroup 'actions' will load additional commands from a
     the 'lava.actions' namespace. For the end user it will be available as::
 
         $ lava-tool foo actions xxx
@@ -161,3 +161,6 @@ class SubCommand(Command):
         if namespace is not None:
             dispatcher.import_commands(namespace)
         parser.set_defaults(dispatcher=dispatcher)
+
+
+SubCommand = CommandGroup
