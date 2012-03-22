@@ -1,6 +1,7 @@
-# Copyright (C) 2010 Linaro Limited
+# Copyright (C) 2010, 2011 Linaro Limited
 #
 # Author: Zygmunt Krynicki <zygmunt.krynicki@linaro.org>
+# Author: Michael Hudson-Doyle <michael.hudson@linaro.org>
 #
 # This file is part of lava-tool.
 #
@@ -17,15 +18,10 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Module with miscellaneous commands (such as help and version)
+lava.tool
+=========
+
+Generic code for command line utilities for LAVA
 """
 
-from lava_tool.interface import Command
-
-
-class help(Command):
-    """
-    Show a summary of all available commands
-    """
-    def invoke(self):
-        self.parser.print_help()
+__version__ = (0, 4, 0, "dev", 0)

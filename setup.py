@@ -23,9 +23,10 @@ from setuptools import setup, find_packages
 
 setup(
     name='lava-tool',
-    version=":versiontools:lava_tool:__version__",
+    version=":versiontools:lava.tool:__version__",
     author="Zygmunt Krynicki",
     author_email="zygmunt.krynicki@linaro.org",
+    namespace_packages=['lava'],
     packages=find_packages(),
     description="Command line utility for Linaro validation services",
     url='https://launchpad.net/lava-tool',
@@ -34,11 +35,11 @@ setup(
     entry_points="""
     [console_scripts]
     lava-tool = lava_tool.dispatcher:main
-    lava = lava_tool.dispatcher:main_nonlegacy
+    lava = lava.tool.main:LavaDispatcher.run
     [lava.commands]
-    help = lava_tool.commands.misc:help
+    help = lava.tool.commands.help:help
     [lava_tool.commands]
-    help = lava_tool.commands.misc:help
+    help = lava.tool.commands.help:help
     auth-add = lava_tool.commands.auth:auth_add
     """,
     classifiers=[
