@@ -66,7 +66,12 @@ class Dispatcher(object):
         """
         logging.debug("Loading commands in entry point %r", entrypoint_name)
         for entrypoint in pkg_resources.iter_entry_points(entrypoint_name):
-                self.add_command_cls(entrypoint.load())
+            try:
+                command_cls = entrypoint.load()
+            except (ImportError, pkg_resources.DistributionNotFound) as exc:
+                logging.debug("Unable to load %s: %r", entrypoint, exc)
+            else:
+                self.add_command_cls(command_cls)
 
     def add_command_cls(self, command_cls):
         """
