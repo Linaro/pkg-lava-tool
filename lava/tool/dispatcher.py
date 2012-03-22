@@ -69,7 +69,7 @@ class Dispatcher(object):
             try:
                 command_cls = entrypoint.load()
             except (ImportError, pkg_resources.DistributionNotFound) as exc:
-                logging.debug("Unable to load %s: %r", entrypoint, exc)
+                logging.exception("Unable to load command: %s", entrypoint.name)
             else:
                 self.add_command_cls(command_cls)
 
@@ -102,6 +102,8 @@ class Dispatcher(object):
             sub_parser.set_defaults(
                 command_cls=command_cls,
                 parser=sub_parser)
+        # Make sure the sub-parser knows about this dispatcher
+        sub_parser.set_defaults(dispatcher=self)
 
     def dispatch(self, raw_args=None):
         """
@@ -126,8 +128,16 @@ class Dispatcher(object):
             return 1
 
     @classmethod
-    def run(cls):
+    def run(cls, args=None):
         """
         Dispatch commandsd and exit
         """
-        raise SystemExit(cls().dispatch())
+        raise SystemExit(cls().dispatch(args))
+
+    def say(self, command, message, *args, **kwargs):
+        """
+        Handy wrapper for print + format
+        """
+        print "{0} >>> {1}".format(
+            command.get_name(),
+            message.format(*args, **kwargs))
