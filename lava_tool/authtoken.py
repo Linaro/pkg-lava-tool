@@ -18,6 +18,8 @@
 
 import base64
 import urllib
+import urllib2
+import os
 import xmlrpclib
 
 import keyring.core
@@ -59,53 +61,39 @@ class MemoryAuthBackend(AuthBackend):
         return self._tokens.get((username, endpoint_url))
 
 
-class AuthenticatingTransportMixin:
+class XMLRPCTransport(xmlrpclib.Transport):
 
-    def send_request(self, connection, handler, request_body):
-        xmlrpclib.Transport.send_request(
-            self, connection, handler, request_body)
-        if self._auth is None:
-            return
-        user, token = urllib.splitpasswd(self._auth)
-        if token is None:
-            endpoint_url = '%s://%s%s' % (self._scheme, self._host, handler)
-            token = self.auth_backend.get_token_for_endpoint(
-                user, endpoint_url)
+    def __init__(self, scheme, auth_backend):
+        xmlrpclib.Transport.__init__(self)
+        self._scheme = scheme
+        self.auth_backend = auth_backend
+        self._opener = urllib2.build_opener()
+        self.verbose = 0
+
+    def request(self, host, handler, request_body, verbose=0):
+        self.verbose = verbose
+        token = None
+        user = None
+        auth, host = urllib.splituser(host)
+        if auth:
+            user, password = urllib.splitpasswd(auth)
+        url = self._scheme + "://" + host + handler
+        if user is not None and token is None:
+            token = self.auth_backend.get_token_for_endpoint(user, url)
             if token is None:
                 raise LavaCommandError(
                     "Username provided but no token found.")
-        auth = base64.b64encode(urllib.unquote(user + ':' + token))
-        connection.putheader("Authorization", "Basic " + auth)
-
-    def get_host_info(self, host):
-        # We override stash the auth part away and never send any
-        # authorization header based soley on the host; we do all that in
-        # send_request above.
-        x509 = {}
-        if isinstance(host, tuple):
-            host, x509 = host
-        self._auth, self._host = urllib.splituser(host)
-        return self._host, None, x509
-
-
-class AuthenticatingTransport(
-        AuthenticatingTransportMixin, xmlrpclib.Transport):
-
-    _scheme = 'http'
-
-    def __init__(self, use_datetime=0, auth_backend=None):
-        xmlrpclib.Transport.__init__(self, use_datetime)
-        self.auth_backend = auth_backend
-
-
-class AuthenticatingSafeTransport(
-        AuthenticatingTransportMixin, xmlrpclib.SafeTransport):
-
-    _scheme = 'https'
-
-    def __init__(self, use_datetime=0, auth_backend=None):
-        xmlrpclib.SafeTransport.__init__(self, use_datetime)
-        self.auth_backend = auth_backend
+        request = urllib2.Request(url, request_body)
+        request.add_header("Content-Type", "text/xml")
+        if token:
+            auth = base64.b64encode(urllib.unquote(user + ':' + token))
+            request.add_header("Authorization", "Basic " + auth)
+        try:
+            response = self._opener.open(request)
+        except urllib2.HTTPError as e:
+            raise xmlrpclib.ProtocolError(
+                host + handler, e.code, e.msg, e.info())
+        return self.parse_response(response)
 
 
 class AuthenticatingServerProxy(xmlrpclib.ServerProxy):
@@ -113,11 +101,7 @@ class AuthenticatingServerProxy(xmlrpclib.ServerProxy):
     def __init__(self, uri, transport=None, encoding=None, verbose=0,
                  allow_none=0, use_datetime=0, auth_backend=None):
         if transport is None:
-            if urllib.splittype(uri)[0] == "https":
-                transport = AuthenticatingSafeTransport(
-                    use_datetime=use_datetime, auth_backend=auth_backend)
-            else:
-                transport = AuthenticatingTransport(
-                    use_datetime=use_datetime, auth_backend=auth_backend)
+            scheme = urllib.splittype(uri)[0]
+            transport = XMLRPCTransport(scheme, auth_backend=auth_backend)
         xmlrpclib.ServerProxy.__init__(
             self, uri, transport, encoding, verbose, allow_none, use_datetime)
