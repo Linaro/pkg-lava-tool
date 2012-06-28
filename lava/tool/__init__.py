@@ -24,4 +24,4 @@ lava.tool
 Generic code for command line utilities for LAVA
 """
 
-__version__ = (0, 5, 0, "dev", 0)
+__version__ = (0, 5, 0, "final", 0)
