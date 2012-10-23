@@ -76,7 +76,7 @@ class XMLRPCTransport(xmlrpclib.Transport):
         user = None
         auth, host = urllib.splituser(host)
         if auth:
-            user, password = urllib.splitpasswd(auth)
+            user, token = urllib.splitpasswd(auth)
         url = self._scheme + "://" + host + handler
         if user is not None and token is None:
             token = self.auth_backend.get_token_for_endpoint(user, url)
