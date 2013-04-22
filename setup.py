@@ -38,9 +38,18 @@ setup(
     lava = lava.tool.main:LavaDispatcher.run
     [lava.commands]
     help = lava.tool.commands.help:help
+    scheduler = lava_scheduler_tool.commands:scheduler
     [lava_tool.commands]
     help = lava.tool.commands.help:help
-    auth-add = lava_tool.commands.auth:auth_add [auth]
+    auth-add = lava_tool.commands.auth:auth_add
+    submit-job = lava_scheduler_tool.commands:submit_job
+    resubmit-job = lava_scheduler_tool.commands:resubmit_job
+    cancel-job = lava_scheduler_tool.commands:cancel_job
+    [lava.scheduler.commands]
+    submit-job = lava_scheduler_tool.commands:submit_job
+    resubmit-job = lava_scheduler_tool.commands:resubmit_job
+    cancel-job = lava_scheduler_tool.commands:cancel_job
+    job-output = lava_scheduler_tool.commands:job_output
     """,
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -52,8 +61,7 @@ setup(
         "Programming Language :: Python :: 2.7",
         "Topic :: Software Development :: Testing",
     ],
-    extras_require={'auth': ['keyring']},
-    install_requires=['argparse >= 1.1'],
+    install_requires=['argparse >= 1.1', 'keyring'],
     setup_requires=['versiontools >= 1.3.1'],
     tests_require=['mocker >= 1.0'],
     zip_safe=True)
