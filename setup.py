@@ -47,6 +47,7 @@ setup(
     submit-job = lava_scheduler_tool.commands:submit_job
     resubmit-job = lava_scheduler_tool.commands:resubmit_job
     cancel-job = lava_scheduler_tool.commands:cancel_job
+    job-output = lava_scheduler_tool.commands:job_output
     [lava.scheduler.commands]
     submit-job = lava_scheduler_tool.commands:submit_job
     resubmit-job = lava_scheduler_tool.commands:resubmit_job
