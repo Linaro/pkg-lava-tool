@@ -610,7 +610,7 @@ class bundles(XMLRPCCommand):
             row_formatter={
                 'is_deserialized': lambda x: "yes" if x else "no",
                 'uploaded_by': lambda x: x or "(anonymous)",
-                'uploaded_on': lambda x: x.strftime("%Y-%m-%d %H:%M:%S")},
+                'uploaded_on': lambda x: x},
             order=('content_sha1', 'content_filename', 'uploaded_by',
                 'uploaded_on', 'is_deserialized'),
             empty="There are no bundles in this stream",
