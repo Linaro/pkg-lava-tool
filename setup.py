@@ -47,6 +47,7 @@ setup(
     ],
     install_requires=[
         'argparse >= 1.1',
+        'argcomplete >= 0.3',
         'keyring',
         'json-schema-validator >= 2.0',
         'versiontools >= 1.3.1'
