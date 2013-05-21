@@ -101,10 +101,6 @@ class CommandTestCase(MockerTestCase):
 class DispatcherTestCase(MockerTestCase):
 
     def test_main(self):
-        mock_LavaDispatcher = self.mocker.replace(
-            'lava_tool.dispatcher.LavaDispatcher')
-        mock_LavaDispatcher().dispatch()
-        self.mocker.replay()
         self.assertRaises(SystemExit, main)
 
     def test_add_command_cls(self):
