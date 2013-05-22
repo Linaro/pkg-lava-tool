@@ -31,6 +31,7 @@ from mocker import ARGS, KWARGS, Mocker
 
 from lava_tool.authtoken import (
     AuthenticatingServerProxy,
+    XMLRPCTransport,
     MemoryAuthBackend,
     )
 from lava_tool.interface import LavaCommandError
@@ -39,48 +40,30 @@ class TestAuthenticatingServerProxy(TestCase):
 
     def auth_headers_for_method_call_on(self, url, auth_backend):
         parsed = urlparse.urlparse(url)
-        expected_host = parsed.hostname
-        if parsed.port:
-            expected_host += ':' + str(parsed.port)
-        server_proxy = AuthenticatingServerProxy(
-            url, auth_backend=auth_backend)
+
         mocker = Mocker()
-        if url.startswith('https'):
-            cls_name = 'httplib.HTTPSConnection'
-            expected_constructor_args = (expected_host, ARGS)
-        else:
-            cls_name = 'httplib.HTTPConnection'
-            expected_constructor_args = (expected_host, ARGS)
-        mocked_HTTPConnection = mocker.replace(cls_name, passthrough=False)
-        mocked_connection = mocked_HTTPConnection(*expected_constructor_args)
-        # nospec() is required because of
-        # https://bugs.launchpad.net/mocker/+bug/794351
-        mocker.nospec()
+        transport = mocker.mock()
+
         auth_data = []
-        mocked_connection.putrequest(ARGS, KWARGS)
 
-        def match_header(header, *values):
-            if header.lower() == 'authorization':
-                if len(values) != 1:
-                    self.fail(
-                        'more than one value for '
-                        'putheader("Authorization", ...)')
-                auth_data.append(values[0])
-        mocked_connection.putheader(ARGS)
-        mocker.call(match_header)
-        mocker.count(1, None)
+        def intercept_request(host, handler, request_body, verbose=0):
+            actual_transport = XMLRPCTransport(parsed.scheme, auth_backend)
+            request = actual_transport.build_http_request(host, handler, request_body)
+            if (request.has_header('Authorization')):
+                auth_data.append(request.get_header('Authorization'))
 
-        mocked_connection.endheaders(ARGS, KWARGS)
+        response_body = xmlrpclib.dumps((1,), methodresponse=True)
+        response = StringIO.StringIO(response_body)
+        response.status = 200
+        response.__len__ = lambda: len(response_body)
 
-        mocked_connection.getresponse(ARGS, KWARGS)
-        s = StringIO.StringIO(xmlrpclib.dumps((1,), methodresponse=True))
-        s.status = 200
-        mocker.result(s)
-
-        mocked_connection.close()
-        mocker.count(0, 1)
+        transport.request(ARGS, KWARGS)
+        mocker.call(intercept_request)
+        mocker.result(response)
 
         with mocker:
+            server_proxy = AuthenticatingServerProxy(
+                url, auth_backend=auth_backend, transport=transport)
             server_proxy.method()
 
         return auth_data
