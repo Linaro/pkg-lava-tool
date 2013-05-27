@@ -12,13 +12,15 @@ red() {
 
 passed=0
 failed=0
-export tmpdir=$(mktemp -d)
-export logs="${tmpdir}/logs"
+base_tmpdir=$(mktemp -d)
+logs="${base_tmpdir}/logs"
 mkdir "$logs"
 
 for testfile in integration-tests.d/*.sh; do
     testname=$(basename "$testfile")
     logfile="${logs}/${testname}.log"
+    export tmpdir="${base_tmpdir}/${testname}"
+    mkdir "${tmpdir}"
     if sh -x "$testfile" > "${logfile}" 2>&1; then
         green "$testname: PASS"
         passed=$(($passed + 1))
@@ -29,7 +31,7 @@ for testfile in integration-tests.d/*.sh; do
     fi
 done
 
-rm -rf "$tmpdir"
+rm -rf "${base_tmpdir}"
 
 echo
 if [ "$failed" -eq 0 ]; then
