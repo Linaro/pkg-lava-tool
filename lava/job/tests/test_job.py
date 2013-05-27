@@ -56,3 +56,11 @@ class JobTest(TestCase):
 
         data = json.loads(output.getvalue())
         self.assertEqual(data, orig_data)
+
+    def test_writes_nicely_formatted_json(self):
+        orig_data = { "foo": "bar" }
+        job = Job(orig_data)
+        output = StringIO()
+        job.write(output)
+
+        self.assertTrue(output.getvalue().startswith("{\n"))
