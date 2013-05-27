@@ -14,6 +14,26 @@ Installation
 
 See INSTALL
 
+Usage
+=====
+
+Dealing with jobs
+
+  $ lava job new file.json      # creates file.json from a template
+  $ lava job submit file.json   # submits file.json to a remote LAVA server
+  $ lava job run file.json      # runs file.json on a local LAVA device
+
+Dealing with LAVA Test Shell Test Definitions
+
+  $ lava testdef new file.yml      # creates file.yml from a template
+  $ lava testdef submit file.yml   # submits file.yml to a remote LAVA server
+  $ lava testdef run file.yml      # runs file.yml on a local LAVA device
+
+Dealing with LAVA Test Shell Test Definitions
+
+  $ lava script submit SCRIPT     # submits SCRIPT to a remote LAVA server
+  $ lava script run SCRIPT        # runs SCRIPT on a local LAVA device
+
 Bash completion
 ===============
 

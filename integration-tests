@@ -1,0 +1,40 @@
+#!/bin/sh
+
+set -e
+
+green() {
+    test -t 1 && printf "\033[0;32;40m$@\033[m\n" || echo "$@"
+}
+
+red() {
+    test -t 2 && printf "\033[0;31;40m$@\033[m\n" >&2 || echo "$2" >&2
+}
+
+passed=0
+failed=0
+export tmpdir=$(mktemp -d)
+export logs="${tmpdir}/logs"
+mkdir "$logs"
+
+for testfile in integration-tests.d/*.sh; do
+    testname=$(basename "$testfile")
+    logfile="${logs}/${testname}.log"
+    if sh -ex "$testfile" > "${logfile}" 2>&1; then
+        green "$testname: PASS"
+        passed=$(($passed + 1))
+    else
+        failed=$(($failed + 1))
+        red "$testname: FAIL"
+        cat "$logfile"
+    fi
+done
+
+rm -rf "$tmpdir"
+
+echo
+if [ "$failed" -eq 0 ]; then
+    green "$passed tests passed, $failed tests failed."
+else
+    red "$passed tests passed, $failed tests failed."
+    exit 1
+fi

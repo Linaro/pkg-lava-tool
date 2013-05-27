@@ -39,6 +39,8 @@ def test_modules():
             'lava_tool.tests.test_auth_commands',
             'lava_tool.tests.test_commands',
             'lava_dashboard_tool.tests.test_commands',
+            'lava.job.tests.test_job',
+            'lava.job.tests.test_commands',
             ]
 
 
