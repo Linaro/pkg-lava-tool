@@ -20,6 +20,7 @@
 Unit tests for the commands classes
 """
 
+from argparse import ArgumentParser
 import json
 from os import (
     makedirs,
@@ -38,14 +39,11 @@ from unittest import TestCase
 from lava.job.commands import *
 from lava.tool.errors import CommandError
 
-class FakeArgs:
-    token_file = None
-    no_check = False
-
-def make_command(command, **kwargs):
-    args = FakeArgs()
-    args.__dict__.update(kwargs)
-    return command(None, args)
+def make_command(command, *args):
+    parser = ArgumentParser(description="fake argument parser")
+    command.register_arguments(parser)
+    the_args = parser.parse_args(*args)
+    return command(parser, the_args)
 
 class CommandTest(TestCase):
 
@@ -62,14 +60,14 @@ class JobNewTest(CommandTest):
 
     def test_create_new_file(self):
         f = self.tmp('file.json')
-        command = make_command(new, FILE=f)
+        command = make_command(new, [f])
         command.invoke()
         self.assertTrue(exists(f))
 
     def test_fills_in_template_parameters(self):
         f = self.tmp('myjob.json')
-        command = make_command(new, FILE=f)
-        command.config_source = { 'device_type': 'foo', 'prebuilt_image': 'bar' }
+        command = make_command(new, [f])
+        command.config = { 'device_type': 'foo', 'prebuilt_image': 'bar' }
         command.invoke()
 
         data = json.loads(open(f).read())
@@ -79,7 +77,7 @@ class JobNewTest(CommandTest):
         existing = self.tmp('existing.json')
         with open(existing, 'w') as f:
             f.write("CONTENTS")
-        command = make_command(new, FILE=existing)
+        command = make_command(new, [existing])
         with self.assertRaises(CommandError):
             command.invoke()
         self.assertEqual("CONTENTS", open(existing).read())
