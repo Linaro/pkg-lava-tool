@@ -19,7 +19,7 @@ mkdir "$logs"
 for testfile in integration-tests.d/*.sh; do
     testname=$(basename "$testfile")
     logfile="${logs}/${testname}.log"
-    if sh -ex "$testfile" > "${logfile}" 2>&1; then
+    if sh -x "$testfile" > "${logfile}" 2>&1; then
         green "$testname: PASS"
         passed=$(($passed + 1))
     else
