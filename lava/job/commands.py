@@ -44,7 +44,7 @@ class new(Command):
 
     def invoke(self):
         if exists(self.args.FILE):
-            raise CommandError('%s already exists', self.args.FILE)
+            raise CommandError('%s already exists' % self.args.FILE)
 
         with open(self.args.FILE, 'w') as f:
             job = Job(BOOT_TEST)

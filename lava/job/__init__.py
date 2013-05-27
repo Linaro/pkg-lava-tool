@@ -43,5 +43,5 @@ class Job:
         insert_data(self.data)
 
     def write(self, stream):
-        stream.write(json.dumps(self.data))
+        stream.write(json.dumps(self.data, indent=4))
 
