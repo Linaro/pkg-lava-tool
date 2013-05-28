@@ -18,20 +18,21 @@
 
 class Parameter(object):
 
-    def __init__(self, id):
-        self._id = id
+    def __init__(self, id, depends=None):
+        self.id = id
+        self.depends = depends
 
-    def id(self):
-        return self._id
+device_type = Parameter("device_type")
+prebuilt_image = Parameter("prebuilt_image", depends=device_type)
 
 BOOT_TEST = {
     "job_name": "Boot test",
-    "device_type": Parameter("device_type"),
+    "device_type": device_type,
     "actions": [
         {
             "command": "deploy_linaro_image",
             "parameters": {
-                "image": Parameter("prebuilt_image")
+                "image": prebuilt_image
             }
         },
         {
@@ -42,12 +43,12 @@ BOOT_TEST = {
 
 LAVA_TEST_SHELL = {
     "job_name": "LAVA Test Shell",
-    "device_type": Parameter("device_type"),
+    "device_type": device_type,
     "actions": [
         {
             "command": "deploy_linaro_image",
             "parameters": {
-                "image": Parameter("prebuilt_image"),
+                "image": prebuilt_image,
             }
         },
         {

@@ -26,7 +26,7 @@ class Job:
     def __init__(self, template):
         self.data = deepcopy(template)
 
-    def fill_in(self, parameters):
+    def fill_in(self, config):
         def insert_data(data):
             if isinstance(data, dict):
                 keys = data.keys()
@@ -35,11 +35,11 @@ class Job:
             else:
                 return
             for key in keys:
-                value = data[key]
-                if isinstance(value, Parameter):
-                    data[key] = parameters.get(value.id(), None)
+                entry = data[key]
+                if isinstance(entry, Parameter):
+                    data[key] = config.get(entry)
                 else:
-                    insert_data(value)
+                    insert_data(entry)
         insert_data(self.data)
 
     def write(self, stream):

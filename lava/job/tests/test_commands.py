@@ -36,6 +36,7 @@ from shutil import(
 from tempfile import mkdtemp
 from unittest import TestCase
 
+from lava.config import NonInteractiveConfig
 from lava.job.commands import *
 from lava.tool.errors import CommandError
 
@@ -67,7 +68,7 @@ class JobNewTest(CommandTest):
     def test_fills_in_template_parameters(self):
         f = self.tmp('myjob.json')
         command = make_command(new, [f])
-        command.config = { 'device_type': 'foo', 'prebuilt_image': 'bar' }
+        command.config = NonInteractiveConfig({ 'device_type': 'foo', 'prebuilt_image': 'bar' })
         command.invoke()
 
         data = json.loads(open(f).read())

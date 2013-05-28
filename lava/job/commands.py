@@ -18,6 +18,7 @@
 
 from os.path import exists
 
+from lava.config import InteractiveConfig
 from lava.job import Job
 from lava.job.templates import *
 from lava.tool.command import Command, CommandGroup
@@ -35,12 +36,18 @@ class new(Command):
 
     def __init__(self, parser, args):
         super(new, self).__init__(parser, args)
-        self.config_source = {} # FIXME
+        self.config = InteractiveConfig(force_interactive=self.args.interactive)
 
     @classmethod
     def register_arguments(self, parser):
         super(new, self).register_arguments(parser)
         parser.add_argument("FILE", help=("Job file to be created."))
+
+        parser.add_argument(
+            "-i", "--interactive",
+            action='store_true',
+            help=("Forces asking for input parameters even if we already "
+                  "have them cached."))
 
     def invoke(self):
         if exists(self.args.FILE):
@@ -48,7 +55,7 @@ class new(Command):
 
         with open(self.args.FILE, 'w') as f:
             job = Job(BOOT_TEST)
-            job.fill_in(self.config_source)
+            job.fill_in(self.config)
             job.write(f)
 
 

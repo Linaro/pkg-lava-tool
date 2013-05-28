@@ -16,12 +16,14 @@ base_tmpdir=$(mktemp -d)
 logs="${base_tmpdir}/logs"
 mkdir "$logs"
 
+export LAVACONFIG=/dev/null
+
 for testfile in integration-tests.d/*.sh; do
     testname=$(basename "$testfile")
     logfile="${logs}/${testname}.log"
     export tmpdir="${base_tmpdir}/${testname}"
     mkdir "${tmpdir}"
-    if sh -x "$testfile" > "${logfile}" 2>&1; then
+    if sh -x "$testfile" > "${logfile}" 2>&1 < /dev/null; then
         green "$testname: PASS"
         passed=$(($passed + 1))
     else

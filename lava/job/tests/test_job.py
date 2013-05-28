@@ -24,6 +24,7 @@ import json
 from unittest import TestCase
 from StringIO import StringIO
 
+from lava.config import NonInteractiveConfig
 from lava.job.templates import *
 from lava.job import Job
 
@@ -38,12 +39,13 @@ class JobTest(TestCase):
     def test_fill_in_data(self):
         job = Job(BOOT_TEST)
         image = "/path/to/panda.img"
-        job.fill_in(
+        config = NonInteractiveConfig(
             {
                 "device_type": "panda",
                 "prebuilt_image": image,
             }
         )
+        job.fill_in(config)
 
         self.assertEqual(job.data['device_type'], "panda")
         self.assertEqual(job.data['actions'][0]["parameters"]["image"], image)
