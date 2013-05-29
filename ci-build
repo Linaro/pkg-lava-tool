@@ -1,9 +1,9 @@
 #!/bin/sh
 
 set -e
-set -x
 
 if test -z "$VIRTUAL_ENV"; then
+  set -x
   virtualenv ci-build-venv
   . ci-build-venv/bin/activate
   python setup.py develop
