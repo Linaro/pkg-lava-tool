@@ -44,7 +44,9 @@ def make_command(command, *args):
     parser = ArgumentParser(description="fake argument parser")
     command.register_arguments(parser)
     the_args = parser.parse_args(*args)
-    return command(parser, the_args)
+    cmd = command(parser, the_args)
+    cmd.config = NonInteractiveConfig({ 'device_type': 'foo', 'prebuilt_image': 'bar' })
+    return cmd
 
 class CommandTest(TestCase):
 
@@ -68,7 +70,6 @@ class JobNewTest(CommandTest):
     def test_fills_in_template_parameters(self):
         f = self.tmp('myjob.json')
         command = make_command(new, [f])
-        command.config = NonInteractiveConfig({ 'device_type': 'foo', 'prebuilt_image': 'bar' })
         command.invoke()
 
         data = json.loads(open(f).read())
