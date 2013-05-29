@@ -9,14 +9,16 @@ if test -z "$VIRTUAL_ENV"; then
   python setup.py develop
 fi
 
+export LAVACONFIG=/dev/null
+
 if test -z "$DISPLAY"; then
   # actual CI - will install tests dependencies automatically
-  python setup.py test
+  python setup.py test < /dev/null
 else
   # in a development workstation, this will produce shorter/nicer output, but
   # requires the test dependencies to be installed manually (or by running
   # `python setup.py test` before).
-  python -m unittest lava_tool.tests.test_suite
+  python -m unittest lava_tool.tests.test_suite < /dev/null
 fi
 
 ./integration-tests
