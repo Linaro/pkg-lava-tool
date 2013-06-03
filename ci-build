@@ -15,8 +15,14 @@ fi
 export LAVACONFIG=/dev/null
 
 if test -z "$DISPLAY"; then
-  # actual CI - will install tests dependencies automatically
+  # actual CI
+
+  # will install tests dependencies automatically. The output is also more
+  # verbose
   python setup.py test < /dev/null
+
+  # integration-tests will pick this up and provide detailed output
+  export VERBOSE=1
 else
   # in a development workstation, this will produce shorter/nicer output, but
   # requires the test dependencies to be installed manually (or by running
