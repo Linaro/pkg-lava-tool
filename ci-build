@@ -7,9 +7,18 @@ if test -z "$VIRTUAL_ENV"; then
   virtualenv ci-build-venv
   . ci-build-venv/bin/activate
   python setup.py develop
+fi
 
-  # requirement for integration tests
+# requirement for integration tests
+if ! pip show Flask | grep -q Flask; then
   pip install 'Flask==0.9'
+fi
+if ! pip show PyYAML | grep -q PyYAML; then
+  pip install PyYAML
+fi
+# requirement for unit tests
+if ! pip show mocker | grep -q mocker; then
+  pip install mocker
 fi
 
 export LAVACONFIG=/dev/null
