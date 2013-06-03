@@ -9,7 +9,7 @@ if test -z "$VIRTUAL_ENV"; then
   python setup.py develop
 
   # requirement for integration tests
-  pip install Flask=0.9
+  pip install 'Flask==0.9'
 fi
 
 export LAVACONFIG=/dev/null
