@@ -24,10 +24,22 @@ stop_server() {
 
 run_test() {
     local testfile="$1"
+    local logfile="$2"
+    rc=0
     if test -n "$VERBOSE"; then
-        sh -x "$testfile" < /dev/null
+        sh -x "$testfile" < /dev/null || rc=$?
     else
-        sh -x "$testfile" > "${logfile}" 2>&1 < /dev/null
+        sh -x "$testfile" > "${logfile}" 2>&1 < /dev/null || rc=$?
+    fi
+    if test $rc -eq 0; then
+        green "$testname: PASS"
+        passed=$(($passed + 1))
+    else
+        failed=$(($failed + 1))
+        red "$testname: FAIL"
+        if test -f "$logfile"; then
+            cat "$logfile"
+        fi
     fi
 }
 
@@ -52,14 +64,7 @@ for testfile in $tests; do
     export tmpdir="${base_tmpdir}/${testname}"
     export LAVACONFIG="${tmpdir}/config"
     mkdir "${tmpdir}"
-    if run_test "$testfile"; then
-        green "$testname: PASS"
-        passed=$(($passed + 1))
-    else
-        failed=$(($failed + 1))
-        red "$testname: FAIL"
-        cat "$logfile"
-    fi
+    run_test "$testfile" "$logfile"
 done
 
 stop_server
