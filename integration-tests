@@ -10,18 +10,38 @@ red() {
     test -t 2 && printf "\033[0;31;40m$@\033[m\n" >&2 || echo "$2" >&2
 }
 
+start_server() {
+    server_dir="${base_tmpdir}/_server"
+    mkdir -p "${server_dir}"
+    server_log="${server_dir}/log"
+    python integration-tests.d/lib/server.py > "${server_log}" 2>&1 &
+    server_pid=$?
+}
+
+stop_server() {
+    curl -q http://localhost:5000/exit
+}
+
 passed=0
 failed=0
 base_tmpdir=$(mktemp -d)
 logs="${base_tmpdir}/logs"
 mkdir "$logs"
 
-export LAVACONFIG=/dev/null
+export PATH="$(dirname $0)"/integration-tests.d/lib:$PATH
 
-for testfile in integration-tests.d/*.sh; do
+start_server
+
+tests="$@"
+if test -z "$tests"; then
+    tests=$(echo integration-tests.d/*.sh)
+fi
+
+for testfile in $tests; do
     testname=$(basename "$testfile")
     logfile="${logs}/${testname}.log"
     export tmpdir="${base_tmpdir}/${testname}"
+    export LAVACONFIG="${tmpdir}/config"
     mkdir "${tmpdir}"
     if sh -x "$testfile" > "${logfile}" 2>&1 < /dev/null; then
         green "$testname: PASS"
@@ -32,6 +52,8 @@ for testfile in integration-tests.d/*.sh; do
         cat "$logfile"
     fi
 done
+
+stop_server
 
 rm -rf "${base_tmpdir}"
 

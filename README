@@ -29,7 +29,7 @@ Dealing with LAVA Test Shell Test Definitions
   $ lava testdef submit file.yml   # submits file.yml to a remote LAVA server
   $ lava testdef run file.yml      # runs file.yml on a local LAVA device
 
-Dealing with LAVA Test Shell Test Definitions
+Dealing with LAVA Test Shell Scripts
 
   $ lava script submit SCRIPT     # submits SCRIPT to a remote LAVA server
   $ lava script run SCRIPT        # runs SCRIPT on a local LAVA device

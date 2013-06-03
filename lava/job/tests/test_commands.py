@@ -40,6 +40,8 @@ from lava.config import NonInteractiveConfig
 from lava.job.commands import *
 from lava.tool.errors import CommandError
 
+from mocker import Mocker
+
 def make_command(command, *args):
     parser = ArgumentParser(description="fake argument parser")
     command.register_arguments(parser)
@@ -84,3 +86,8 @@ class JobNewTest(CommandTest):
             command.invoke()
         self.assertEqual("CONTENTS", open(existing).read())
 
+class JobSubmitTest(CommandTest):
+
+    def test_receives_job_file_in_cmdline(self):
+        cmd = make_command(new, ['FOO.json'])
+        self.assertEqual('FOO.json', cmd.args.FILE)

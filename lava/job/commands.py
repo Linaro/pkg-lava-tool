@@ -24,6 +24,8 @@ from lava.job.templates import *
 from lava.tool.command import Command, CommandGroup
 from lava.tool.errors import CommandError
 
+from lava_tool.authtoken import AuthenticatingServerProxy, KeyringAuthBackend
+import xmlrpclib
 
 class job(CommandGroup):
     """
@@ -32,22 +34,27 @@ class job(CommandGroup):
 
     namespace = 'lava.job.commands'
 
-class new(Command):
+class BaseCommand(Command):
 
     def __init__(self, parser, args):
-        super(new, self).__init__(parser, args)
+        super(BaseCommand, self).__init__(parser, args)
         self.config = InteractiveConfig(force_interactive=self.args.interactive)
 
     @classmethod
-    def register_arguments(self, parser):
-        super(new, self).register_arguments(parser)
-        parser.add_argument("FILE", help=("Job file to be created."))
-
+    def register_arguments(cls, parser):
+        super(BaseCommand, cls).register_arguments(parser)
         parser.add_argument(
             "-i", "--interactive",
             action='store_true',
             help=("Forces asking for input parameters even if we already "
                   "have them cached."))
+
+class new(BaseCommand):
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(new, cls).register_arguments(parser)
+        parser.add_argument("FILE", help=("Job file to be created."))
 
     def invoke(self):
         if exists(self.args.FILE):
@@ -59,10 +66,29 @@ class new(Command):
             job.write(f)
 
 
-class submit(Command):
-    def invoke(self):
-        print("hello world")
+class submit(BaseCommand):
+    @classmethod
+    def register_arguments(cls, parser):
+        super(submit, cls).register_arguments(parser)
+        parser.add_argument("FILE", help=("The job file to submit"))
 
-class run(Command):
+    def invoke(self):
+        jobfile = self.args.FILE
+        jobdata = open(jobfile, 'rb').read()
+
+        server_name = Parameter('server')
+        rpc_endpoint = Parameter('rpc_endpoint', depends=server_name)
+        self.config.get(server_name)
+        endpoint = self.config.get(rpc_endpoint)
+
+        server = AuthenticatingServerProxy(endpoint,
+                                           auth_backend=KeyringAuthBackend())
+        try:
+            job_id = server.scheduler.submit_job(jobdata)
+            print "Job submitted with job ID %d" % job_id
+        except xmlrpclib.Fault, e:
+            raise CommandError(str(e))
+
+class run(BaseCommand):
     def invoke(self):
         print("hello world")
