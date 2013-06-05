@@ -1,4 +1,5 @@
 .coverage
 *.egg-info
-./build
-./dist
+build/
+dist/
+.pc/
