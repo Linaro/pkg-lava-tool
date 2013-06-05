@@ -1,0 +1,6 @@
+include COPYING
+include INSTALL
+recursive-include launch_control_tool/models *.py
+recursive-include launch_control_tool/tests *.py
+recursive-include launch_control_tool/thirdparty *.py
+recursive-include launch_control_tool/utils *.py
