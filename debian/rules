@@ -19,13 +19,14 @@ export DH_OPTIONS
 PYTHON2:=$(shell pyversions -r)
 install_dir=$(call py_libdir, $(PYTHON2))
 
+#	dh $@ --with sphinxdoc,python2
 %:
-	dh $@ --with sphinxdoc,python2
+	dh $@ --with python2
 
 override_dh_auto_build:
 	dh_auto_build
 	python setup.py build
-	make -C doc/ html
+#	make -C doc/ html
 
 override_dh_auto_install:
 	dh_auto_install
