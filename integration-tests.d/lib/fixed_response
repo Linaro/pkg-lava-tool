@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import xmlrpclib
+
+data = eval(sys.argv[1])
+
+output = os.path.join(os.path.dirname(__file__), 'fixed_response.txt')
+with open(output, 'w') as f:
+    f.write(xmlrpclib.dumps((data,), methodresponse=True))

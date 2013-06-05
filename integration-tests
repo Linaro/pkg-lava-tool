@@ -1,0 +1,80 @@
+#!/bin/sh
+
+set -e
+
+green() {
+    test -t 1 && printf "\033[0;32;40m$@\033[m\n" || echo "$@"
+}
+
+red() {
+    test -t 2 && printf "\033[0;31;40m$@\033[m\n" >&2 || echo "$2" >&2
+}
+
+start_server() {
+    server_dir="${base_tmpdir}/_server"
+    mkdir -p "${server_dir}"
+    server_log="${server_dir}/log"
+    python integration-tests.d/lib/server.py > "${server_log}" 2>&1 &
+    server_pid=$?
+}
+
+stop_server() {
+    curl -q http://localhost:5000/exit
+}
+
+run_test() {
+    local testfile="$1"
+    local logfile="$2"
+    rc=0
+    if test -n "$VERBOSE"; then
+        sh -x "$testfile" < /dev/null || rc=$?
+    else
+        sh -x "$testfile" > "${logfile}" 2>&1 < /dev/null || rc=$?
+    fi
+    if test $rc -eq 0; then
+        green "$testname: PASS"
+        passed=$(($passed + 1))
+    else
+        failed=$(($failed + 1))
+        red "$testname: FAIL"
+        if test -f "$logfile"; then
+            cat "$logfile"
+        fi
+    fi
+}
+
+passed=0
+failed=0
+base_tmpdir=$(mktemp -d)
+logs="${base_tmpdir}/logs"
+mkdir "$logs"
+
+export PATH="$(dirname $0)"/integration-tests.d/lib:$PATH
+
+start_server
+
+tests="$@"
+if test -z "$tests"; then
+    tests=$(echo integration-tests.d/*.sh)
+fi
+
+for testfile in $tests; do
+    testname=$(basename "$testfile")
+    logfile="${logs}/${testname}.log"
+    export tmpdir="${base_tmpdir}/${testname}"
+    export LAVACONFIG="${tmpdir}/config"
+    mkdir "${tmpdir}"
+    run_test "$testfile" "$logfile"
+done
+
+stop_server
+
+rm -rf "${base_tmpdir}"
+
+echo
+if [ "$failed" -eq 0 ]; then
+    green "$passed tests passed, $failed tests failed."
+else
+    red "$passed tests passed, $failed tests failed."
+    exit 1
+fi
