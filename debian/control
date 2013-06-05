@@ -1,0 +1,19 @@
+Source: lava-tool
+Section: net
+Priority: optional
+Maintainer: Neil Williams <codehelp@debian.org>
+Build-Depends: debhelper (>= 8.0.0),
+ python | python-all | python-dev | python-all-dev,
+ python-sphinx (>= 1.0.7+dfsg) | python3-sphinx,
+ python-versiontools, python-setuptools
+X-Python-Version: 2.7
+Standards-Version: 3.9.4
+Homepage: http://www.linaro.org/engineering/validation
+#Vcs-Git: git://git.debian.org/collab-maint/lava-tool.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/lava-tool.git;a=summary
+
+Package: lava-tool
+Architecture: all
+Depends: ${python:Depends}, ${misc:Depends}
+Description: command line utility for LAVA
+ Linaro Automated Validation Architecture.

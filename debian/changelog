@@ -1,0 +1,5 @@
+lava-tool (0.7.1-1) unstable; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Neil Williams <codehelp@debian.org>  Wed, 05 Jun 2013 11:55:07 +0100
