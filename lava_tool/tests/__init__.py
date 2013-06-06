@@ -41,6 +41,7 @@ def test_modules():
             'lava_dashboard_tool.tests.test_commands',
             'lava.job.tests.test_job',
             'lava.job.tests.test_commands',
+            'lava.device.tests.test_device',
             ]
 
 
