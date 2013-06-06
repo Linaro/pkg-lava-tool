@@ -26,7 +26,7 @@ from lava.tool.command import Command, CommandGroup
 # Default lava-dispatcher path, has to be joined with an instance full path.
 DEFAUL_DISPATCHER_PATH = os.path.join('etc', 'lava-dispatcher')
 # Default devices path.
-DEFAULT_DEVICES_PATH = os.path.join(DEFAUL_DISPATCHER_PATH, 'devices')
+DEFAULT_DEVICES_PATH = 'devices'
 
 
 class device(CommandGroup):
