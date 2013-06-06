@@ -100,9 +100,10 @@ class remove(BaseCommand):
 
     def invoke(self):
         dispatcher_path = self.config.get(Parameter("lava_dispatcher"))
-        device_path = os.path.join(dispatcher_path, self.args.DEVICE)
-        if os.path.isfile(device_path):
-            os.remove(device_path)
+        devices_path = os.path.join(dispatcher_path, DEFAULT_DEVICES_PATH)
+        device_conf = os.path.join(devices_path, self.args.DEVICE)
+        if os.path.isfile(device_conf):
+            os.remove(device_conf)
         else:
-            print ("Cannot remove file '%s' at: %s" %
-                   (self.args.DEVICE, os.path.dirname(device_path)))
+            print ("Cannot remove file '%s' at: %s. It does not exist or it "
+                   "is not a file." % (self.args.DEVICE, devices_path))
