@@ -53,6 +53,7 @@ def test_suite():
     modules = app_modules() + test_modules()
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
+
     for name in modules:
         unit_suite = loader.loadTestsFromName(name)
         suite.addTests(unit_suite)
