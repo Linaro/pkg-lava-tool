@@ -30,13 +30,24 @@ except IOError:
     pass
 atexit.register(readline.write_history_file, history)
 
-config_file = os.environ.get('LAVACONFIG') or os.path.join(os.path.expanduser('~'), '.lavaconfig')
+config_file = (os.environ.get('LAVACONFIG') or
+               os.path.join(os.path.expanduser('~'), '.lavaconfig'))
 config_backend = ConfigParser()
 config_backend.read([config_file])
+
+
 def save_config():
     with open(config_file, 'w') as f:
         config_backend.write(f)
 atexit.register(save_config)
+
+
+class Parameter(object):
+
+    def __init__(self, id, depends=None):
+        self.id = id
+        self.depends = depends
+
 
 class InteractiveConfig(object):
 
