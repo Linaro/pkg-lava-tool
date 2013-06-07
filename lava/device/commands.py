@@ -31,7 +31,8 @@ DEVICE_FILE_SUFFIX = "conf"
 
 
 class device(CommandGroup):
-    """LAVA devices handling."""
+    """LAVA devices handling"""
+
     namespace = "lava.device.commands"
 
 
@@ -42,7 +43,7 @@ class BaseCommand(Command):
 
     @classmethod
     def register_arguments(cls, parser):
-        super(cls.__name__, cls).register_arguments(parser)
+        super(BaseCommand, cls).register_arguments(parser)
         parser.add_argument("-i", "--interactive",
                             action='store_true',
                             help=("Forces asking for input parameters even if "
@@ -61,7 +62,7 @@ class add(BaseCommand):
 
     @classmethod
     def register_arguments(cls, parser):
-        super(cls.__name__, cls).register_arguments(parser)
+        super(add, cls).register_arguments(parser)
         parser.add_argument("DEVICE", help="The name of the device to add.")
 
     def invoke(self):
@@ -96,9 +97,9 @@ class remove(BaseCommand):
 
     @classmethod
     def register_arguments(cls, parser):
-        super(cls.__name__, cls).register_arguments(parser)
-        parser.add_arguments("DEVICE",
-                             help="The name of the device to remove.")
+        super(remove, cls).register_arguments(parser)
+        parser.add_argument("DEVICE",
+                            help="The name of the device to remove.")
 
     def invoke(self):
         dispatcher_path = self.config.get(Parameter("lava_dispatcher"))
@@ -107,6 +108,7 @@ class remove(BaseCommand):
         device_conf = os.path.join(devices_path, real_file_name)
         if os.path.isfile(device_conf):
             os.remove(device_conf)
+            print "Device configuration file %s removed." % self.args.DEVICE
         else:
             print ("Cannot remove file '%s' at: %s. It does not exist or it "
                    "is not a file." % (real_file_name, devices_path))
