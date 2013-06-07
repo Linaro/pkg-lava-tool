@@ -1,11 +1,13 @@
 #!/bin/sh
 
+VENV_DIR="/tmp/ci-build-venv"
+
 set -e
 
 if test -z "$VIRTUAL_ENV"; then
   set -x
-  virtualenv ci-build-venv
-  . ci-build-venv/bin/activate
+  virtualenv $VENV_DIR
+  . $VENV_DIR/bin/activate
   python setup.py develop
 fi
 
@@ -19,6 +21,14 @@ fi
 # requirement for unit tests
 if ! pip show mocker | grep -q mocker; then
   pip install mocker
+fi
+
+if ! pip show pep8 | grep -q pep8; then
+  pip install pep8
+fi
+
+if ! pip show pyflakes | grep -q pyflakes; then
+  pip install pyflakes
 fi
 
 export LAVACONFIG=/dev/null
