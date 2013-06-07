@@ -17,11 +17,14 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import subprocess
 import sys
 
 from lava.config import InteractiveConfig, Parameter
 from lava.device import get_known_device
 from lava.tool.command import Command, CommandGroup
+from lava.tool.utils import has_command
+
 
 # Default lava-dispatcher path, has to be joined with an instance full path.
 DEFAUL_DISPATCHER_PATH = os.path.join('etc', 'lava-dispatcher')
@@ -64,8 +67,19 @@ class BaseCommand(Command):
         """Opens the specified file with the default file editor.
 
         :param file: The file to edit."""
-        # TODO: what should we use? sensible-editor, xdg-open?
-        pass
+        # TODO: find a better way
+        editors = []
+        editors.append(os.environ.get("EDITOR", None))
+        if has_command('sensible-editor'):
+            editors.append("sensible-editor")
+        if has_command('xdg-open'):
+            editors.append('xdg-open')
+
+        try:
+            editor = editors.pop(0)
+            subprocess.Popen(editor).wait()
+        except Exception:
+            pass
 
 
 class add(BaseCommand):
