@@ -20,19 +20,50 @@
 Device class unit tests.
 """
 
+import sys
 from unittest import TestCase
+from StringIO import StringIO
 
 from lava.device import (
+    Device,
     PandaDevice,
     get_known_device,
 )
+from lava.tool.errors import CommandError
 
 
 class DeviceTest(TestCase):
 
+    def setUp(self):
+        # Fake the stdin and the stdout
+        self.original_stdout = sys.stdout
+        sys.stdout = StringIO("/dev/null")
+        self.original_stdin = sys.stdin
+        sys.stdin = StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.original_stdout
+        sys.stdin = self.original_stdin
+
     def test_get_known_device_panda(self):
+        # User creates a new device with a guessable name for a panda device.
         instance = get_known_device('panda_new_01')
         self.assertIsInstance(instance, PandaDevice)
 
     def test_get_known_device_unknown(self):
-        pass
+        # User tries to create a new device with an unknown device type. She
+        # is asked to insert the device type and types 'a_fake_device'.
+        sys.stdin = StringIO('a_fake_device')
+        instance = get_known_device('a_fake_device')
+        self.assertIsInstance(instance, Device)
+        self.assertEqual(instance.device_type, 'a_fake_device')
+
+    def test_get_known_device_raises(self):
+        # User tries to create a new device, but in some way nothing is passed
+        # on the command line when asked.
+        self.assertRaises(CommandError, get_known_device, 'a_fake_device')
+
+    def test_device_write(self):
+        # User tries to create a new panda device. The conf file is written
+        # and containes the expexted results.
+        self.fail()
