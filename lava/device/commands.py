@@ -49,6 +49,17 @@ class BaseCommand(Command):
                             help=("Forces asking for input parameters even if "
                                   "we already have them cached."))
 
+    def _get_devices_path(self):
+        """Gets the path to the devices in the LAVA dispatcher."""
+        dispatcher_path = self.config.get(Parameter("lava_dispatcher"))
+        if not dispatcher_path:
+            # Nothing provided? We write on the current dir.
+            dispatcher_path = os.path.join(os.getcwd(), DEFAUL_DISPATCHER_PATH)
+            print "LAVA dispatcher path will be: %s" % dispatcher_path
+
+        devices_path = os.path.join(dispatcher_path, DEFAULT_DEVICES_PATH)
+        return devices_path
+
     def edit_config_file(file):
         """Opens the specified file with the default file editor.
 
@@ -66,13 +77,7 @@ class add(BaseCommand):
         parser.add_argument("DEVICE", help="The name of the device to add.")
 
     def invoke(self):
-        dispatcher_path = self.config.get(Parameter("lava_dispatcher"))
-        if not dispatcher_path:
-            # Nothing provided? We write on the current dir.
-            dispatcher_path = os.path.join(os.getcwd(), DEFAUL_DISPATCHER_PATH)
-            print "LAVA dispatcher path will be: %s" % dispatcher_path
-
-        devices_path = os.path.join(dispatcher_path, DEFAULT_DEVICES_PATH)
+        devices_path = self._get_devices_path()
         real_file_name = ".".join(self.args.DEVICE, DEVICE_FILE_SUFFIX)
         device_conf_file = os.path.abspath(os.path.join(devices_path,
                                                         real_file_name))
@@ -102,8 +107,7 @@ class remove(BaseCommand):
                             help="The name of the device to remove.")
 
     def invoke(self):
-        dispatcher_path = self.config.get(Parameter("lava_dispatcher"))
-        devices_path = os.path.join(dispatcher_path, DEFAULT_DEVICES_PATH)
+        devices_path = self._get_devices_path()
         real_file_name = ".".join(self.args.DEVICE, DEVICE_FILE_SUFFIX)
         device_conf = os.path.join(devices_path, real_file_name)
         if os.path.isfile(device_conf):
@@ -111,4 +115,23 @@ class remove(BaseCommand):
             print "Device configuration file %s removed." % self.args.DEVICE
         else:
             print ("Cannot remove file '%s' at: %s. It does not exist or it "
+                   "is not a file." % (real_file_name, devices_path))
+
+
+class config(BaseCommand):
+    """Implements 'lava device config DEVICE' command."""
+    @classmethod
+    def register_arguments(cls, parser):
+        super(config, cls).register_arguments(parser)
+        parser.add_argument("DEVICE",
+                            help="The name of the device to edit.")
+
+    def invoke(self):
+        devices_path = self._get_devices_path()
+        real_file_name = ".".join(self.args.DEVICE, DEVICE_FILE_SUFFIX)
+        device_conf = os.path.join(devices_path, real_file_name)
+        if os.path.isfile(device_conf):
+            self.edit_config_file(device_conf)
+        else:
+            print ("Cannot edit file '%s' at: %s. It does not exist or it "
                    "is not a file." % (real_file_name, devices_path))
