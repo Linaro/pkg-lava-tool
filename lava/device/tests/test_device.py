@@ -20,9 +20,12 @@
 Device class unit tests.
 """
 
+import os
 import sys
-from unittest import TestCase
+import tempfile
+
 from StringIO import StringIO
+from unittest import TestCase
 
 from lava.device import (
     Device,
@@ -40,10 +43,12 @@ class DeviceTest(TestCase):
         sys.stdout = StringIO("/dev/null")
         self.original_stdin = sys.stdin
         sys.stdin = StringIO()
+        self.temp_file = tempfile.NamedTemporaryFile(delete=False)
 
     def tearDown(self):
         sys.stdout = self.original_stdout
         sys.stdin = self.original_stdin
+        os.unlink(self.temp_file.name)
 
     def test_get_known_device_panda(self):
         # User creates a new device with a guessable name for a panda device.
@@ -66,4 +71,10 @@ class DeviceTest(TestCase):
     def test_device_write(self):
         # User tries to create a new panda device. The conf file is written
         # and containes the expexted results.
-        self.fail()
+        expected = "device_type = panda\nhostname = panda02\n"
+        instance = get_known_device("panda02")
+        instance.write(self.temp_file.name)
+        obtained = ""
+        with open(self.temp_file.name) as f:
+            obtained = f.read()
+        self.assertEqual(expected, obtained)
