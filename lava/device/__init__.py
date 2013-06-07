@@ -18,6 +18,7 @@
 
 import re
 
+from lava.device.templates import DEFAULT_TEMPLATE
 from lava.tool.errors import CommandError
 
 
@@ -27,6 +28,7 @@ class Device(object):
         super(Device, self).__init__()
         self.device_type = None
         self.hostname = name
+        self.template = DEFAULT_TEMPLATE
 
     def write(self, where):
         """Writes the object to file.
@@ -35,17 +37,26 @@ class Device(object):
         with open(where, 'w') as f:
             f.write(self.__str__())
 
-    def __str__(self):
-        """Commodity method for string representation of the object.
+    def _update(self):
+        """Updates the template with the values specified for this class.
 
-        Subclasses that adds more attributes should override this method.
+        Subclasses need to override this when they add more specific
+        attributes.
         """
-        string = "device_type = %s\n" % str(self.device_type)
-        string += "hostname = %s\n" % str(self.hostname)
+        self.template.update(device_type=self.device_type,
+                             hostname=self.hostname)
+
+    def __str__(self):
+        """Convinent method for string representation of the object."""
+        self._update()
+        string = ""
+        for key, value in self.template.iteritems():
+            string += "%s = %s\n" % (str(key), str(value))
         return string
 
     def __repr__(self):
-        return self.__str__()
+        self._update()
+        return str(self.template)
 
 
 class PandaDevice(Device):
