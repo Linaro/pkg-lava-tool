@@ -28,13 +28,25 @@ class Device(object):
         self.device_type = None
         self.hostname = name
 
-    def write(where):
+    def write(self, where):
         """Writes the object to file.
 
         :param where: The full path of the file where to write."""
         with open(where, 'w') as f:
             # TODO need a way to serialized the object
-            f.write('')
+            f.write(self.__str__())
+
+    def __str__(self):
+        """Commodity method for string representation of the object.
+
+        Subclasses that adds more attributes should override this method.
+        """
+        string = "device_type = %s\n" % str(self.device_type)
+        string += "hostname = %s\n" % str(self.hostname)
+        return string
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class PandaDevice(Device):
@@ -87,8 +99,3 @@ def get_known_device(device):
             instance.device_type = dev_type
 
     return instance
-
-
-if __name__ == '__main__':
-    instance = get_known_device('pippo')
-    print instance.device_type, instance.hostname
