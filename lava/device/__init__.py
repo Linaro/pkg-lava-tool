@@ -33,7 +33,6 @@ class Device(object):
 
         :param where: The full path of the file where to write."""
         with open(where, 'w') as f:
-            # TODO need a way to serialized the object
             f.write(self.__str__())
 
     def __str__(self):
