@@ -53,5 +53,9 @@ setup(
         'versiontools >= 1.3.1'
     ],
     setup_requires=['versiontools >= 1.3.1'],
-    tests_require=['mocker >= 1.0'],
+    tests_require=[
+        'mocker >= 1.0',
+        'pep8',
+        'pyflakes',
+    ],
     zip_safe=True)
