@@ -34,6 +34,7 @@ class TestPep8(TestCase):
             ['pep8',
              '--repeat',
              '--ignore=%s' % ','.join(ignore),
+             '--exclude=ci-build-venv,versiontools*',
              '.'],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
