@@ -21,7 +21,10 @@ Package with unit tests for lava_tool
 """
 
 import doctest
+import os
 import unittest
+
+from lava_tool.utils import has_command
 
 
 def app_modules():
@@ -53,6 +56,16 @@ def test_suite():
     modules = app_modules() + test_modules()
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
+
+    if has_command("pep8") and not os.path.isabs(__file__):
+        # Run the pep8 test.
+        unit_suite = loader.loadTestsFromName('lava_tool.tests.test_pep8')
+        suite.addTest(unit_suite)
+
+    if has_command("pyflakes") and not os.path.isabs(__file__):
+        # Run pyflakes too.
+        unit_suite = loader.loadTestsFromName('lava_tool.tests.test_pyflakes')
+        suite.addTest(unit_suite)
 
     for name in modules:
         unit_suite = loader.loadTestsFromName(name)
