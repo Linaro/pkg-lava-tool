@@ -27,6 +27,7 @@ from lava.tool.command import Command, CommandGroup
 DEFAUL_DISPATCHER_PATH = os.path.join('etc', 'lava-dispatcher')
 # Default devices path.
 DEFAULT_DEVICES_PATH = 'devices'
+DEVICE_FILE_SUFFIX = "conf"
 
 
 class device(CommandGroup):
@@ -71,12 +72,13 @@ class add(BaseCommand):
             print "LAVA dispatcher path will be: %s" % dispatcher_path
 
         devices_path = os.path.join(dispatcher_path, DEFAULT_DEVICES_PATH)
+        real_file_name = ".".join(self.args.DEVICE, DEVICE_FILE_SUFFIX)
         device_conf_file = os.path.abspath(os.path.join(devices_path,
-                                                        self.args.DEVICE))
+                                                        real_file_name))
 
         if os.path.exists(device_conf_file):
             print ("A device configuration file named '%s' already exists."
-                   % self.args.DEVICE)
+                   % real_file_name)
             print "Use 'lava config DEVICE' to edit it."
             sys.exit(-1)
 
@@ -101,9 +103,10 @@ class remove(BaseCommand):
     def invoke(self):
         dispatcher_path = self.config.get(Parameter("lava_dispatcher"))
         devices_path = os.path.join(dispatcher_path, DEFAULT_DEVICES_PATH)
-        device_conf = os.path.join(devices_path, self.args.DEVICE)
+        real_file_name = ".".join(self.args.DEVICE, DEVICE_FILE_SUFFIX)
+        device_conf = os.path.join(devices_path, real_file_name)
         if os.path.isfile(device_conf):
             os.remove(device_conf)
         else:
             print ("Cannot remove file '%s' at: %s. It does not exist or it "
-                   "is not a file." % (self.args.DEVICE, devices_path))
+                   "is not a file." % (real_file_name, devices_path))
