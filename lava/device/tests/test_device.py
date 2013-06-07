@@ -40,7 +40,7 @@ class DeviceTest(TestCase):
     def setUp(self):
         # Fake the stdin and the stdout
         self.original_stdout = sys.stdout
-        sys.stdout = StringIO("/dev/null")
+        sys.stdout = open("/dev/null", "w")
         self.original_stdin = sys.stdin
         sys.stdin = StringIO()
         self.temp_file = tempfile.NamedTemporaryFile(delete=False)
@@ -70,7 +70,7 @@ class DeviceTest(TestCase):
 
     def test_device_write(self):
         # User tries to create a new panda device. The conf file is written
-        # and containes the expexted results.
+        # and contains the expected results.
         expected = ("hostname = panda02\nconnection_command = None\n"
                     "device_type = panda\n")
         instance = get_known_device("panda02")
