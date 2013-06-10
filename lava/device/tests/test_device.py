@@ -55,6 +55,12 @@ class DeviceTest(TestCase):
         instance = get_known_device('panda_new_01')
         self.assertIsInstance(instance, PandaDevice)
 
+    def test_get_known_device_panda_1(self):
+        # User creates a new device with a guessable name for a panda device.
+        # Name passed has capital letters.
+        instance = get_known_device('new_PanDa_02')
+        self.assertIsInstance(instance, PandaDevice)
+
     def test_get_known_device_unknown(self):
         # User tries to create a new device with an unknown device type. She
         # is asked to insert the device type and types 'a_fake_device'.

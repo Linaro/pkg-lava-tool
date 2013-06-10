@@ -68,7 +68,7 @@ class PandaDevice(Device):
 # Dictionary with key the name of a know device, and value a tuple composed of
 # a matcher used to guess the device type, and its associated Device class.
 known_devices = {
-    'panda': (re.compile('^panda'), PandaDevice),
+    'panda': (re.compile('^.*panda.*', re.I), PandaDevice),
 }
 
 
