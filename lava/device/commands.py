@@ -55,20 +55,29 @@ class BaseCommand(Command):
 
     def _get_devices_path(self):
         """Gets the path to the devices in the LAVA dispatcher."""
-        dispatcher_path = self.config.get(Parameter("lava_dispatcher"))
-        if not dispatcher_path:
+        lava_instance = self.config.get(Parameter("lava_instance"))
+        if not lava_instance:
             # Nothing provided? We write on the current dir.
-            dispatcher_path = os.path.join(os.getcwd(), DEFAUL_DISPATCHER_PATH)
-            print "LAVA dispatcher path will be: %s" % dispatcher_path
+            lava_instance = os.getcwd()
+            print "LAVA instance path will be: %s" % lava_instance
 
+        dispatcher_path = os.path.join(lava_instance, DEFAUL_DISPATCHER_PATH)
         devices_path = os.path.join(dispatcher_path, DEFAULT_DEVICES_PATH)
 
+        self._create_devices_path(devices_path)
+
+        return devices_path
+
+    def _create_devices_path(self, devices_path):
+        """Checks and creates the path on file system.
+
+        :param devices_path: The path to check and create.
+        """
         if not os.path.exists(devices_path):
             try:
                 os.makedirs(devices_path)
             except OSError:
                 raise CommandError("Cannot create path %s." % devices_path)
-        return devices_path
 
     def edit_config_file(self, config_file):
         """Opens the specified file with the default file editor.
