@@ -21,32 +21,29 @@ Package with unit tests for lava_tool
 """
 
 import doctest
-import os
 import unittest
-
-from lava_tool.utils import has_command
 
 
 def app_modules():
     return [
-            'lava_tool.commands',
-            'lava_tool.dispatcher',
-            'lava_tool.interface',
-            'lava_dashboard_tool.commands',
-            ]
+        'lava_tool.commands',
+        'lava_tool.dispatcher',
+        'lava_tool.interface',
+        'lava_dashboard_tool.commands',
+    ]
 
 
 def test_modules():
     return [
-            'lava_tool.tests.test_authtoken',
-            'lava_tool.tests.test_auth_commands',
-            'lava_tool.tests.test_commands',
-            'lava_dashboard_tool.tests.test_commands',
-            'lava.job.tests.test_job',
-            'lava.job.tests.test_commands',
-            'lava.device.tests.test_device',
-            'lava.device.tests.test_commands',
-            ]
+        'lava_tool.tests.test_authtoken',
+        'lava_tool.tests.test_auth_commands',
+        'lava_tool.tests.test_commands',
+        'lava_dashboard_tool.tests.test_commands',
+        'lava.job.tests.test_job',
+        'lava.job.tests.test_commands',
+        'lava.device.tests.test_device',
+        'lava.device.tests.test_commands',
+    ]
 
 
 def test_suite():
@@ -57,16 +54,6 @@ def test_suite():
     modules = app_modules() + test_modules()
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
-
-    if has_command("pep8") and not os.path.isabs(__file__):
-        # Run the pep8 test.
-        unit_suite = loader.loadTestsFromName('lava_tool.tests.test_pep8')
-        suite.addTest(unit_suite)
-
-    if has_command("pyflakes") and not os.path.isabs(__file__):
-        # Run pyflakes too.
-        unit_suite = loader.loadTestsFromName('lava_tool.tests.test_pyflakes')
-        suite.addTest(unit_suite)
 
     for name in modules:
         unit_suite = loader.loadTestsFromName(name)
