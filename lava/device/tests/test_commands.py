@@ -44,10 +44,13 @@ class CommandsTest(TestCase):
         self.original_stdout = sys.stdout
         sys.stdout = open("/dev/null", "w")
 
+        self.device = "panda02"
+
         self.tempdir = tempfile.mkdtemp()
         self.parser = MagicMock()
         self.args = MagicMock()
         self.args.interactive = MagicMock(return_value=False)
+        self.args.DEVICE = self.device
 
         self.config = MagicMock()
         self.config.get = MagicMock(return_value=self.tempdir)
@@ -78,24 +81,18 @@ class CommandsTest(TestCase):
     def test_add_invoke(self):
         # Tests invocation of the add command. Verifies that the conf file is
         # written to disk.
-        device = "panda02"
-        self.args.DEVICE = device
-
         add_command = add(self.parser, self.args)
         add_command.edit_config_file = MagicMock()
         add_command._get_devices_path = MagicMock(return_value=self.tempdir)
         add_command.invoke()
 
         expected_path = os.path.join(self.tempdir,
-                                     ".".join(["panda02", "conf"]))
+                                     ".".join([self.device, "conf"]))
         self.assertTrue(os.path.isfile(expected_path))
 
     def test_remove_invoke(self):
         # Tests invocation of the remove command. Verifies that the conf file
         # has been correctly removed.
-        device = "panda02"
-        self.args.DEVICE = device
-
         add_command = add(self.parser, self.args)
         add_command.edit_config_file = MagicMock()
         add_command._get_devices_path = MagicMock(return_value=self.tempdir)
@@ -106,15 +103,12 @@ class CommandsTest(TestCase):
         remove_command.invoke()
 
         expected_path = os.path.join(self.tempdir,
-                                     ".".join(["panda02", "conf"]))
+                                     ".".join([self.device, "conf"]))
         self.assertFalse(os.path.isfile(expected_path))
 
     def test_remove_invoke_raises(self):
         # Tests invocation of the remove command, with a non existent device
         # configuration file.
-        device = "panda02"
-        self.args.DEVICE = device
-
         remove_command = remove(self.parser, self.args)
         remove_command._get_devices_path = MagicMock(return_value=self.tempdir)
 
@@ -123,9 +117,6 @@ class CommandsTest(TestCase):
     def test_config_invoke_raises(self):
         # Tests invocation of the config command, with a non existent device
         # configuration file.
-        device = "panda02"
-        self.args.DEVICE = device
-
         config_command = config(self.parser, self.args)
         config_command._get_devices_path = MagicMock(return_value=self.tempdir)
 
