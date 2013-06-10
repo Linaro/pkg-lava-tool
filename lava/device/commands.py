@@ -114,7 +114,7 @@ class add(BaseCommand):
         if os.path.exists(device_conf_file):
             print ("A device configuration file named '%s' already exists."
                    % real_file_name)
-            print "Use 'lava config DEVICE' to edit it."
+            print "Use 'lava device config DEVICE' to edit it."
             sys.exit(-1)
 
         device = get_known_device(self.args.DEVICE)
