@@ -77,7 +77,7 @@ class DeviceTest(TestCase):
     def test_device_write(self):
         # User tries to create a new panda device. The conf file is written
         # and contains the expected results.
-        expected = ("hostname = panda02\nconnection_command = None\n"
+        expected = ("hostname = panda02\nconnection_command = \n"
                     "device_type = panda\n")
         instance = get_known_device("panda02")
         instance.write(self.temp_file.name)

@@ -50,6 +50,8 @@ class Device(object):
         self._update()
         string = ""
         for key, value in self.template.iteritems():
+            if not value:
+                value = ''
             string += "%s = %s\n" % (str(key), str(value))
         return string
 
