@@ -31,6 +31,14 @@ if ! pip show pyflakes | grep -q pyflakes; then
   pip install pyflakes
 fi
 
+if ! pip show testtools | grep -q testtools; then
+  pip install testtools
+fi
+
+if ! pip show mock | grep -q mock; then
+  pip install mock
+fi
+
 export LAVACONFIG=/dev/null
 
 if test -z "$DISPLAY"; then

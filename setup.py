@@ -57,5 +57,7 @@ setup(
         'mocker >= 1.0',
         'pep8',
         'pyflakes',
+        'testtools == 0.9.15',
+        'mock >= 0.7.2'
     ],
     zip_safe=True)
