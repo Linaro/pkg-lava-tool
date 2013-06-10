@@ -31,6 +31,7 @@ from unittest import TestCase
 from lava.device.commands import (
     BaseCommand,
     add,
+    config,
     remove,
 )
 
@@ -125,7 +126,7 @@ class CommandsTest(TestCase):
         device = "panda02"
         self.args.DEVICE = device
 
-        config_command = remove(self.parser, self.args)
+        config_command = config(self.parser, self.args)
         config_command._get_devices_path = MagicMock(return_value=self.tempdir)
 
         self.assertRaises(CommandError, config_command.invoke)
