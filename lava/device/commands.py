@@ -152,8 +152,9 @@ class remove(BaseCommand):
             os.remove(device_conf)
             print "Device configuration file %s removed." % self.args.DEVICE
         else:
-            print ("Cannot remove file '%s' at: %s. It does not exist or it "
-                   "is not a file." % (real_file_name, devices_path))
+            raise CommandError("Cannot remove file '%s' at: %s. It does not "
+                               "exist or it is not a file." %
+                               (real_file_name, devices_path))
 
 
 class config(BaseCommand):
@@ -171,5 +172,6 @@ class config(BaseCommand):
         if os.path.isfile(device_conf):
             self.edit_config_file(device_conf)
         else:
-            print ("Cannot edit file '%s' at: %s. It does not exist or it "
-                   "is not a file." % (real_file_name, devices_path))
+            raise CommandError("Cannot edit file '%s' at: %s. It does not "
+                               "exist or it is not a file." %
+                               (real_file_name, devices_path))
