@@ -17,7 +17,7 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-This is just a convinent place where to store a template like dictionary that
+This is just a place where to store a template like dictionary that
 will be used to serialize a Device object.
 """
 

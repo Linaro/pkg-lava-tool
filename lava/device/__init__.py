@@ -47,7 +47,6 @@ class Device(object):
                              hostname=self.hostname)
 
     def __str__(self):
-        """Convinent method for string representation of the object."""
         self._update()
         string = ""
         for key, value in self.template.iteritems():

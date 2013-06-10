@@ -23,7 +23,8 @@ import sys
 from lava.config import InteractiveConfig, Parameter
 from lava.device import get_known_device
 from lava.tool.command import Command, CommandGroup
-from lava.tool.utils import has_command
+from lava.tool.errors import CommandError
+from lava_tool.utils import has_command
 
 
 # Default lava-dispatcher path, has to be joined with an instance full path.
@@ -61,25 +62,39 @@ class BaseCommand(Command):
             print "LAVA dispatcher path will be: %s" % dispatcher_path
 
         devices_path = os.path.join(dispatcher_path, DEFAULT_DEVICES_PATH)
+
+        if not os.path.exists(devices_path):
+            try:
+                os.makedirs(devices_path)
+            except OSError:
+                raise CommandError("Cannot create path %s." % devices_path)
         return devices_path
 
-    def edit_config_file(file):
+    def edit_config_file(self, config_file):
         """Opens the specified file with the default file editor.
 
-        :param file: The file to edit."""
-        # TODO: find a better way
-        editors = []
-        editors.append(os.environ.get("EDITOR", None))
-        if has_command('sensible-editor'):
-            editors.append("sensible-editor")
-        if has_command('xdg-open'):
-            editors.append('xdg-open')
+        :param config_file: The file to edit.
+        """
+        editor = os.environ.get("EDITOR", None)
+        if editor is None:
+            if has_command("sensible-editor"):
+                editor = "sensible-editor"
+            elif has_command("xdg-open"):
+                editor = "xdg-open"
+            else:
+                # We really do not know how to open a file.
+                print ("Cannot find an editor to open the file '%s'." %
+                       config_file)
+                print ("Either set the 'EDITOR' environment variable, or "
+                       "install 'sensible-editor' or 'xdg-open'.")
+                sys.exit(-1)
 
         try:
-            editor = editors.pop(0)
-            subprocess.Popen(editor).wait()
+            cmd_args = [editor, config_file]
+            subprocess.Popen(cmd_args).wait()
         except Exception:
-            pass
+            raise CommandError("Error opening the file '%s' with the "
+                               "following editor: %s." % (config_file, editor))
 
 
 class add(BaseCommand):
@@ -92,7 +107,7 @@ class add(BaseCommand):
 
     def invoke(self):
         devices_path = self._get_devices_path()
-        real_file_name = ".".join(self.args.DEVICE, DEVICE_FILE_SUFFIX)
+        real_file_name = ".".join([self.args.DEVICE, DEVICE_FILE_SUFFIX])
         device_conf_file = os.path.abspath(os.path.join(devices_path,
                                                         real_file_name))
 
@@ -105,7 +120,7 @@ class add(BaseCommand):
         device = get_known_device(self.args.DEVICE)
         device.write(device_conf_file)
 
-        print ("Created device file '%s' in: " %
+        print ("Created device file '%s' in: %s" %
                (self.args.DEVICE, devices_path))
 
         self.edit_config_file(device_conf_file)
@@ -122,7 +137,7 @@ class remove(BaseCommand):
 
     def invoke(self):
         devices_path = self._get_devices_path()
-        real_file_name = ".".join(self.args.DEVICE, DEVICE_FILE_SUFFIX)
+        real_file_name = ".".join([self.args.DEVICE, DEVICE_FILE_SUFFIX])
         device_conf = os.path.join(devices_path, real_file_name)
         if os.path.isfile(device_conf):
             os.remove(device_conf)
@@ -142,7 +157,7 @@ class config(BaseCommand):
 
     def invoke(self):
         devices_path = self._get_devices_path()
-        real_file_name = ".".join(self.args.DEVICE, DEVICE_FILE_SUFFIX)
+        real_file_name = ".".join([self.args.DEVICE, DEVICE_FILE_SUFFIX])
         device_conf = os.path.join(devices_path, real_file_name)
         if os.path.isfile(device_conf):
             self.edit_config_file(device_conf)
