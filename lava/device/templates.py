@@ -20,6 +20,8 @@
 This is just a place where to store a template like dictionary that
 will be used to serialize a Device object.
 """
+import copy
+
 
 DEFAULT_TEMPLATE = {
     'device_type': None,
@@ -27,17 +29,11 @@ DEFAULT_TEMPLATE = {
     'connection_command': None,
 }
 
-PANDA_TEMPLATE = {
-    'device_type': 'panda',
-    'hostname': None,
-    'connection_command': None,
-}
+PANDA_TEMPLATE = copy.deepcopy(DEFAULT_TEMPLATE)
+PANDA_TEMPLATE.update(device_type='panda')
 
-VEXPRESS_TEMPLATE = {
-    'device_type': 'vexpress',
-    'hostname': None,
-    'connection_command': None,
-}
+VEXPRESS_TEMPLATE = copy.deepcopy(DEFAULT_TEMPLATE)
+VEXPRESS_TEMPLATE.update(device_type='vexpress')
 
 # Dictionary with templates of known devices.
 KNOWN_TEMPLATES = {
