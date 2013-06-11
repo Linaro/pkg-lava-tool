@@ -17,7 +17,6 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
-import copy
 
 from lava.device.templates import (
     KNOWN_TEMPLATES,
@@ -48,7 +47,7 @@ class Device(object):
     def __init__(self, hostname, template):
         self.device_type = None
         self.hostname = hostname
-        self.template = copy.deepcopy(template)
+        self.template = template.copy()
 
     def write(self, conf_file):
         """Writes the object to file.
