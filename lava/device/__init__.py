@@ -30,11 +30,11 @@ class Device(object):
         self.hostname = name
         self.template = DEFAULT_TEMPLATE
 
-    def write(self, where):
+    def write(self, conf_file):
         """Writes the object to file.
 
-        :param where: The full path of the file where to write."""
-        with open(where, 'w') as f:
+        :param conf_file: The full path of the file where to write."""
+        with open(conf_file, 'w') as f:
             f.write(self.__str__())
 
     def _update(self):
