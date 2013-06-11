@@ -35,7 +35,7 @@ DEVICE_FILE_SUFFIX = "conf"
 
 
 class device(CommandGroup):
-    """LAVA devices handling"""
+    """LAVA devices handling."""
 
     namespace = "lava.device.commands"
 
@@ -108,7 +108,7 @@ class BaseCommand(Command):
 
 
 class add(BaseCommand):
-    """Implements 'lava device add' command."""
+    """Adds a new device."""
 
     @classmethod
     def register_arguments(cls, parser):
@@ -137,7 +137,7 @@ class add(BaseCommand):
 
 
 class remove(BaseCommand):
-    """Implements 'lava device remove' command."""
+    """Removes the specified device."""
 
     @classmethod
     def register_arguments(cls, parser):
@@ -159,7 +159,7 @@ class remove(BaseCommand):
 
 
 class config(BaseCommand):
-    """Implements 'lava device config DEVICE' command."""
+    """Opens the specified device config file."""
     @classmethod
     def register_arguments(cls, parser):
         super(config, cls).register_arguments(parser)
