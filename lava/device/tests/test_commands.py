@@ -40,7 +40,7 @@ from lava.tool.errors import CommandError
 
 class CommandsTest(TestCase):
     def setUp(self):
-        # Fake the stdin and the stdout.
+        # Fake the stdout.
         self.original_stdout = sys.stdout
         sys.stdout = open("/dev/null", "w")
 

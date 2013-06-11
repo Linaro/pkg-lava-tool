@@ -28,7 +28,7 @@ from lava_tool.utils import has_command
 
 
 # Default lava-dispatcher path, has to be joined with an instance full path.
-DEFAUL_DISPATCHER_PATH = os.path.join('etc', 'lava-dispatcher')
+DEFAULT_DISPATCHER_PATH = os.path.join('etc', 'lava-dispatcher')
 # Default devices path.
 DEFAULT_DEVICES_PATH = 'devices'
 DEVICE_FILE_SUFFIX = "conf"
@@ -43,7 +43,8 @@ class device(CommandGroup):
 class BaseCommand(Command):
     def __init__(self, parser, args):
         super(BaseCommand, self).__init__(parser, args)
-        self.config = InteractiveConfig(force_interactive=self.args.interactive)
+        self.config = InteractiveConfig(
+            force_interactive=self.args.interactive)
 
     @classmethod
     def register_arguments(cls, parser):
@@ -61,7 +62,7 @@ class BaseCommand(Command):
             lava_instance = os.getcwd()
             print "LAVA instance path will be: %s" % lava_instance
 
-        dispatcher_path = os.path.join(lava_instance, DEFAUL_DISPATCHER_PATH)
+        dispatcher_path = os.path.join(lava_instance, DEFAULT_DISPATCHER_PATH)
         devices_path = os.path.join(dispatcher_path, DEFAULT_DEVICES_PATH)
 
         self._create_devices_path(devices_path)

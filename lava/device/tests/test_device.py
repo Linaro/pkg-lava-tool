@@ -29,7 +29,6 @@ from unittest import TestCase
 
 from lava.device import (
     Device,
-    PandaDevice,
     get_known_device,
 )
 from lava.tool.errors import CommandError
@@ -50,16 +49,45 @@ class DeviceTest(TestCase):
         sys.stdin = self.original_stdin
         os.unlink(self.temp_file.name)
 
-    def test_get_known_device_panda(self):
-        # User creates a new device with a guessable name for a panda device.
+    def test_get_known_device_panda_0(self):
+        # User creates a new device with a guessable name for a device.
         instance = get_known_device('panda_new_01')
-        self.assertIsInstance(instance, PandaDevice)
+        self.assertIsInstance(instance, Device)
+        self.assertEqual(instance.template['device_type'], 'panda')
+        self.assertIsNone(instance.device_type)
 
     def test_get_known_device_panda_1(self):
-        # User creates a new device with a guessable name for a panda device.
+        # User creates a new device with a guessable name for a device.
         # Name passed has capital letters.
         instance = get_known_device('new_PanDa_02')
-        self.assertIsInstance(instance, PandaDevice)
+        self.assertIsInstance(instance, Device)
+        self.assertEqual(instance.template['device_type'], 'panda')
+        self.assertIsNone(instance.device_type)
+
+    def test_get_known_device_vexpress_0(self):
+        # User creates a new device with a guessable name for a device.
+        # Name passed has capital letters.
+        instance = get_known_device('a_VexPress_Device')
+        self.assertIsInstance(instance, Device)
+        self.assertEqual(instance.template['device_type'], 'vexpress')
+        self.assertIsNone(instance.device_type)
+
+    def test_get_known_device_vexpress_1(self):
+        # User creates a new device with a guessable name for a device.
+        instance = get_known_device('another-vexpress')
+        self.assertIsInstance(instance, Device)
+        self.assertEqual(instance.template['device_type'], 'vexpress')
+        self.assertIsNone(instance.device_type)
+
+    def test_instance_update(self):
+        # Tests that when calling the _update() function with an known device
+        # it does not update the device_type instance attribute, and that the
+        # template contains the correct name.
+        instance = get_known_device('Another_PanDa_device')
+        instance._update()
+        self.assertIsInstance(instance, Device)
+        self.assertEqual(instance.template['device_type'], 'panda')
+        self.assertIsNone(instance.device_type)
 
     def test_get_known_device_unknown(self):
         # User tries to create a new device with an unknown device type. She

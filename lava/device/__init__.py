@@ -17,25 +17,45 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
+import copy
 
-from lava.device.templates import DEFAULT_TEMPLATE
+from lava.device.templates import (
+    KNOWN_TEMPLATES,
+    DEFAULT_TEMPLATE,
+)
 from lava.tool.errors import CommandError
+
+
+def __re_compile(name):
+    """Creates a generic regex for the specified device name.
+
+    :param name: The name of the device.
+    :return A Pattern object.
+    """
+    return re.compile('^.*%s.*' % name, re.I)
+
+
+# Dictionary of know devices.
+# Keys are the general device name taken from lava.device.templates, values
+# are tuples of: a regex matcher to match the device, and the device associated
+# template.
+KNOWN_DEVICES = dict([(device, (__re_compile(device), template))
+                     for device, template in KNOWN_TEMPLATES.iteritems()])
 
 
 class Device(object):
     """A generic device."""
-    def __init__(self, name):
-        super(Device, self).__init__()
+    def __init__(self, hostname, template):
         self.device_type = None
-        self.hostname = name
-        self.template = DEFAULT_TEMPLATE
+        self.hostname = hostname
+        self.template = copy.deepcopy(template)
 
     def write(self, conf_file):
         """Writes the object to file.
 
         :param conf_file: The full path of the file where to write."""
-        with open(conf_file, 'w') as f:
-            f.write(self.__str__())
+        with open(conf_file, 'w') as write_file:
+            write_file.write(self.__str__())
 
     def _update(self):
         """Updates the template with the values specified for this class.
@@ -43,8 +63,14 @@ class Device(object):
         Subclasses need to override this when they add more specific
         attributes.
         """
-        self.template.update(device_type=self.device_type,
-                             hostname=self.hostname)
+        # This is needed for the 'default' behavior. If we matched a known
+        # device, we do not need to update its device_type, since its already
+        # defined in the template.
+        if self.device_type:
+            self.template.update(hostname=self.hostname,
+                                 device_type=self.device_type)
+        else:
+            self.template.update(hostname=self.hostname)
 
     def __str__(self):
         self._update()
@@ -58,20 +84,6 @@ class Device(object):
     def __repr__(self):
         self._update()
         return str(self.template)
-
-
-class PandaDevice(Device):
-    """A panda device."""
-    def __init__(self, name):
-        super(PandaDevice, self).__init__(name)
-        self.device_type = 'panda'
-
-
-# Dictionary with key the name of a know device, and value a tuple composed of
-# a matcher used to guess the device type, and its associated Device class.
-known_devices = {
-    'panda': (re.compile('^.*panda.*', re.I), PandaDevice),
-}
 
 
 def _get_device_type_from_user():
@@ -88,25 +100,25 @@ def _get_device_type_from_user():
     return dev_type
 
 
-def get_known_device(device):
+def get_known_device(name):
     """Tries to match a device name with a known device type.
 
-    :param device: The name of the device we want matched to a real device.
-    :return Its special Device instance, or a general one.
+    :param name: The name of the device we want matched to a real device.
+    :return A Device instance.
         """
     instance = None
-    for known_dev, (matcher, clazz) in known_devices.iteritems():
-        if matcher.match(device):
-            instance = clazz(device)
+    for known_dev, (matcher, dev_template) in KNOWN_DEVICES.iteritems():
+        if matcher.match(name):
+            instance = Device(name, dev_template)
     if not instance:
         dev_type = _get_device_type_from_user()
-        known_dev = known_devices.get(dev_type, None)
+        known_dev = KNOWN_DEVICES.get(dev_type, None)
         if known_dev:
-            clazz = known_dev[1]
-            instance = clazz(device)
+            instance = Device(name, known_dev[1][1])
         else:
             print ("Device '%s' does not match a known device." % dev_type)
-            instance = Device(device)
+            instance = Device(name, DEFAULT_TEMPLATE)
+            # Not stricly necessary, users can fill up the field later.
             instance.device_type = dev_type
 
     return instance

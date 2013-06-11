@@ -24,5 +24,23 @@ will be used to serialize a Device object.
 DEFAULT_TEMPLATE = {
     'device_type': None,
     'hostname': None,
-    'connection_command': None
+    'connection_command': None,
+}
+
+PANDA_TEMPLATE = {
+    'device_type': 'panda',
+    'hostname': None,
+    'connection_command': None,
+}
+
+VEXPRESS_TEMPLATE = {
+    'device_type': 'vexpress',
+    'hostname': None,
+    'connection_command': None,
+}
+
+# Dictionary with templates of known devices.
+KNOWN_TEMPLATES = {
+    'panda': PANDA_TEMPLATE,
+    'vexpress': VEXPRESS_TEMPLATE,
 }
