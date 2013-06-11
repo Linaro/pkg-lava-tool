@@ -5,4 +5,3 @@
 /tags
 .testrepository
 *.egg
-ci-build-venv
