@@ -31,7 +31,7 @@ def __re_compile(name):
     :param name: The name of the device.
     :return A Pattern object.
     """
-    return re.compile('^.*%s.*' % name, re.I)
+    return re.compile('^.*{0}.*'.format(name), re.I)
 
 
 # Dictionary of know devices.
@@ -77,7 +77,7 @@ class Device(object):
         for key, value in self.template.iteritems():
             if not value:
                 value = ''
-            string_list.append("%s = %s\n" % (str(key), str(value)))
+            string_list.append("{0} = {1}\n".format(str(key), str(value)))
         return "".join(string_list)
 
     def __repr__(self):
@@ -115,7 +115,8 @@ def get_known_device(name):
         if known_dev:
             instance = Device(name, known_dev[1][1])
         else:
-            print ("Device '%s' does not match a known device." % dev_type)
+            print ("Device '{0}' does not match a known "
+                   "device.".format(dev_type))
             instance = Device(name, DEFAULT_TEMPLATE)
             # Not stricly necessary, users can fill up the field later.
             instance.device_type = dev_type

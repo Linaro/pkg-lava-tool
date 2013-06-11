@@ -60,7 +60,7 @@ class BaseCommand(Command):
         if not lava_instance:
             # Nothing provided? We write on the current dir.
             lava_instance = os.getcwd()
-            print "LAVA instance path will be: %s" % lava_instance
+            print "LAVA instance path will be: {0}".format(lava_instance)
 
         dispatcher_path = os.path.join(lava_instance, DEFAULT_DISPATCHER_PATH)
         devices_path = os.path.join(dispatcher_path, DEFAULT_DEVICES_PATH)
@@ -78,7 +78,8 @@ class BaseCommand(Command):
             try:
                 os.makedirs(devices_path)
             except OSError:
-                raise CommandError("Cannot create path %s." % devices_path)
+                raise CommandError("Cannot create path "
+                                   "{0}.".format(devices_path))
 
     def edit_config_file(self, config_file):
         """Opens the specified file with the default file editor.
@@ -93,8 +94,8 @@ class BaseCommand(Command):
                 editor = "xdg-open"
             else:
                 # We really do not know how to open a file.
-                print ("Cannot find an editor to open the file '%s'." %
-                       config_file)
+                print ("Cannot find an editor to open the "
+                       "file '{0}'.".format(config_file))
                 print ("Either set the 'EDITOR' environment variable, or "
                        "install 'sensible-editor' or 'xdg-open'.")
                 sys.exit(-1)
@@ -103,8 +104,9 @@ class BaseCommand(Command):
             cmd_args = [editor, config_file]
             subprocess.Popen(cmd_args).wait()
         except Exception:
-            raise CommandError("Error opening the file '%s' with the "
-                               "following editor: %s." % (config_file, editor))
+            raise CommandError("Error opening the file '{0}' with the "
+                               "following editor: {1}.".format(config_file,
+                                                               editor))
 
 
 class add(BaseCommand):
@@ -122,17 +124,16 @@ class add(BaseCommand):
                                                         real_file_name))
 
         if os.path.exists(device_conf_file):
-            print ("A device configuration file named '%s' already exists."
-                   % real_file_name)
+            print ("A device configuration file named '{0}' already "
+                   "exists.".format(real_file_name))
             print "Use 'lava device config DEVICE' to edit it."
             sys.exit(-1)
 
         device = get_known_device(self.args.DEVICE)
         device.write(device_conf_file)
 
-        print ("Created device file '%s' in: %s" %
-               (self.args.DEVICE, devices_path))
-
+        print ("Created device file '{0}' in: {1}".format(self.args.DEVICE,
+                                                          devices_path))
         self.edit_config_file(device_conf_file)
 
 
@@ -151,11 +152,12 @@ class remove(BaseCommand):
         device_conf = os.path.join(devices_path, real_file_name)
         if os.path.isfile(device_conf):
             os.remove(device_conf)
-            print "Device configuration file %s removed." % self.args.DEVICE
+            print ("Device configuration file {0} "
+                   "removed.".format(self.args.DEVICE))
         else:
-            raise CommandError("Cannot remove file '%s' at: %s. It does not "
-                               "exist or it is not a file." %
-                               (real_file_name, devices_path))
+            raise CommandError("Cannot remove file '{0}' at: {1}. It does not "
+                               "exist or it is not a "
+                               "file.".format(real_file_name, devices_path))
 
 
 class config(BaseCommand):
@@ -173,6 +175,6 @@ class config(BaseCommand):
         if os.path.isfile(device_conf):
             self.edit_config_file(device_conf)
         else:
-            raise CommandError("Cannot edit file '%s' at: %s. It does not "
-                               "exist or it is not a file." %
-                               (real_file_name, devices_path))
+            raise CommandError("Cannot edit file '{0}' at: {1}. It does not "
+                               "exist or it is not a "
+                               "file.".format(real_file_name, devices_path))
