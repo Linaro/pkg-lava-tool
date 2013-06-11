@@ -23,18 +23,6 @@ if ! pip show mocker | grep -q mocker; then
   pip install mocker
 fi
 
-if ! pip show pep8 | grep -q pep8; then
-  pip install pep8
-fi
-
-if ! pip show pyflakes | grep -q pyflakes; then
-  pip install pyflakes
-fi
-
-if ! pip show testtools | grep -q testtools; then
-  pip install testtools
-fi
-
 if ! pip show mock | grep -q mock; then
   pip install mock
 fi

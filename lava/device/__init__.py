@@ -48,12 +48,12 @@ class Device(object):
 
     def __str__(self):
         self._update()
-        string = ""
+        string_list = []
         for key, value in self.template.iteritems():
             if not value:
                 value = ''
-            string += "%s = %s\n" % (str(key), str(value))
-        return string
+            string_list.append("%s = %s\n" % (str(key), str(value)))
+        return "".join(string_list)
 
     def __repr__(self):
         self._update()
