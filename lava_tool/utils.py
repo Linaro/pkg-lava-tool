@@ -26,12 +26,8 @@ def has_command(command):
     """
     command_available = True
     try:
-        cmd_args = ["which", command]
-        process = subprocess.Popen(cmd_args, stdout=open('/dev/null', 'w'))
-        process.wait()
-        if process.returncode != 0:
-            command_available = False
+        subprocess.check_call(["which", command],
+                              stdout=open('/dev/null', 'w'))
     except subprocess.CalledProcessError:
-        # TODO: logging infrastructure?
         command_available = False
     return command_available
