@@ -97,6 +97,14 @@ class DeviceTest(TestCase):
         self.assertIsInstance(instance, Device)
         self.assertEqual(instance.device_type, 'a_fake_device')
 
+    def test_get_known_device_known(self):
+        # User tries to create a new device with a not recognizable name.
+        # She is asked to insert the device type and types 'panda'.
+        sys.stdin = StringIO("panda")
+        instance = get_known_device("another_fake_device")
+        self.assertIsInstance(instance, Device)
+        self.assertEqual(instance.template["device_type"], "panda")
+
     def test_get_known_device_raises(self):
         # User tries to create a new device, but in some way nothing is passed
         # on the command line when asked.
