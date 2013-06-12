@@ -16,21 +16,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Device specific commands class.
+"""
+
 import os
 import subprocess
 import sys
 
-from lava.config import InteractiveConfig, Parameter
+from lava.config import InteractiveConfig
 from lava.device import get_known_device
 from lava.tool.command import Command, CommandGroup
 from lava.tool.errors import CommandError
 from lava_tool.utils import has_command
 
-
-# Default lava-dispatcher path, has to be joined with an instance full path.
-DEFAULT_DISPATCHER_PATH = os.path.join('etc', 'lava-dispatcher')
-# Default devices path.
-DEFAULT_DEVICES_PATH = 'devices'
+# Default lava-dispatcher paths.
+DEFAULT_DISPATCHER_PATH = os.path.join("etc", "lava-dispatcher")
+USER_DISPATCHER_PATH = os.path.join(os.path.expanduser("~"), ".config",
+                                    "lava-dispatcher")
+# Default devices path, has to be joined with the dispatcher path.
+DEFAULT_DEVICES_PATH = "devices"
 DEVICE_FILE_SUFFIX = "conf"
 
 
@@ -41,6 +46,7 @@ class device(CommandGroup):
 
 
 class BaseCommand(Command):
+    """Base command for device commands."""
     def __init__(self, parser, args):
         super(BaseCommand, self).__init__(parser, args)
         self.config = InteractiveConfig(
@@ -54,22 +60,43 @@ class BaseCommand(Command):
                             help=("Forces asking for input parameters even if "
                                   "we already have them cached."))
 
-    def _get_devices_path(self):
+    @classmethod
+    def _get_dispatcher_paths(cls):
+        """Tries to get the dispatcher from lava-dispatcher."""
+        global_paths = []
+        try:
+            from lava_dispatcher.config import search_path
+
+            global_paths += search_path()
+        except ImportError:
+            print >> sys.stderr, "Cannot import lava_dispatcher."
+        return global_paths
+
+    @classmethod
+    def _get_devices_path(cls):
         """Gets the path to the devices in the LAVA dispatcher."""
-        lava_instance = self.config.get(Parameter("lava_instance"))
-        if not lava_instance:
-            # Nothing provided? We write on the current dir.
-            lava_instance = os.getcwd()
-            print "LAVA instance path will be: {0}".format(lava_instance)
+        dispatcher_paths = cls._get_dispatcher_paths()
+        # Can't get anything out of lava-dispatcher, guess something.
+        if not dispatcher_paths:
+            dispatcher_paths.append(USER_DISPATCHER_PATH)
+            if "VIRTUAL_ENV" in os.environ:
+                system_dispatcher_path = os.path.join(
+                    os.environ["VIRTUAL_ENV"],
+                    DEFAULT_DISPATCHER_PATH)
+            else:
+                system_dispatcher_path = os.path.join("/",
+                                                      DEFAULT_DISPATCHER_PATH)
+            dispatcher_paths.append(system_dispatcher_path)
 
-        dispatcher_path = os.path.join(lava_instance, DEFAULT_DISPATCHER_PATH)
-        devices_path = os.path.join(dispatcher_path, DEFAULT_DEVICES_PATH)
+        # TODO: handle multiple locations, ask users where to write?
+        devices_path = os.path.join(dispatcher_paths[0], DEFAULT_DEVICES_PATH)
 
-        self._create_devices_path(devices_path)
+        cls._create_devices_path(devices_path)
 
         return devices_path
 
-    def _create_devices_path(self, devices_path):
+    @classmethod
+    def _create_devices_path(cls, devices_path):
         """Checks and creates the path on file system.
 
         :param devices_path: The path to check and create.
@@ -81,7 +108,8 @@ class BaseCommand(Command):
                 raise CommandError("Cannot create path "
                                    "{0}.".format(devices_path))
 
-    def edit_config_file(self, config_file):
+    @classmethod
+    def edit_config_file(cls, config_file):
         """Opens the specified file with the default file editor.
 
         :param config_file: The file to edit.

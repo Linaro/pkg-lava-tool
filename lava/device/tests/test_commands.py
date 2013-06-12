@@ -43,6 +43,8 @@ class CommandsTest(TestCase):
         # Fake the stdout.
         self.original_stdout = sys.stdout
         sys.stdout = open("/dev/null", "w")
+        self.original_stderr = sys.stderr
+        sys.stderr = open("/dev/null", "w")
 
         self.device = "panda02"
 
@@ -57,25 +59,41 @@ class CommandsTest(TestCase):
 
     def tearDown(self):
         sys.stdout = self.original_stdout
+        sys.stderr = self.original_stderr
         shutil.rmtree(self.tempdir)
 
-    def test_get_devices_path(self):
+    def test_get_devices_path_0(self):
         # Tests that the correct devices path is returned.
+        # This test returns a tempdir.
         base_command = BaseCommand(self.parser, self.args)
         base_command.config = self.config
-        base_command._create_devices_path = MagicMock()
+        BaseCommand._create_devices_path = MagicMock()
+        BaseCommand._get_dispatcher_paths = MagicMock(return_value=[
+            self.tempdir])
         obtained = base_command._get_devices_path()
-        expected_path = os.path.join(self.tempdir, "etc", "lava-dispatcher",
-                                     "devices")
+        expected_path = os.path.join(self.tempdir, "devices")
+        self.assertEqual(expected_path, obtained)
+
+    def test_get_devices_path_1(self):
+        # Tests that the correct devices path is returned.
+        # This test checks the user .config path is returned.
+        base_command = BaseCommand(self.parser, self.args)
+        base_command.config = self.config
+        BaseCommand._create_devices_path = MagicMock()
+        BaseCommand._get_dispatcher_paths = MagicMock(return_value=[])
+        obtained = base_command._get_devices_path()
+        expected_path = os.path.join(os.path.expanduser("~"), ".config",
+                                     "lava-dispatcher", "devices")
         self.assertEqual(expected_path, obtained)
 
     def test_create_devices_path(self):
         # Tests that the correct devices path is created on the file system.
         base_command = BaseCommand(self.parser, self.args)
         base_command.config = self.config
+        BaseCommand._get_dispatcher_paths = MagicMock(return_value=[
+            self.tempdir])
         base_command._get_devices_path()
-        expected_path = os.path.join(self.tempdir, "etc", "lava-dispatcher",
-                                     "devices")
+        expected_path = os.path.join(self.tempdir, "devices")
         self.assertTrue(os.path.isdir(expected_path))
 
     def test_add_invoke(self):
