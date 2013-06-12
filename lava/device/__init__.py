@@ -113,7 +113,7 @@ def get_known_device(name):
         dev_type = _get_device_type_from_user()
         known_dev = KNOWN_DEVICES.get(dev_type, None)
         if known_dev:
-            instance = Device(name, known_dev[1][1])
+            instance = Device(name, known_dev[1])
         else:
             print ("Device '{0}' does not match a known "
                    "device.".format(dev_type))

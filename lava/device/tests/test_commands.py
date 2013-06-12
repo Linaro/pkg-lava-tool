@@ -25,6 +25,7 @@ import shutil
 import sys
 import tempfile
 
+from StringIO import StringIO
 from mock import MagicMock
 from unittest import TestCase
 
@@ -45,6 +46,7 @@ class CommandsTest(TestCase):
         sys.stdout = open("/dev/null", "w")
         self.original_stderr = sys.stderr
         sys.stderr = open("/dev/null", "w")
+        self.original_stdin = sys.stdin
 
         self.device = "panda02"
 
@@ -58,6 +60,7 @@ class CommandsTest(TestCase):
         self.config.get = MagicMock(return_value=self.tempdir)
 
     def tearDown(self):
+        sys.stdin = self.original_stdin
         sys.stdout = self.original_stdout
         sys.stderr = self.original_stderr
         shutil.rmtree(self.tempdir)
@@ -75,12 +78,14 @@ class CommandsTest(TestCase):
         self.assertEqual(expected_path, obtained)
 
     def test_get_devices_path_1(self):
-        # Tests that the correct devices path is returned.
+        # Tests that the correct devices path is returned when user enters 1
+        # on the command line to select the correct path.
         # This test checks the user .config path is returned.
         base_command = BaseCommand(self.parser, self.args)
         base_command.config = self.config
         BaseCommand._create_devices_path = MagicMock()
         BaseCommand._get_dispatcher_paths = MagicMock(return_value=[])
+        sys.stdin = StringIO("1")
         obtained = base_command._get_devices_path()
         expected_path = os.path.join(os.path.expanduser("~"), ".config",
                                      "lava-dispatcher", "devices")

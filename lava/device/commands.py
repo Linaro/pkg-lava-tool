@@ -73,6 +73,30 @@ class BaseCommand(Command):
         return global_paths
 
     @classmethod
+    def _choose_dispatcher_path(cls, paths):
+        """Lets the user choose the path to use.
+
+        :param paths: A list of paths.
+        :return The path at the user selected index.
+        """
+        print >> sys.stdout, ("Multiple dispatcher paths found. Please "
+                              "select one between:\n")
+        out_list = []
+        len_paths = range(1, len(paths) + 1)
+        for index, dispatcher_path in zip(len_paths, paths):
+            out_list.append("\t{0}. {1}\n".format(index, dispatcher_path))
+        print >> sys.stdout, "".join(out_list)
+        while True:
+            try:
+                choice = raw_input("Dispatcher path to use: ").strip()
+                if choice in [str(x) for x in len_paths]:
+                    return paths[int(choice) - 1]
+                else:
+                    continue
+            except KeyboardInterrupt:
+                sys.exit(-1)
+
+    @classmethod
     def _get_devices_path(cls):
         """Gets the path to the devices in the LAVA dispatcher."""
         dispatcher_paths = cls._get_dispatcher_paths()
@@ -88,8 +112,13 @@ class BaseCommand(Command):
                                                       DEFAULT_DISPATCHER_PATH)
             dispatcher_paths.append(system_dispatcher_path)
 
-        # TODO: handle multiple locations, ask users where to write?
-        devices_path = os.path.join(dispatcher_paths[0], DEFAULT_DEVICES_PATH)
+        if len(dispatcher_paths) > 1:
+            devices_path = os.path.join(
+                cls._choose_dispatcher_path(dispatcher_paths),
+                DEFAULT_DEVICES_PATH)
+        else:
+            devices_path = os.path.join(dispatcher_paths[0],
+                                        DEFAULT_DEVICES_PATH)
 
         cls._create_devices_path(devices_path)
 
