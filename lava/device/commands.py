@@ -243,7 +243,7 @@ class config(BaseCommand):
         real_file_name = ".".join([self.args.DEVICE, DEVICE_FILE_SUFFIX])
 
         device_conf = self._get_device_file(real_file_name)
-        if device_conf and self.can_edit(device_conf):
+        if device_conf and self.can_edit_file(device_conf):
             self.edit_config_file(device_conf)
         else:
             raise CommandError("Cannot edit file '{0}' at: "
