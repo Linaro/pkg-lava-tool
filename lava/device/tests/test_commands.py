@@ -135,10 +135,18 @@ class CommandsTest(TestCase):
 
         self.assertRaises(CommandError, remove_command.invoke)
 
-    def test_config_invoke_raises(self):
+    def test_config_invoke_raises_0(self):
         # Tests invocation of the config command, with a non existent device
         # configuration file.
         config_command = config(self.parser, self.args)
         config_command._det_device_file = MagicMock(return_value=None)
+
+        self.assertRaises(CommandError, config_command.invoke)
+
+    def test_config_invoke_raises_1(self):
+        # Tests invocation of the config command, with a non writable file.
+        # Hopefully tests are not run as root.
+        config_command = config(self.parser, self.args)
+        config_command._det_device_file = MagicMock(return_value="/etc/passwd")
 
         self.assertRaises(CommandError, config_command.invoke)
