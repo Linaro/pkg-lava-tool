@@ -25,7 +25,6 @@ import shutil
 import sys
 import tempfile
 
-from StringIO import StringIO
 from mock import MagicMock
 from unittest import TestCase
 
@@ -66,46 +65,41 @@ class CommandsTest(TestCase):
         shutil.rmtree(self.tempdir)
 
     def test_get_devices_path_0(self):
-        # Tests that the correct devices path is returned.
-        # This test returns a tempdir.
+        # Tests that the correct devices path is returned and created.
         base_command = BaseCommand(self.parser, self.args)
         base_command.config = self.config
-        BaseCommand._create_devices_path = MagicMock()
         BaseCommand._get_dispatcher_paths = MagicMock(return_value=[
             self.tempdir])
         obtained = base_command._get_devices_path()
         expected_path = os.path.join(self.tempdir, "devices")
         self.assertEqual(expected_path, obtained)
+        self.assertTrue(os.path.isdir(expected_path))
 
     def test_get_devices_path_1(self):
-        # Tests that the correct devices path is returned when user enters 1
-        # on the command line to select the correct path.
-        # This test checks the user .config path is returned.
+        # Tests that when passing a path that is not writable, CommandError
+        # is raised.
         base_command = BaseCommand(self.parser, self.args)
         base_command.config = self.config
-        BaseCommand._create_devices_path = MagicMock()
-        BaseCommand._get_dispatcher_paths = MagicMock(return_value=[])
-        sys.stdin = StringIO("1")
-        obtained = base_command._get_devices_path()
-        expected_path = os.path.join(os.path.expanduser("~"), ".config",
-                                     "lava-dispatcher", "devices")
-        self.assertEqual(expected_path, obtained)
+        BaseCommand._get_dispatcher_paths = MagicMock(
+            return_value=["/", "/root", "/root/tmpdir"])
+        self.assertRaises(CommandError, base_command._get_devices_path)
 
-    def test_create_devices_path(self):
-        # Tests that the correct devices path is created on the file system.
+    def test_choose_devices_path(self):
+        # Tests that when passing more than one path, the first writable one
+        # is returned.
         base_command = BaseCommand(self.parser, self.args)
         base_command.config = self.config
-        BaseCommand._get_dispatcher_paths = MagicMock(return_value=[
-            self.tempdir])
-        base_command._get_devices_path()
-        expected_path = os.path.join(self.tempdir, "devices")
-        self.assertTrue(os.path.isdir(expected_path))
+        obtained = base_command._choose_devices_path(
+            ["/", "/root", self.tempdir, os.path.expanduser("~")])
+        expected = os.path.join(self.tempdir, "devices")
+        self.assertEqual(expected, obtained)
 
     def test_add_invoke(self):
         # Tests invocation of the add command. Verifies that the conf file is
         # written to disk.
         add_command = add(self.parser, self.args)
         add_command.edit_config_file = MagicMock()
+        add_command._get_device_file = MagicMock(return_value=None)
         add_command._get_devices_path = MagicMock(return_value=self.tempdir)
         add_command.invoke()
 
@@ -116,17 +110,21 @@ class CommandsTest(TestCase):
     def test_remove_invoke(self):
         # Tests invocation of the remove command. Verifies that the conf file
         # has been correctly removed.
+        # First we add a new conf file, then we remove it.
         add_command = add(self.parser, self.args)
         add_command.edit_config_file = MagicMock()
+        add_command._get_device_file = MagicMock(return_value=None)
         add_command._get_devices_path = MagicMock(return_value=self.tempdir)
         add_command.invoke()
 
+        expected_path = os.path.join(self.tempdir,
+                                     ".".join([self.device, "conf"]))
+
         remove_command = remove(self.parser, self.args)
+        remove_command._get_device_file = MagicMock(return_value=expected_path)
         remove_command._get_devices_path = MagicMock(return_value=self.tempdir)
         remove_command.invoke()
 
-        expected_path = os.path.join(self.tempdir,
-                                     ".".join([self.device, "conf"]))
         self.assertFalse(os.path.isfile(expected_path))
 
     def test_remove_invoke_raises(self):

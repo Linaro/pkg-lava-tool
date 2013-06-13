@@ -23,6 +23,8 @@ Device specific commands class.
 import os
 import subprocess
 import sys
+import random
+import string
 
 from lava.config import InteractiveConfig
 from lava.device import get_known_device
@@ -63,79 +65,53 @@ class BaseCommand(Command):
     @classmethod
     def _get_dispatcher_paths(cls):
         """Tries to get the dispatcher from lava-dispatcher."""
-        global_paths = []
         try:
             from lava_dispatcher.config import search_path
-
-            global_paths += search_path()
+            return search_path()
         except ImportError:
-            print >> sys.stderr, "Cannot import lava_dispatcher."
-        return global_paths
+            raise CommandError("Cannot find lava_dispatcher installation.")
 
     @classmethod
-    def _choose_dispatcher_path(cls, paths):
-        """Lets the user choose the path to use.
+    def _choose_devices_path(cls, paths):
+        """Picks the first path that is writable by the user.
 
         :param paths: A list of paths.
-        :return The path at the user selected index.
+        :return The first path where it is possible to write.
         """
-        print >> sys.stdout, ("Multiple dispatcher paths found. Please "
-                              "select one between:\n")
-        out_list = []
-        len_paths = range(1, len(paths) + 1)
-        for index, dispatcher_path in zip(len_paths, paths):
-            out_list.append("\t{0}. {1}\n".format(index, dispatcher_path))
-        print >> sys.stdout, "".join(out_list)
-        while True:
-            try:
-                choice = raw_input("Dispatcher path to use: ").strip()
-                if choice in [str(x) for x in len_paths]:
-                    return paths[int(choice) - 1]
-                else:
+        valid_path = None
+        for path in paths:
+            path = os.path.join(path, DEFAULT_DEVICES_PATH)
+            if os.path.exists(path):
+                try:
+                    name = "".join(random.choice(string.ascii_letters)
+                                   for x in range(6))
+                    open(os.path.join(path, name))
+                except IOError:
+                    # Cannot write here.
                     continue
-            except KeyboardInterrupt:
-                sys.exit(-1)
+                else:
+                    valid_path = path
+                    os.unlink(name)
+                    break
+            else:
+                try:
+                    os.makedirs(path)
+                except OSError:
+                    # Cannot write here either.
+                    continue
+                else:
+                    valid_path = path
+                    break
+        else:
+            raise CommandError("Insufficient permissions to create new "
+                               "devices.")
+        return valid_path
 
     @classmethod
     def _get_devices_path(cls):
         """Gets the path to the devices in the LAVA dispatcher."""
         dispatcher_paths = cls._get_dispatcher_paths()
-        # Can't get anything out of lava-dispatcher, guess something.
-        if not dispatcher_paths:
-            dispatcher_paths.append(USER_DISPATCHER_PATH)
-            if "VIRTUAL_ENV" in os.environ:
-                system_dispatcher_path = os.path.join(
-                    os.environ["VIRTUAL_ENV"],
-                    DEFAULT_DISPATCHER_PATH)
-            else:
-                system_dispatcher_path = os.path.join("/",
-                                                      DEFAULT_DISPATCHER_PATH)
-            dispatcher_paths.append(system_dispatcher_path)
-
-        if len(dispatcher_paths) > 1:
-            devices_path = os.path.join(
-                cls._choose_dispatcher_path(dispatcher_paths),
-                DEFAULT_DEVICES_PATH)
-        else:
-            devices_path = os.path.join(dispatcher_paths[0],
-                                        DEFAULT_DEVICES_PATH)
-
-        cls._create_devices_path(devices_path)
-
-        return devices_path
-
-    @classmethod
-    def _create_devices_path(cls, devices_path):
-        """Checks and creates the path on file system.
-
-        :param devices_path: The path to check and create.
-        """
-        if not os.path.exists(devices_path):
-            try:
-                os.makedirs(devices_path)
-            except OSError:
-                raise CommandError("Cannot create path "
-                                   "{0}.".format(devices_path))
+        return cls._choose_devices_path(dispatcher_paths)
 
     @classmethod
     def edit_config_file(cls, config_file):
@@ -158,12 +134,26 @@ class BaseCommand(Command):
                 sys.exit(-1)
 
         try:
-            cmd_args = [editor, config_file]
-            subprocess.Popen(cmd_args).wait()
+            subprocess.Popen([editor, config_file]).wait()
         except Exception:
             raise CommandError("Error opening the file '{0}' with the "
                                "following editor: {1}.".format(config_file,
                                                                editor))
+
+    @classmethod
+    def _get_device_file(cls, file_name):
+        """Retrieves the config file name specified, if it exists.
+
+        :param file_name: The config file name to search.
+        :return The path to the file, or None if it does not exist.
+        """
+        try:
+            from lava_dispatcher.config import get_config_file
+
+            return get_config_file(os.path.join(DEFAULT_DEVICES_PATH,
+                                                file_name))
+        except ImportError:
+            raise CommandError("Cannot find lava_dispatcher installation.")
 
 
 class add(BaseCommand):
@@ -175,16 +165,17 @@ class add(BaseCommand):
         parser.add_argument("DEVICE", help="The name of the device to add.")
 
     def invoke(self):
-        devices_path = self._get_devices_path()
         real_file_name = ".".join([self.args.DEVICE, DEVICE_FILE_SUFFIX])
-        device_conf_file = os.path.abspath(os.path.join(devices_path,
-                                                        real_file_name))
 
-        if os.path.exists(device_conf_file):
+        if self._get_device_file(real_file_name):
             print ("A device configuration file named '{0}' already "
                    "exists.".format(real_file_name))
             print "Use 'lava device config DEVICE' to edit it."
             sys.exit(-1)
+
+        devices_path = self._get_devices_path()
+        device_conf_file = os.path.abspath(os.path.join(devices_path,
+                                                        real_file_name))
 
         device = get_known_device(self.args.DEVICE)
         device.write(device_conf_file)
@@ -204,17 +195,17 @@ class remove(BaseCommand):
                             help="The name of the device to remove.")
 
     def invoke(self):
-        devices_path = self._get_devices_path()
         real_file_name = ".".join([self.args.DEVICE, DEVICE_FILE_SUFFIX])
-        device_conf = os.path.join(devices_path, real_file_name)
-        if os.path.isfile(device_conf):
-            os.remove(device_conf)
-            print ("Device configuration file {0} "
-                   "removed.".format(self.args.DEVICE))
-        else:
-            raise CommandError("Cannot remove file '{0}' at: {1}. It does not "
-                               "exist or it is not a "
-                               "file.".format(real_file_name, devices_path))
+        device_conf = self._get_device_file(real_file_name)
+
+        if device_conf:
+            try:
+                os.remove(device_conf)
+                print ("Device configuration file {0} removed.".format(
+                    real_file_name))
+            except OSError:
+                raise CommandError("Cannot remove file '{0}' at: {1}.".format(
+                    real_file_name, os.path.dirname(device_conf)))
 
 
 class config(BaseCommand):
@@ -226,12 +217,13 @@ class config(BaseCommand):
                             help="The name of the device to edit.")
 
     def invoke(self):
-        devices_path = self._get_devices_path()
         real_file_name = ".".join([self.args.DEVICE, DEVICE_FILE_SUFFIX])
-        device_conf = os.path.join(devices_path, real_file_name)
-        if os.path.isfile(device_conf):
+
+        device_conf = self._get_device_file(real_file_name)
+        if device_conf:
             self.edit_config_file(device_conf)
         else:
             raise CommandError("Cannot edit file '{0}' at: {1}. It does not "
                                "exist or it is not a "
-                               "file.".format(real_file_name, devices_path))
+                               "file.".format(real_file_name,
+                                              os.path.dirname(device_conf)))
