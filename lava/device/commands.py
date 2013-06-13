@@ -229,5 +229,4 @@ class config(BaseCommand):
         else:
             raise CommandError("Cannot edit file '{0}' at: {1}. It does not "
                                "exist or it is not a "
-                               "file.".format(real_file_name,
-                                              os.path.dirname(device_conf)))
+                               "file.".format(real_file_name, device_conf))
