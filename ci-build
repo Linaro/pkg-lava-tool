@@ -1,0 +1,48 @@
+#!/bin/sh
+
+VENV_DIR="/tmp/ci-build-venv"
+
+set -e
+
+if test -z "$VIRTUAL_ENV"; then
+  set -x
+  virtualenv $VENV_DIR
+  . $VENV_DIR/bin/activate
+  python setup.py develop
+fi
+
+# requirement for integration tests
+if ! pip show Flask | grep -q Flask; then
+  pip install 'Flask==0.9'
+fi
+if ! pip show PyYAML | grep -q PyYAML; then
+  pip install PyYAML
+fi
+# requirement for unit tests
+if ! pip show mocker | grep -q mocker; then
+  pip install mocker
+fi
+
+if ! pip show mock | grep -q mock; then
+  pip install mock
+fi
+
+export LAVACONFIG=/dev/null
+
+if test -z "$DISPLAY"; then
+  # actual CI
+
+  # will install tests dependencies automatically. The output is also more
+  # verbose
+  python setup.py test < /dev/null
+
+  # integration-tests will pick this up and provide detailed output
+  export VERBOSE=1
+else
+  # in a development workstation, this will produce shorter/nicer output, but
+  # requires the test dependencies to be installed manually (or by running
+  # `python setup.py test` before).
+  python -m unittest lava_tool.tests.test_suite < /dev/null
+fi
+
+./integration-tests
