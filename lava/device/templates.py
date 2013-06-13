@@ -27,14 +27,16 @@ DEFAULT_TEMPLATE = {
     'connection_command': None,
 }
 
-PANDA_TEMPLATE = DEFAULT_TEMPLATE.copy()
-PANDA_TEMPLATE.update(device_type='panda')
-
-VEXPRESS_TEMPLATE = DEFAULT_TEMPLATE.copy()
-VEXPRESS_TEMPLATE.update(device_type='vexpress')
-
 # Dictionary with templates of known devices.
 KNOWN_TEMPLATES = {
-    'panda': PANDA_TEMPLATE,
-    'vexpress': VEXPRESS_TEMPLATE,
+    'panda': {
+        'device_type': 'panda',
+        'hostname': None,
+        'connection_command': None,
+    },
+    'vexpress': {
+        'device_type': 'vexpress',
+        'hostname': None,
+        'connection_command': None,
+    },
 }
