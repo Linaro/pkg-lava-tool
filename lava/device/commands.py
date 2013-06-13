@@ -86,8 +86,8 @@ class BaseCommand(Command):
                                for x in range(6))
                 test_file = os.path.join(path, name)
                 try:
-                    with open(test_file, 'w'):
-                        pass
+                    fp = open(test_file, 'a')
+                    fp.close()
                 except IOError:
                     # Cannot write here.
                     continue
