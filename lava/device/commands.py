@@ -66,10 +66,10 @@ class BaseCommand(Command):
     def _get_dispatcher_paths(cls):
         """Tries to get the dispatcher from lava-dispatcher."""
         try:
-            from lava_dispatcher.config import search_path
-            return search_path()
+            from lava_dispatcher.config import write_path
+            return write_path()
         except ImportError:
-            raise CommandError("Cannot find lava_dispatcher installation.")
+            raise CommandError("Cannot find lava-dispatcher installation.")
 
     @classmethod
     def _choose_devices_path(cls, paths):
@@ -156,7 +156,7 @@ class BaseCommand(Command):
             return get_config_file(os.path.join(DEFAULT_DEVICES_PATH,
                                                 file_name))
         except ImportError:
-            raise CommandError("Cannot find lava_dispatcher installation.")
+            raise CommandError("Cannot find lava-dispatcher installation.")
 
 
 class add(BaseCommand):
