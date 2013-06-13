@@ -127,10 +127,11 @@ class BaseCommand(Command):
                 editor = "xdg-open"
             else:
                 # We really do not know how to open a file.
-                print ("Cannot find an editor to open the "
-                       "file '{0}'.".format(config_file))
-                print ("Either set the 'EDITOR' environment variable, or "
-                       "install 'sensible-editor' or 'xdg-open'.")
+                print >> sys.stdout, ("Cannot find an editor to open the "
+                                      "file '{0}'.".format(config_file))
+                print >> sys.stdout, ("Either set the 'EDITOR' environment "
+                                      "variable, or install 'sensible-editor' "
+                                      "or 'xdg-open'.")
                 sys.exit(-1)
 
         try:
@@ -168,9 +169,9 @@ class add(BaseCommand):
         real_file_name = ".".join([self.args.DEVICE, DEVICE_FILE_SUFFIX])
 
         if self._get_device_file(real_file_name):
-            print ("A device configuration file named '{0}' already "
-                   "exists.".format(real_file_name))
-            print "Use 'lava device config DEVICE' to edit it."
+            print >> sys.stdout, ("A device configuration file named '{0}' "
+                                  "already exists.".format(real_file_name))
+            print >> sys.stdout, "Use 'lava device config DEVICE' to edit it."
             sys.exit(-1)
 
         devices_path = self._get_devices_path()
@@ -180,8 +181,8 @@ class add(BaseCommand):
         device = get_known_device(self.args.DEVICE)
         device.write(device_conf_file)
 
-        print ("Created device file '{0}' in: {1}".format(self.args.DEVICE,
-                                                          devices_path))
+        print >> sys.stdout, ("Created device file '{0}' in: {1}".format(
+            self.args.DEVICE, devices_path))
         self.edit_config_file(device_conf_file)
 
 
@@ -201,11 +202,14 @@ class remove(BaseCommand):
         if device_conf:
             try:
                 os.remove(device_conf)
-                print ("Device configuration file {0} removed.".format(
-                    real_file_name))
+                print >> sys.stdout, ("Device configuration file {0} "
+                                      "removed.".format(real_file_name))
             except OSError:
                 raise CommandError("Cannot remove file '{0}' at: {1}.".format(
                     real_file_name, os.path.dirname(device_conf)))
+        else:
+            print >> sys.stdout, ("No device configuration file {0} "
+                                  "found.".format(real_file_name))
 
 
 class config(BaseCommand):
