@@ -86,7 +86,8 @@ class BaseCommand(Command):
                                for x in range(6))
                 test_file = os.path.join(path, name)
                 try:
-                    open(test_file, 'w')
+                    with open(test_file, 'w'):
+                        pass
                 except IOError:
                     # Cannot write here.
                     continue
@@ -223,13 +224,27 @@ class config(BaseCommand):
         parser.add_argument("DEVICE",
                             help="The name of the device to edit.")
 
+    @classmethod
+    def can_edit_file(cls, conf_file):
+        """Checks if a file can be opend in write mode.
+
+        :param conf_file: The path to the file.
+        :return True if it is possible to write on the file, False otherwise.
+        """
+        can_edit = True
+        try:
+            with open(conf_file, 'w'):
+                pass
+        except OSError:
+            can_edit = False
+        return can_edit
+
     def invoke(self):
         real_file_name = ".".join([self.args.DEVICE, DEVICE_FILE_SUFFIX])
 
         device_conf = self._get_device_file(real_file_name)
-        if device_conf:
+        if device_conf and self.can_edit(device_conf):
             self.edit_config_file(device_conf)
         else:
-            raise CommandError("Cannot edit file '{0}' at: {1}. It does not "
-                               "exist or it is not a "
-                               "file.".format(real_file_name, device_conf))
+            raise CommandError("Cannot edit file '{0}' at: "
+                               "{1}.".format(real_file_name, device_conf))
