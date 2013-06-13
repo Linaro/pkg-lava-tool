@@ -186,7 +186,7 @@ class add(BaseCommand):
         device.write(device_conf_file)
 
         print >> sys.stdout, ("Created device file '{0}' in: {1}".format(
-            self.args.DEVICE, devices_path))
+            real_file_name, devices_path))
         self.edit_config_file(device_conf_file)
 
 
