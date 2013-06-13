@@ -47,7 +47,7 @@ class CommandsTest(TestCase):
         sys.stderr = open("/dev/null", "w")
         self.original_stdin = sys.stdin
 
-        self.device = "panda02"
+        self.device = "a_fake_panda02"
 
         self.tempdir = tempfile.mkdtemp()
         self.parser = MagicMock()
@@ -139,7 +139,7 @@ class CommandsTest(TestCase):
         # Tests invocation of the config command, with a non existent device
         # configuration file.
         config_command = config(self.parser, self.args)
-        config_command._det_device_file = MagicMock(return_value=None)
+        config_command._get_device_file = MagicMock(return_value=None)
 
         self.assertRaises(CommandError, config_command.invoke)
 
@@ -147,6 +147,6 @@ class CommandsTest(TestCase):
         # Tests invocation of the config command, with a non writable file.
         # Hopefully tests are not run as root.
         config_command = config(self.parser, self.args)
-        config_command._det_device_file = MagicMock(return_value="/etc/passwd")
+        config_command._get_device_file = MagicMock(return_value="/etc/passwd")
 
         self.assertRaises(CommandError, config_command.invoke)
