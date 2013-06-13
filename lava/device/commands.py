@@ -173,7 +173,8 @@ class add(BaseCommand):
         if self._get_device_file(real_file_name):
             print >> sys.stdout, ("A device configuration file named '{0}' "
                                   "already exists.".format(real_file_name))
-            print >> sys.stdout, "Use 'lava device config DEVICE' to edit it."
+            print >> sys.stdout, ("Use 'lava device config {0}' to edit "
+                                  "it.".format(self.args.DEVICE))
             sys.exit(-1)
 
         devices_path = self._get_devices_path()
