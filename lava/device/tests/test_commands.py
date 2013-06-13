@@ -150,3 +150,24 @@ class CommandsTest(TestCase):
         config_command._get_device_file = MagicMock(return_value="/etc/passwd")
 
         self.assertRaises(CommandError, config_command.invoke)
+
+    def test_can_edit_file(self):
+        # Tests the can_edit_file method of the config command.
+        # This is to make sure the device config file is not erased when
+        # checking if it is possible to open it.
+        expected = ("hostname = a_fake_panda02\nconnection_command = \n"
+                    "device_type = panda\n")
+
+        try:
+            config_file = tempfile.NamedTemporaryFile(delete=False)
+
+            with open(config_file.name, "w") as f:
+                f.write(expected)
+
+            obtained = ""
+            with open(config_file.name) as f:
+                obtained = f.read()
+
+            self.assertEqual(expected, obtained)
+        finally:
+            os.unlink(config_file.name)
