@@ -202,13 +202,13 @@ class remove(BaseCommand):
         if device_conf:
             try:
                 os.remove(device_conf)
-                print >> sys.stdout, ("Device configuration file {0} "
+                print >> sys.stdout, ("Device configuration file '{0}'' "
                                       "removed.".format(real_file_name))
             except OSError:
                 raise CommandError("Cannot remove file '{0}' at: {1}.".format(
                     real_file_name, os.path.dirname(device_conf)))
         else:
-            print >> sys.stdout, ("No device configuration file {0} "
+            print >> sys.stdout, ("No device configuration file '{0}'' "
                                   "found.".format(real_file_name))
 
 
