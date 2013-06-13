@@ -131,7 +131,7 @@ class CommandsTest(TestCase):
         # Tests invocation of the remove command, with a non existent device
         # configuration file.
         remove_command = remove(self.parser, self.args)
-        remove_command._get_devices_path = MagicMock(return_value=self.tempdir)
+        remove_command._get_device_file = MagicMock(return_value="/root")
 
         self.assertRaises(CommandError, remove_command.invoke)
 
@@ -139,6 +139,6 @@ class CommandsTest(TestCase):
         # Tests invocation of the config command, with a non existent device
         # configuration file.
         config_command = config(self.parser, self.args)
-        config_command._get_devices_path = MagicMock(return_value=self.tempdir)
+        config_command._det_device_file = MagicMock(return_value=None)
 
         self.assertRaises(CommandError, config_command.invoke)
