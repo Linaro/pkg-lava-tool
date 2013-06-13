@@ -233,9 +233,9 @@ class config(BaseCommand):
         """
         can_edit = True
         try:
-            with open(conf_file, 'w'):
-                pass
-        except OSError:
+            fp = open(conf_file, "a")
+            fp.close()
+        except IOError:
             can_edit = False
         return can_edit
 
