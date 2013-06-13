@@ -82,16 +82,18 @@ class BaseCommand(Command):
         for path in paths:
             path = os.path.join(path, DEFAULT_DEVICES_PATH)
             if os.path.exists(path):
+                name = "".join(random.choice(string.ascii_letters)
+                               for x in range(6))
+                test_file = os.path.join(path, name)
                 try:
-                    name = "".join(random.choice(string.ascii_letters)
-                                   for x in range(6))
-                    open(os.path.join(path, name))
+                    open(test_file, 'w')
                 except IOError:
                     # Cannot write here.
                     continue
                 else:
                     valid_path = path
-                    os.unlink(name)
+                    if os.path.isfile(test_file):
+                        os.unlink(test_file)
                     break
             else:
                 try:
