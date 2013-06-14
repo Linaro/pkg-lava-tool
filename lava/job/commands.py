@@ -94,6 +94,29 @@ class run(BaseCommand):
         super(run, cls).register_arguments(parser)
         parser.add_argument("FILE", help=("The job file to submit."))
 
+    @classmethod
+    def _choose_device(self, devices):
+        devices_len = len(devices)
+        output_list = []
+        for number, device in zip(devices, range(1, devices_len + 1)):
+            output_list.append("\t{0}. {1}\n".format(number, device.hostname))
+
+        print >> sys.stdout, "More than one local device found. Choose one:\n"
+        print >> sys.stdout, "".join(output_list)
+
+        while True:
+            try:
+                user_input = raw_input("Device number to use: ").strip()
+
+                if user_input in [str(x) for x in range(1, devices_len + 1)]:
+                    return devices[user_input - 1].hostname
+                else:
+                    continue
+            except EOFError:
+                user_input = None
+            except KeyboardInterrupt:
+                sys.exit(-1)
+
     def invoke(self):
         if has_command("lava-dispatch"):
             devices = self.get_devices()
