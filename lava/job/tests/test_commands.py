@@ -73,8 +73,6 @@ class CommandTest(TestCase):
                                         depends=self.device_type)
         self.config = NonInteractiveConfig(
             {'device_type': 'foo', 'prebuilt_image': 'bar'})
-        # self.config.put_parameter(self.device_type, 'foo')
-        # self.config.put_parameter(self.prebuilt_image, 'bar')
 
     def tearDown(self):
         sys.stdin = self.original_stdin
@@ -84,6 +82,11 @@ class CommandTest(TestCase):
         shutil.rmtree(self.tmpdir)
 
     def tmp(self, filename):
+        """Returns a path to a non existent file.
+
+        :param filename: The name the file should have.
+        :return A path.
+        """
         return os.path.join(self.tmpdir, filename)
 
 
@@ -128,7 +131,7 @@ class JobSubmitTest(CommandTest):
 class JobRunTest(CommandTest):
 
     def test_invoke_raises_0(self):
-        # Users passes a non existen job file to the run command.
+        # Users passes a non existing job file to the run command.
         self.args.FILE = self.tmp("test_invoke_raises_0.json")
         command = run(self.parser, self.args)
         self.assertRaises(CommandError, command.invoke)

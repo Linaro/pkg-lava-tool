@@ -103,7 +103,7 @@ class run(BaseCommand):
         """
         devices_len = len(devices)
         output_list = []
-        for number, device in zip(devices, range(1, devices_len + 1)):
+        for device, number in zip(devices, range(1, devices_len + 1)):
             output_list.append("\t{0}. {1}\n".format(number, device.hostname))
 
         print >> sys.stdout, ("More than one local device found. "
