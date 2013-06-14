@@ -16,40 +16,34 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
-from os.path import exists
+"""
+LAVA job commands.
+"""
 
-from lava.config import InteractiveConfig
-from lava.job import Job
-from lava.job.templates import *
-from lava.tool.command import Command, CommandGroup
-from lava.tool.errors import CommandError
-
-from lava_tool.authtoken import AuthenticatingServerProxy, KeyringAuthBackend
+import os
+import sys
 import xmlrpclib
 
-class job(CommandGroup):
-    """
-    LAVA job file handling
-    """
+from lava.base_command import BaseCommand
 
+from lava.config import Parameter
+from lava.job import Job
+from lava.job.templates import (
+    BOOT_TEST,
+)
+from lava.tool.command import CommandGroup
+from lava.tool.errors import CommandError
+from lava_tool.authtoken import AuthenticatingServerProxy, KeyringAuthBackend
+from lava_tool.utils import has_command
+
+
+class job(CommandGroup):
+    """LAVA job file handling."""
     namespace = 'lava.job.commands'
 
-class BaseCommand(Command):
-
-    def __init__(self, parser, args):
-        super(BaseCommand, self).__init__(parser, args)
-        self.config = InteractiveConfig(force_interactive=self.args.interactive)
-
-    @classmethod
-    def register_arguments(cls, parser):
-        super(BaseCommand, cls).register_arguments(parser)
-        parser.add_argument(
-            "-i", "--interactive",
-            action='store_true',
-            help=("Forces asking for input parameters even if we already "
-                  "have them cached."))
 
 class new(BaseCommand):
+    """Creates a new job file."""
 
     @classmethod
     def register_arguments(cls, parser):
@@ -57,20 +51,22 @@ class new(BaseCommand):
         parser.add_argument("FILE", help=("Job file to be created."))
 
     def invoke(self):
-        if exists(self.args.FILE):
-            raise CommandError('%s already exists' % self.args.FILE)
+        if os.path.exists(self.args.FILE):
+            raise CommandError('{0} already exists.'.format(self.args.FILE))
 
         with open(self.args.FILE, 'w') as f:
-            job = Job(BOOT_TEST)
-            job.fill_in(self.config)
-            job.write(f)
+            job_instance = Job(BOOT_TEST)
+            job_instance.fill_in(self.config)
+            job_instance.write(f)
 
 
 class submit(BaseCommand):
+    """Submits the specified job file."""
+
     @classmethod
     def register_arguments(cls, parser):
         super(submit, cls).register_arguments(parser)
-        parser.add_argument("FILE", help=("The job file to submit"))
+        parser.add_argument("FILE", help=("The job file to submit."))
 
     def invoke(self):
         jobfile = self.args.FILE
@@ -85,10 +81,25 @@ class submit(BaseCommand):
                                            auth_backend=KeyringAuthBackend())
         try:
             job_id = server.scheduler.submit_job(jobdata)
-            print "Job submitted with job ID %d" % job_id
-        except xmlrpclib.Fault, e:
-            raise CommandError(str(e))
+            print >> sys.stdout, "Job submitted with job ID {0}".format(job_id)
+        except xmlrpclib.Fault, exc:
+            raise CommandError(str(exc))
+
 
 class run(BaseCommand):
+    """Runs the specified job file on the local dispatcher."""
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(run, cls).register_arguments(parser)
+        parser.add_argument("FILE", help=("The job file to submit."))
+
     def invoke(self):
-        print("hello world")
+        if has_command("lava-dispatch"):
+            devices = self.get_devices()
+            if len(devices) > 1:
+                pass
+            else:
+                print >> sys.stdout, "Invoking"
+        else:
+            raise CommandError("Cannot find lava-dispatcher installation.")
