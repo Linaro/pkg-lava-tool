@@ -77,4 +77,4 @@ class BaseCommand(Command):
             return subprocess.check_call(cmd_args)
         except subprocess.CalledProcessError:
             raise CommandError("Error running the following command: "
-                               "{0}".format("".join(cmd_args)))
+                               "{0}".format(" ".join(cmd_args)))
