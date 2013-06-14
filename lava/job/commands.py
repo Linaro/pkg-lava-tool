@@ -54,10 +54,10 @@ class new(BaseCommand):
         if os.path.exists(self.args.FILE):
             raise CommandError('{0} already exists.'.format(self.args.FILE))
 
-        with open(self.args.FILE, 'w') as f:
+        with open(self.args.FILE, 'w') as job_file:
             job_instance = Job(BOOT_TEST)
             job_instance.fill_in(self.config)
-            job_instance.write(f)
+            job_instance.write(job_file)
 
 
 class submit(BaseCommand):
@@ -95,7 +95,12 @@ class run(BaseCommand):
         parser.add_argument("FILE", help=("The job file to submit."))
 
     @classmethod
-    def _choose_device(self, devices):
+    def _choose_device(cls, devices):
+        """Let the user choose the device to use.
+
+        :param devices: The list of available devices.
+        :return The selected device.
+        """
         devices_len = len(devices)
         output_list = []
         for number, device in zip(devices, range(1, devices_len + 1)):
@@ -122,12 +127,13 @@ class run(BaseCommand):
         if os.path.isfile(self.args.FILE):
             if has_command("lava-dispatch"):
                 devices = self.get_devices()
-                if len(devices) > 1:
-                    device = self._choose_device(devices)
-                else:
-                    device = devices[0].hostname
-                self.run(["lava-dispatch", "--target", device,
-                          self.args.FILE])
+                if devices:
+                    if len(devices) > 1:
+                        device = self._choose_device(devices)
+                    else:
+                        device = devices[0].hostname
+                    self.run(["lava-dispatch", "--target", device,
+                              self.args.FILE])
             else:
                 raise CommandError("Cannot find lava-dispatcher installation.")
         else:

@@ -27,13 +27,14 @@ import sys
 import tempfile
 import argparse
 
-from mock import MagicMock
+from mock import MagicMock, patch
 from unittest import TestCase
 
 from lava.config import NonInteractiveConfig, Parameter
 
 from lava.job.commands import (
     new,
+    run,
 )
 
 from lava.tool.errors import CommandError
@@ -126,5 +127,15 @@ class JobSubmitTest(CommandTest):
 
 class JobRunTest(CommandTest):
 
-    def test_invoke_raises(self):
-        pass
+    def test_invoke_raises_0(self):
+        # Users passes a non existen job file to the run command.
+        self.args.FILE = self.tmp("test_invoke_raises_0.json")
+        command = run(self.parser, self.args)
+        self.assertRaises(CommandError, command.invoke)
+
+    @patch("lava.job.commands.has_command", new=MagicMock(return_value=False))
+    def test_invoke_raises_1(self):
+        # Users passes a valid file to the run command, but she does not have
+        # the dispatcher installed.
+        command = run(self.parser, self.args)
+        self.assertRaises(CommandError, command.invoke)
