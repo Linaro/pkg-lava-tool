@@ -115,7 +115,7 @@ class run(BaseCommand):
                 user_input = raw_input("Device number to use: ").strip()
 
                 if user_input in [str(x) for x in range(1, devices_len + 1)]:
-                    return devices[user_input - 1].hostname
+                    return devices[int(user_input) - 1].hostname
                 else:
                     continue
             except EOFError:
