@@ -18,6 +18,8 @@
 
 """Base command class common to lava commands series."""
 
+import subprocess
+
 from lava.config import InteractiveConfig
 from lava.tool.command import Command
 from lava.tool.errors import CommandError
@@ -61,3 +63,18 @@ class BaseCommand(Command):
             return get_devices()
         except ImportError:
             raise CommandError("Cannot find lava-dispatcher installation.")
+
+    @classmethod
+    def run(cls, cmd_args):
+        """Runs the supplied command args.
+
+        :param cmd_args: The command, and its optional arguments, to run.
+        :return The command execution return code.
+        """
+        if not isinstance(cmd_args, list):
+            cmd_args = list(cmd_args)
+        try:
+            return subprocess.check_call(cmd_args)
+        except subprocess.CalledProcessError:
+            raise CommandError("Error running the following command: "
+                               "{0}".format("".join(cmd_args)))

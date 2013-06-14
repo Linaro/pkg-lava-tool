@@ -101,7 +101,8 @@ class run(BaseCommand):
         for number, device in zip(devices, range(1, devices_len + 1)):
             output_list.append("\t{0}. {1}\n".format(number, device.hostname))
 
-        print >> sys.stdout, "More than one local device found. Choose one:\n"
+        print >> sys.stdout, ("More than one local device found. "
+                              "Please choose one:\n")
         print >> sys.stdout, "".join(output_list)
 
         while True:
@@ -118,11 +119,17 @@ class run(BaseCommand):
                 sys.exit(-1)
 
     def invoke(self):
-        if has_command("lava-dispatch"):
-            devices = self.get_devices()
-            if len(devices) > 1:
-                pass
+        if os.path.isfile(self.args.FILE):
+            if has_command("lava-dispatch"):
+                devices = self.get_devices()
+                if len(devices) > 1:
+                    device = self._choose_device(devices)
+                else:
+                    device = devices[0].hostname
+                self.run(["lava-dispatch", "--target", device,
+                          self.args.FILE])
             else:
-                print >> sys.stdout, "Invoking"
+                raise CommandError("Cannot find lava-dispatcher installation.")
         else:
-            raise CommandError("Cannot find lava-dispatcher installation.")
+            raise CommandError("The file '{0}' does not exists. or is not "
+                               "a file.".format(self.args.FILE))
