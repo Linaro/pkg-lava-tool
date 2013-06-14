@@ -158,16 +158,18 @@ class CommandsTest(TestCase):
         expected = ("hostname = a_fake_panda02\nconnection_command = \n"
                     "device_type = panda\n")
 
+        config_command = config(self.parser, self.args)
         try:
-            config_file = tempfile.NamedTemporaryFile(delete=False)
+            conf_file = tempfile.NamedTemporaryFile(delete=False)
 
-            with open(config_file.name, "w") as f:
+            with open(conf_file.name, "w") as f:
                 f.write(expected)
 
+            self.assertTrue(config_command.can_edit_file(conf_file.name))
             obtained = ""
-            with open(config_file.name) as f:
+            with open(conf_file.name) as f:
                 obtained = f.read()
 
             self.assertEqual(expected, obtained)
         finally:
-            os.unlink(config_file.name)
+            os.unlink(conf_file.name)
