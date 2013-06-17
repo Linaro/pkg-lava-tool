@@ -17,90 +17,175 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 import atexit
-from ConfigParser import ConfigParser, NoOptionError, NoSectionError
 import os
 import readline
+import sys
 
-__all__ = ['InteractiveConfig', 'NonInteractiveConfig']
 
-history = os.path.join(os.path.expanduser("~"), ".lava_history")
+from ConfigParser import ConfigParser, NoOptionError, NoSectionError
+
+__all__ = ['Config', 'InteractiveConfig']
+
+# Store for function calls to be made at exit time.
+AT_EXIT_CALLS = set()
+# Config default section.
+DEFAULT_SECTION = "DEFAULT"
+
+HISTORY = os.path.join(os.path.expanduser("~"), ".lava_history")
 try:
-    readline.read_history_file(history)
+    readline.read_history_file(HISTORY)
 except IOError:
     pass
-atexit.register(readline.write_history_file, history)
-
-config_file = (os.environ.get('LAVACONFIG') or
-               os.path.join(os.path.expanduser('~'), '.lavaconfig'))
-config_backend = ConfigParser()
-config_backend.read([config_file])
+atexit.register(readline.write_history_file, HISTORY)
 
 
-def save_config():
-    with open(config_file, 'w') as f:
-        config_backend.write(f)
-atexit.register(save_config)
+def _run_at_exit():
+    """Runs all the function at exit."""
+    for call in list(AT_EXIT_CALLS):
+        call()
+atexit.register(_run_at_exit)
 
 
 class Parameter(object):
-
+    """A parameter with optional dependencies."""
     def __init__(self, id, depends=None):
         self.id = id
         self.depends = depends
 
 
-class InteractiveConfig(object):
-
-    def __init__(self, force_interactive=False):
-        self._force_interactive = force_interactive
+class Config(object):
+    """A generic config object."""
+    def __init__(self):
+        # The cache where to store parameters.
         self._cache = {}
+        self._config_file = (os.environ.get('LAVACONFIG') or
+                             os.path.join(os.path.expanduser('~'),
+                                          '.lavaconfig'))
+        self._config_backend = ConfigParser()
+        self._config_backend.read([self._config_file])
+        AT_EXIT_CALLS.add(self.save)
 
-    def get(self, parameter):
-        key = parameter.id
-        value = None
+    def _calculate_config_section(self, parameter):
+        """Calculates the config section of the specified parameter.
+
+        :param parameter: The parameter to calculate the section of.
+        :type Parameter
+        :return The config section.
+        """
+        config_section = DEFAULT_SECTION
         if parameter.depends:
-            pass
-            config_section = parameter.depends.id + '=' + self.get(parameter.depends)
-        else:
-            config_section = "DEFAULT"
-
-        if config_section in self._cache:
-            if key in self._cache[config_section]:
-                return self._cache[config_section][key]
-
-        prompt = '%s: ' % key
-
-        try:
-            value = config_backend.get(config_section, key)
-        except (NoOptionError, NoSectionError):
-            pass
-        if value:
-            if self._force_interactive:
-                prompt = "%s[%s]: " % (key, value)
-            else:
-                return value
-        try:
-            user_input = raw_input(prompt).strip()
-        except EOFError:
-            user_input = None
-        if user_input:
-            value = user_input
-            if not config_backend.has_section(config_section) and config_section != 'DEFAULT':
-                config_backend.add_section(config_section)
-            config_backend.set(config_section, key, value)
-
-        if value:
-            if config_section not in self._cache:
-                self._cache[config_section] = {}
-            self._cache[config_section][key] = value
-            return value
-        else:
-            raise KeyError(key)
-
-class NonInteractiveConfig(object):
-
-    def __init__(self, data):
-        self.data = data
+            config_section = "{0}={1}".format(parameter.depends.id,
+                                              self.get(parameter.depends))
+        return config_section
 
     def get(self, parameter):
-        return self.data[parameter.id]
+        """Retrieves a Parameter from the config file.
+
+        :param parameter: The parameter to search.
+        :type Parameter
+        :return The parameter value, or None if it is not found.
+        """
+        config_section = self._calculate_config_section(parameter)
+        value = self._get_from_cache(parameter, config_section)
+
+        if not value:
+            try:
+                value = self._config_backend.get(config_section, parameter.id)
+            except (NoOptionError, NoSectionError):
+                # Ignore, we return None since value is already None.
+                pass
+        return value
+
+    def _get_from_cache(self, parameter, section):
+        """Looks for the specified parameter in the internal cache.
+
+        :param parameter: The parameter to search.
+        :type Parameter
+        :return The parameter value, of None if it is not found.
+        """
+        value = None
+        if section in self._cache.keys():
+            if parameter.id in self._cache[section].keys():
+                value = self._cache[section][parameter.id]
+        return value
+
+    def _put_in_cache(self, key, value, section):
+        """Insert the passed parameter in the internal cache.
+
+        :param parameter: The parameter to insert.
+        :type Parameter
+        :param section: The name of the section in the config file.
+        :type str
+        """
+        if section not in self._cache.keys():
+            self._cache[section] = {}
+        self._cache[section][key] = value
+
+    def put(self, key, value, section=DEFAULT_SECTION):
+        """Adds a parameter to the config file.
+
+        :param key: The key to add.
+        :param value: The value to add.
+        :param section: The name of the section as in the config file.
+        """
+        if (not self._config_backend.has_section(section) and
+                section != DEFAULT_SECTION):
+            self._config_backend.add_section(section)
+        self._config_backend.set(section, key, value)
+        # Store in the cache too.
+        self._put_in_cache(key, value, section)
+
+    def put_parameter(self, parameter, value):
+        """Adds a Parameter to the config file and cache.
+
+        :param Parameter: The parameter to add.
+        :param value: The value of the parameter.
+        """
+        config_section = self._calculate_config_section(parameter)
+        self.put(parameter.id, value, config_section)
+
+    def save(self):
+        """Saves the config to file."""
+        with open(self._config_file, "w") as write_file:
+            self._config_backend.write(write_file)
+
+
+class InteractiveConfig(Config):
+    """An interactive config.
+
+    If a value is not found in the config file, it will ask it and then stores
+    it.
+    """
+    def __init__(self, force_interactive=False):
+        super(InteractiveConfig, self).__init__()
+        self._force_interactive = force_interactive
+
+    def get(self, parameter):
+        """Overrides the parent one.
+
+        The only difference with the parent one, is that it will ask to type
+        a parameter value in case it is not found.
+        """
+        value = super(InteractiveConfig, self).get(parameter)
+
+        if self._force_interactive:
+            prompt = "Reinsert value for {0} [was: {1}] :".format(
+                parameter.id,
+                value)
+        else:
+            prompt = "Insert value for {0}: ".format(parameter.id)
+
+        if not value or self._force_interactive:
+            config_section = self._calculate_config_section(parameter)
+
+            try:
+                user_input = raw_input(prompt).strip()
+            except EOFError:
+                user_input = None
+            except KeyboardInterrupt:
+                sys.exit(-1)
+
+            if user_input:
+                value = user_input
+                self.put(parameter.id, value, config_section)
+        return value
