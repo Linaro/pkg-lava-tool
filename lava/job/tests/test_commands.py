@@ -25,7 +25,6 @@ import os
 import shutil
 import sys
 import tempfile
-import argparse
 
 from mock import MagicMock, patch
 from unittest import TestCase
@@ -38,15 +37,6 @@ from lava.job.commands import (
 )
 
 from lava.tool.errors import CommandError
-
-
-def make_command(command, *args):
-    parser = argparse.ArgumentParser(description="fake argument parser")
-    command.register_arguments(parser)
-    the_args = parser.parse_args(*args)
-    cmd = command(parser, the_args)
-    cmd.config = NonInteractiveConfig({ 'device_type': 'foo', 'prebuilt_image': 'bar' })
-    return cmd
 
 
 class CommandTest(TestCase):
@@ -119,13 +109,6 @@ class JobNewTest(CommandTest):
 
         self.assertRaises(CommandError, self.new_command.invoke)
         self.assertEqual("CONTENTS", open(self.args.FILE).read())
-
-
-class JobSubmitTest(CommandTest):
-
-    def test_receives_job_file_in_cmdline(self):
-        cmd = make_command(new, ['FOO.json'])
-        self.assertEqual('FOO.json', cmd.args.FILE)
 
 
 class JobRunTest(CommandTest):
