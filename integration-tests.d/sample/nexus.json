@@ -1,0 +1,15 @@
+{
+    "device_type": "nexus", 
+    "job_name": "Boot test", 
+    "actions": [
+        {
+            "command": "deploy_linaro_image", 
+            "parameters": {
+                "image": "http:///url/to/nexus.img"
+            }
+        }, 
+        {
+            "command": "boot_linaro_image"
+        }
+    ]
+}

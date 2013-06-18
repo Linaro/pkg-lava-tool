@@ -27,9 +27,9 @@ import unittest
 def app_modules():
     return [
             'lava_tool.commands',
-            'lava_tool.commands.misc',
             'lava_tool.dispatcher',
             'lava_tool.interface',
+            'lava_dashboard_tool.commands',
             ]
 
 
@@ -38,6 +38,9 @@ def test_modules():
             'lava_tool.tests.test_authtoken',
             'lava_tool.tests.test_auth_commands',
             'lava_tool.tests.test_commands',
+            'lava_dashboard_tool.tests.test_commands',
+            'lava.job.tests.test_job',
+            'lava.job.tests.test_commands',
             ]
 
 

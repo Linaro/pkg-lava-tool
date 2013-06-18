@@ -20,7 +20,7 @@
 Unit tests for the launch_control.commands package
 """
 
-from mocker import MockerTestCase
+from mocker import MockerTestCase, ARGS
 
 from lava_tool.interface import (
     Command,
@@ -101,10 +101,10 @@ class CommandTestCase(MockerTestCase):
 class DispatcherTestCase(MockerTestCase):
 
     def test_main(self):
-        mock_LavaDispatcher = self.mocker.replace(
-            'lava_tool.dispatcher.LavaDispatcher')
-        mock_LavaDispatcher().dispatch()
+        dispatcher = self.mocker.patch(LavaDispatcher)
+        dispatcher.dispatch(ARGS)
         self.mocker.replay()
+
         self.assertRaises(SystemExit, main)
 
     def test_add_command_cls(self):
