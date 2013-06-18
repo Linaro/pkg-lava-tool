@@ -43,6 +43,7 @@ def test_modules():
         'lava.job.tests.test_commands',
         'lava.device.tests.test_device',
         'lava.device.tests.test_commands',
+        'lava.tests.test_config',
     ]
 
 
