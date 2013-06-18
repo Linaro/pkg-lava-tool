@@ -49,7 +49,7 @@ class MockedConfig(Config):
         self._config_backend.read([self._config_file])
 
 
-class TestInteractiveConfig(InteractiveConfig):
+class MockedInteractiveConfig(InteractiveConfig):
     def __init__(self, config_file, force_interactive=False):
         self._cache = {}
         self._config_file = config_file
@@ -163,7 +163,7 @@ class InteractiveConfigTest(TestCase):
 
     def setUp(self):
         self.config_file = tempfile.NamedTemporaryFile(delete=False)
-        self.config = TestInteractiveConfig(config_file=self.config_file.name)
+        self.config = MockedInteractiveConfig(config_file=self.config_file.name)
 
         self.original_stdin = sys.stdin
         self.original_stdout = sys.stdout
@@ -201,5 +201,21 @@ class InteractiveConfigTest(TestCase):
         value = self.config.get(Parameter("foo"))
         self.assertEqual(expected, value)
 
-    def test_non_interactive_config_3(self):
-        self.fail()
+    @patch("lava.config.Config.get", new=MagicMock(return_value="value"))
+    def test_interactive_config_0(self):
+        # We force to be interactive, meaning that even if a value is found,
+        # it will be asked anyway.
+        self.config._force_interactive = True
+        expected = "a_new_value"
+        sys.stdin = StringIO(expected)
+        value = self.config.get(Parameter("foo"))
+        self.assertEqual(expected, value)
+
+    @patch("lava.config.Config.get", new=MagicMock(return_value="value"))
+    def test_interactive_config_1(self):
+        # Force to be interactive, but when asked for the new value press
+        # Enter. The old value should be returned.
+        self.config._force_interactive = True
+        sys.stdin = StringIO("\n")
+        value = self.config.get(Parameter("foo"))
+        self.assertEqual("value", value)
