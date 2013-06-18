@@ -29,7 +29,7 @@ import tempfile
 from mock import MagicMock, patch
 from unittest import TestCase
 
-from lava.config import NonInteractiveConfig, Parameter
+from lava.config import Config, Parameter
 
 from lava.job.commands import (
     new,
@@ -61,8 +61,9 @@ class CommandTest(TestCase):
         self.device_type = Parameter('device_type')
         self.prebuilt_image = Parameter('prebuilt_image',
                                         depends=self.device_type)
-        self.config = NonInteractiveConfig(
-            {'device_type': 'foo', 'prebuilt_image': 'bar'})
+        self.config = Config()
+        self.config.put_parameter(self.device_type, 'foo')
+        self.config.put_parameter(self.prebuilt_image, 'bar')
 
     def tearDown(self):
         sys.stdin = self.original_stdin
