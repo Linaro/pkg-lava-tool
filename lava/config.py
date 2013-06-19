@@ -16,6 +16,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Config class.
+"""
+
 import atexit
 import os
 import readline
@@ -160,6 +164,35 @@ class InteractiveConfig(Config):
         super(InteractiveConfig, self).__init__()
         self._force_interactive = force_interactive
 
+    def _calculate_config_section(self, parameter):
+        """Calculates the config section of the specified parameter.
+
+        :param parameter: The parameter to calculate the section of.
+        :type Parameter
+        :return The config section.
+        """
+        config_section = DEFAULT_SECTION
+        if parameter.depends:
+            # This is mostly relevant to the InteractiveConfig class.
+            # If a parameter has a dependencies we do as follows:
+            # - Get the dependency cached value
+            # - Get the dependency value from the config file
+            # - If both are None, it means the dependency has not been inserted
+            #   yet, and we ask for it.
+            cached_value = self._get_from_cache(
+                parameter.depends,
+                self._calculate_config_section(parameter.depends))
+
+            config_value = self._config_backend.get(
+                self._calculate_config_section(parameter.depends),
+                parameter.depends.id)
+
+            value = cached_value or config_value
+            if not value:
+                value = self.get(parameter.depends)
+            config_section = "{0}={1}".format(parameter.depends.id, value)
+        return config_section
+
     def get(self, parameter):
         """Overrides the parent one.
 
@@ -168,8 +201,8 @@ class InteractiveConfig(Config):
         """
         value = super(InteractiveConfig, self).get(parameter)
 
-        if self._force_interactive:
-            prompt = "Reinsert value for {0} [was: {1}] :".format(
+        if value and self._force_interactive:
+            prompt = "Reinsert value for {0} [was: {1}]: ".format(
                 parameter.id,
                 value)
         else:
