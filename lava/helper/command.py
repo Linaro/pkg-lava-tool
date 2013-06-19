@@ -41,8 +41,7 @@ class BaseCommand(Command):
         super(BaseCommand, cls).register_arguments(parser)
         parser.add_argument("--non-interactive",
                             action='store_false',
-                            help=("Forces asking for input parameters even if "
-                                  "we already have them cached."))
+                            help=("Do not ask for input parameters."))
 
     @classmethod
     def can_edit_file(cls, conf_file):
