@@ -18,37 +18,34 @@
 
 """lava.helper.dispatcher tests."""
 
+import os
+from lava.tool.errors import CommandError
+
 from lava.helper.tests.helper_test import HelperTest
+
+from lava.helper.dispatcher import (
+    choose_devices_path,
+)
 
 
 class DispatcherTests(HelperTest):
 
-    def test_choose_devices_path(self):
+    def test_choose_devices_path_0(self):
         # Tests that when passing more than one path, the first writable one
         # is returned.
-        base_command = BaseCommand(self.parser, self.args)
-        base_command.config = self.config
-        obtained = base_command._choose_devices_path(
+        obtained = choose_devices_path(
             ["/", "/root", self.tempdir, os.path.expanduser("~")])
         expected = os.path.join(self.tempdir, "devices")
         self.assertEqual(expected, obtained)
 
-    def test_get_devices_path_1(self):
+    def test_choose_devices_path_1(self):
         # Tests that when passing a path that is not writable, CommandError
         # is raised.
-        base_command = BaseCommand(self.parser, self.args)
-        base_command.config = self.config
-        BaseCommand._get_dispatcher_paths = MagicMock(
-            return_value=["/", "/root", "/root/tmpdir"])
-        self.assertRaises(CommandError, base_command._get_devices_path)
+        self.assertRaises(CommandError, choose_devices_path, ["/", "/root", "/root/tmpdir"])
 
-    def test_get_devices_path_0(self):
-        # Tests that the correct devices path is returned and created.
-        base_command = BaseCommand(self.parser, self.args)
-        base_command.config = self.config
-        BaseCommand._get_dispatcher_paths = MagicMock(return_value=[
-            self.tempdir])
-        obtained = base_command._get_devices_path()
+    def test_choose_devices_path_2(self):
+        # Tests that the correct path for devices is created on the filesystem.
         expected_path = os.path.join(self.tempdir, "devices")
+        obtained = choose_devices_path([self.tempdir])
         self.assertEqual(expected_path, obtained)
         self.assertTrue(os.path.isdir(expected_path))

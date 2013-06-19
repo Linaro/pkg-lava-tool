@@ -60,7 +60,6 @@ def get_device_file(file_name):
     """
     try:
         from lava_dispatcher.config import get_config_file
-
         return get_config_file(os.path.join(DEFAULT_DEVICES_PATH,
                                             file_name))
     except ImportError:
