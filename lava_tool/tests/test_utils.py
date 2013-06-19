@@ -16,19 +16,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
+"""lava_tool.utils tests."""
+
 import subprocess
 
+from unittest import TestCase
+from mock import patch
 
-def has_command(command):
-    """Checks that the given command is available.
+from lava_tool.utils import has_command
 
-    :param command: The name of the command to check availability.
-    """
-    command_available = True
-    try:
-        subprocess.check_call(["which", command],
-                              stdout=open(os.path.devnull, 'w'))
-    except subprocess.CalledProcessError:
-        command_available = False
-    return command_available
+
+class UtilTests(TestCase):
+
+    @patch("lava_tool.utils.subprocess.check_call")
+    def test_has_command_0(self, mocked_check_call):
+        # Make sure we raise an exception when the subprocess is called.
+        mocked_check_call.side_effect = subprocess.CalledProcessError(0, "")
+        self.assertFalse(has_command(""))
+
+    @patch("lava_tool.utils.subprocess.check_call")
+    def test_has_command_1(self, mocked_check_call):
+        # Check that a "command" exists. The call to subprocess is mocked.
+        mocked_check_call.return_value = 0
+        self.assertTrue(has_command(""))

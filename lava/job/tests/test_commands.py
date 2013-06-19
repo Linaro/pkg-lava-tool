@@ -22,41 +22,26 @@ Unit tests for the commands classes
 
 import json
 import os
-import shutil
-import sys
-import tempfile
 
 from mock import MagicMock, patch
-from unittest import TestCase
 
 from lava.config import Config, Parameter
 
 from lava.job.commands import (
     new,
     run,
+    submit,
 )
 
+from lava.helper.tests.helper_test import HelperTest
 from lava.tool.errors import CommandError
 
 
-class CommandTest(TestCase):
+class CommandTest(HelperTest):
 
     def setUp(self):
-        # Fake the stdout.
-        self.original_stdout = sys.stdout
-        sys.stdout = open("/dev/null", "w")
-        self.original_stderr = sys.stderr
-        sys.stderr = open("/dev/null", "w")
-        self.original_stdin = sys.stdin
-
-        self.device = "panda02"
-
-        self.tmpdir = tempfile.mkdtemp()
-        self.tmpfile = tempfile.NamedTemporaryFile(delete=False)
-        self.parser = MagicMock()
-        self.args = MagicMock()
-        self.args.interactive = MagicMock(return_value=False)
-        self.args.FILE = self.tmpfile.name
+        super(CommandTest, self).setUp()
+        self.args.FILE = self.temp_file.name
 
         self.device_type = Parameter('device_type')
         self.prebuilt_image = Parameter('prebuilt_image',
@@ -65,20 +50,13 @@ class CommandTest(TestCase):
         self.config.put_parameter(self.device_type, 'foo')
         self.config.put_parameter(self.prebuilt_image, 'bar')
 
-    def tearDown(self):
-        sys.stdin = self.original_stdin
-        sys.stdout = self.original_stdout
-        sys.stderr = self.original_stderr
-        os.unlink(self.tmpfile.name)
-        shutil.rmtree(self.tmpdir)
-
     def tmp(self, filename):
         """Returns a path to a non existent file.
 
         :param filename: The name the file should have.
         :return A path.
         """
-        return os.path.join(self.tmpdir, filename)
+        return os.path.join(self.temp_dir, filename)
 
 
 class JobNewTest(CommandTest):
@@ -110,6 +88,15 @@ class JobNewTest(CommandTest):
 
         self.assertRaises(CommandError, self.new_command.invoke)
         self.assertEqual("CONTENTS", open(self.args.FILE).read())
+
+
+class JobSubmitTest(CommandTest):
+
+    def test_receives_job_file_in_cmdline(self):
+        command = submit(self.parser, self.args)
+        command.register_arguments(self.parser)
+        name, args, kwargs = self.parser.method_calls[1]
+        self.assertIn("FILE", args)
 
 
 class JobRunTest(CommandTest):

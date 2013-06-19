@@ -38,12 +38,15 @@ def test_modules():
         'lava_tool.tests.test_authtoken',
         'lava_tool.tests.test_auth_commands',
         'lava_tool.tests.test_commands',
+        'lava_tool.tests.test_utils',
         'lava_dashboard_tool.tests.test_commands',
         'lava.job.tests.test_job',
         'lava.job.tests.test_commands',
         'lava.device.tests.test_device',
         'lava.device.tests.test_commands',
         'lava.tests.test_config',
+        'lava.helper.tests.test_command',
+        'lava.helper.tests.test_dispatcher',
     ]
 
 
