@@ -41,7 +41,8 @@ class DispatcherTests(HelperTest):
     def test_choose_devices_path_1(self):
         # Tests that when passing a path that is not writable, CommandError
         # is raised.
-        self.assertRaises(CommandError, choose_devices_path, ["/", "/root", "/root/tmpdir"])
+        self.assertRaises(CommandError, choose_devices_path,
+                          ["/", "/root", "/root/tmpdir"])
 
     def test_choose_devices_path_2(self):
         # Tests that the correct path for devices is created on the filesystem.

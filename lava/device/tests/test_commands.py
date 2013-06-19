@@ -35,7 +35,8 @@ from lava.tool.errors import CommandError
 
 class CommandsTest(HelperTest):
 
-    @patch("lava.device.commands.get_device_file", new=MagicMock(return_value=None))
+    @patch("lava.device.commands.get_device_file",
+           new=MagicMock(return_value=None))
     @patch("lava.device.commands.get_devices_path")
     def test_add_invoke(self, get_devices_path_mock):
         # Tests invocation of the add command. Verifies that the conf file is
@@ -74,21 +75,24 @@ class CommandsTest(HelperTest):
 
         self.assertFalse(os.path.isfile(expected_path))
 
-    @patch("lava.device.commands.get_device_file", new=MagicMock(return_value="/root"))
+    @patch("lava.device.commands.get_device_file",
+           new=MagicMock(return_value="/root"))
     def test_remove_invoke_raises(self):
         # Tests invocation of the remove command, with a non existent device
         # configuration file.
         remove_command = remove(self.parser, self.args)
         self.assertRaises(CommandError, remove_command.invoke)
 
-    @patch("lava.device.commands.get_device_file", new=MagicMock(return_value=None))
+    @patch("lava.device.commands.get_device_file",
+           new=MagicMock(return_value=None))
     def test_config_invoke_raises_0(self):
         # Tests invocation of the config command, with a non existent device
         # configuration file.
         config_command = config(self.parser, self.args)
         self.assertRaises(CommandError, config_command.invoke)
 
-    @patch("lava.device.commands.get_device_file", new=MagicMock(return_value="/etc/password"))
+    @patch("lava.device.commands.get_device_file",
+           new=MagicMock(return_value="/etc/password"))
     def test_config_invoke_raises_1(self):
         # Tests invocation of the config command, with a non writable file.
         # Hopefully tests are not run as root.
