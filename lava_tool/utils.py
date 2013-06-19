@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import subprocess
 
 
@@ -27,7 +28,7 @@ def has_command(command):
     command_available = True
     try:
         subprocess.check_call(["which", command],
-                              stdout=open('/dev/null', 'w'))
+                              stdout=open(os.path.devnull, 'w'))
     except subprocess.CalledProcessError:
         command_available = False
     return command_available
