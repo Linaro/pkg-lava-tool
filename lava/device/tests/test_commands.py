@@ -47,7 +47,7 @@ class CommandsTest(TestCase):
         sys.stderr = open("/dev/null", "w")
         self.original_stdin = sys.stdin
 
-        self.device = "panda02"
+        self.device = "a_fake_panda02"
 
         self.tempdir = tempfile.mkdtemp()
         self.parser = MagicMock()
@@ -135,10 +135,41 @@ class CommandsTest(TestCase):
 
         self.assertRaises(CommandError, remove_command.invoke)
 
-    def test_config_invoke_raises(self):
+    def test_config_invoke_raises_0(self):
         # Tests invocation of the config command, with a non existent device
         # configuration file.
         config_command = config(self.parser, self.args)
-        config_command._det_device_file = MagicMock(return_value=None)
+        config_command._get_device_file = MagicMock(return_value=None)
 
         self.assertRaises(CommandError, config_command.invoke)
+
+    def test_config_invoke_raises_1(self):
+        # Tests invocation of the config command, with a non writable file.
+        # Hopefully tests are not run as root.
+        config_command = config(self.parser, self.args)
+        config_command._get_device_file = MagicMock(return_value="/etc/passwd")
+
+        self.assertRaises(CommandError, config_command.invoke)
+
+    def test_can_edit_file(self):
+        # Tests the can_edit_file method of the config command.
+        # This is to make sure the device config file is not erased when
+        # checking if it is possible to open it.
+        expected = ("hostname = a_fake_panda02\nconnection_command = \n"
+                    "device_type = panda\n")
+
+        config_command = config(self.parser, self.args)
+        try:
+            conf_file = tempfile.NamedTemporaryFile(delete=False)
+
+            with open(conf_file.name, "w") as f:
+                f.write(expected)
+
+            self.assertTrue(config_command.can_edit_file(conf_file.name))
+            obtained = ""
+            with open(conf_file.name) as f:
+                obtained = f.read()
+
+            self.assertEqual(expected, obtained)
+        finally:
+            os.unlink(conf_file.name)

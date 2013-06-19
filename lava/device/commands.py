@@ -66,10 +66,10 @@ class BaseCommand(Command):
     def _get_dispatcher_paths(cls):
         """Tries to get the dispatcher from lava-dispatcher."""
         try:
-            from lava_dispatcher.config import search_path
-            return search_path()
+            from lava_dispatcher.config import write_path
+            return write_path()
         except ImportError:
-            raise CommandError("Cannot find lava_dispatcher installation.")
+            raise CommandError("Cannot find lava-dispatcher installation.")
 
     @classmethod
     def _choose_devices_path(cls, paths):
@@ -86,7 +86,8 @@ class BaseCommand(Command):
                                for x in range(6))
                 test_file = os.path.join(path, name)
                 try:
-                    open(test_file, 'w')
+                    fp = open(test_file, 'a')
+                    fp.close()
                 except IOError:
                     # Cannot write here.
                     continue
@@ -156,7 +157,7 @@ class BaseCommand(Command):
             return get_config_file(os.path.join(DEFAULT_DEVICES_PATH,
                                                 file_name))
         except ImportError:
-            raise CommandError("Cannot find lava_dispatcher installation.")
+            raise CommandError("Cannot find lava-dispatcher installation.")
 
 
 class add(BaseCommand):
@@ -185,7 +186,7 @@ class add(BaseCommand):
         device.write(device_conf_file)
 
         print >> sys.stdout, ("Created device file '{0}' in: {1}".format(
-            self.args.DEVICE, devices_path))
+            real_file_name, devices_path))
         self.edit_config_file(device_conf_file)
 
 
@@ -223,13 +224,27 @@ class config(BaseCommand):
         parser.add_argument("DEVICE",
                             help="The name of the device to edit.")
 
+    @classmethod
+    def can_edit_file(cls, conf_file):
+        """Checks if a file can be opend in write mode.
+
+        :param conf_file: The path to the file.
+        :return True if it is possible to write on the file, False otherwise.
+        """
+        can_edit = True
+        try:
+            fp = open(conf_file, "a")
+            fp.close()
+        except IOError:
+            can_edit = False
+        return can_edit
+
     def invoke(self):
         real_file_name = ".".join([self.args.DEVICE, DEVICE_FILE_SUFFIX])
 
         device_conf = self._get_device_file(real_file_name)
-        if device_conf:
+        if device_conf and self.can_edit_file(device_conf):
             self.edit_config_file(device_conf)
         else:
-            raise CommandError("Cannot edit file '{0}' at: {1}. It does not "
-                               "exist or it is not a "
-                               "file.".format(real_file_name, device_conf))
+            raise CommandError("Cannot edit file '{0}' at: "
+                               "{1}.".format(real_file_name, device_conf))
