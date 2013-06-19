@@ -18,11 +18,15 @@
 
 """Base command class common to lava commands series."""
 
+import os
 import subprocess
+import sys
+
 
 from lava.config import InteractiveConfig
 from lava.tool.command import Command
 from lava.tool.errors import CommandError
+from lava_tool.utils import has_command
 
 
 class BaseCommand(Command):
@@ -30,39 +34,57 @@ class BaseCommand(Command):
     def __init__(self, parser, args):
         super(BaseCommand, self).__init__(parser, args)
         self.config = InteractiveConfig(
-            force_interactive=self.args.interactive)
+            force_interactive=self.args.non_interactive)
 
     @classmethod
     def register_arguments(cls, parser):
         super(BaseCommand, cls).register_arguments(parser)
-        parser.add_argument("-i", "--interactive",
-                            action='store_true',
+        parser.add_argument("--non-interactive",
+                            action='store_false',
                             help=("Forces asking for input parameters even if "
                                   "we already have them cached."))
 
     @classmethod
-    def get_dispatcher_paths(cls):
-        """Tries to get the dispatcher paths from lava-dispatcher.
+    def can_edit_file(cls, conf_file):
+        """Checks if a file can be opend in write mode.
 
-        :return A list of paths.
+        :param conf_file: The path to the file.
+        :return True if it is possible to write on the file, False otherwise.
         """
+        can_edit = True
         try:
-            from lava_dispatcher.config import write_path
-            return write_path()
-        except ImportError:
-            raise CommandError("Cannot find lava-dispatcher installation.")
+            fp = open(conf_file, "a")
+            fp.close()
+        except IOError:
+            can_edit = False
+        return can_edit
 
     @classmethod
-    def get_devices(cls):
-        """Gets the devices list from the dispatcher.
+    def edit_file(cls, config_file):
+        """Opens the specified file with the default file editor.
 
-        :return A list of DeviceConfig.
+        :param config_file: The file to edit.
         """
+        editor = os.environ.get("EDITOR", None)
+        if editor is None:
+            if has_command("sensible-editor"):
+                editor = "sensible-editor"
+            elif has_command("xdg-open"):
+                editor = "xdg-open"
+            else:
+                # We really do not know how to open a file.
+                print >> sys.stdout, ("Cannot find an editor to open the "
+                                      "file '{0}'.".format(config_file))
+                print >> sys.stdout, ("Either set the 'EDITOR' environment "
+                                      "variable, or install 'sensible-editor' "
+                                      "or 'xdg-open'.")
+                sys.exit(-1)
         try:
-            from lava_dispatcher.config import get_devices
-            return get_devices()
-        except ImportError:
-            raise CommandError("Cannot find lava-dispatcher installation.")
+            subprocess.Popen([editor, config_file]).wait()
+        except Exception:
+            raise CommandError("Error opening the file '{0}' with the "
+                               "following editor: {1}.".format(config_file,
+                                                               editor))
 
     @classmethod
     def run(cls, cmd_args):
