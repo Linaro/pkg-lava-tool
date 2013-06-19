@@ -20,34 +20,19 @@
 Device class unit tests.
 """
 
-import os
 import sys
-import tempfile
 
 from StringIO import StringIO
-from unittest import TestCase
 
 from lava.device import (
     Device,
     get_known_device,
 )
 from lava.tool.errors import CommandError
+from lava.helper.tests.helper_test import HelperTest
 
 
-class DeviceTest(TestCase):
-
-    def setUp(self):
-        # Fake the stdin and the stdout.
-        self.original_stdout = sys.stdout
-        sys.stdout = open("/dev/null", "w")
-        self.original_stdin = sys.stdin
-        sys.stdin = StringIO()
-        self.temp_file = tempfile.NamedTemporaryFile(delete=False)
-
-    def tearDown(self):
-        sys.stdout = self.original_stdout
-        sys.stdin = self.original_stdin
-        os.unlink(self.temp_file.name)
+class DeviceTest(HelperTest):
 
     def test_get_known_device_panda_0(self):
         # User creates a new device with a guessable name for a device.
