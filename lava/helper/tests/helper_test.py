@@ -44,18 +44,18 @@ class HelperTest(TestCase):
         self.device = "a_fake_panda02"
 
         self.temp_file = tempfile.NamedTemporaryFile(delete=False)
-        self.tempdir = tempfile.mkdtemp()
+        self.temp_dir = tempfile.mkdtemp()
         self.parser = MagicMock()
         self.args = MagicMock()
         self.args.interactive = MagicMock(return_value=False)
         self.args.DEVICE = self.device
 
         self.config = MagicMock()
-        self.config.get = MagicMock(return_value=self.tempdir)
+        self.config.get = MagicMock(return_value=self.temp_dir)
 
     def tearDown(self):
         sys.stdin = self.original_stdin
         sys.stdout = self.original_stdout
         sys.stderr = self.original_stderr
-        shutil.rmtree(self.tempdir)
+        shutil.rmtree(self.temp_dir)
         os.unlink(self.temp_file.name)

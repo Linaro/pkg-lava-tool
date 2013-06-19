@@ -40,13 +40,13 @@ class CommandsTest(HelperTest):
     def test_add_invoke(self, get_devices_path_mock):
         # Tests invocation of the add command. Verifies that the conf file is
         # written to disk.
-        get_devices_path_mock.return_value = self.tempdir
+        get_devices_path_mock.return_value = self.temp_dir
 
         add_command = add(self.parser, self.args)
         add_command.edit_file = MagicMock()
         add_command.invoke()
 
-        expected_path = os.path.join(self.tempdir,
+        expected_path = os.path.join(self.temp_dir,
                                      ".".join([self.device, "conf"]))
         self.assertTrue(os.path.isfile(expected_path))
 
@@ -57,13 +57,13 @@ class CommandsTest(HelperTest):
         # has been correctly removed.
         # First we add a new conf file, then we remove it.
         get_device_file_mock.return_value = None
-        get_devices_path_mock.return_value = self.tempdir
+        get_devices_path_mock.return_value = self.temp_dir
 
         add_command = add(self.parser, self.args)
         add_command.edit_file = MagicMock()
         add_command.invoke()
 
-        expected_path = os.path.join(self.tempdir,
+        expected_path = os.path.join(self.temp_dir,
                                      ".".join([self.device, "conf"]))
 
         # Set new values for the mocked function.

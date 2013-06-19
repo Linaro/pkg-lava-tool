@@ -34,8 +34,8 @@ class DispatcherTests(HelperTest):
         # Tests that when passing more than one path, the first writable one
         # is returned.
         obtained = choose_devices_path(
-            ["/", "/root", self.tempdir, os.path.expanduser("~")])
-        expected = os.path.join(self.tempdir, "devices")
+            ["/", "/root", self.temp_dir, os.path.expanduser("~")])
+        expected = os.path.join(self.temp_dir, "devices")
         self.assertEqual(expected, obtained)
 
     def test_choose_devices_path_1(self):
@@ -45,7 +45,7 @@ class DispatcherTests(HelperTest):
 
     def test_choose_devices_path_2(self):
         # Tests that the correct path for devices is created on the filesystem.
-        expected_path = os.path.join(self.tempdir, "devices")
-        obtained = choose_devices_path([self.tempdir])
+        expected_path = os.path.join(self.temp_dir, "devices")
+        obtained = choose_devices_path([self.temp_dir])
         self.assertEqual(expected_path, obtained)
         self.assertTrue(os.path.isdir(expected_path))
