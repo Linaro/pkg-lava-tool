@@ -24,7 +24,7 @@ import os
 import sys
 import xmlrpclib
 
-from lava.base_command import BaseCommand
+from lava.helper.command import BaseCommand
 
 from lava.config import Parameter
 from lava.job import Job
