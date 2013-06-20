@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
-from lava.config import Parameter
+from lava.parameter import Parameter
 
 device_type = Parameter("device_type")
 prebuilt_image = Parameter("prebuilt_image", depends=device_type)
