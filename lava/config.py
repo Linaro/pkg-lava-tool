@@ -83,14 +83,21 @@ class Config(object):
         return config_section
 
     def get(self, parameter):
-        """Retrieves a Parameter from the config file.
+        """Retrieves a Parameter value.
+
+        The value is taken either from the Parameter itself, or from the cache,
+        or from the config file.
 
         :param parameter: The parameter to search.
         :type Parameter
         :return The parameter value, or None if it is not found.
         """
         config_section = self._calculate_config_section(parameter)
-        value = self._get_from_cache(parameter, config_section)
+        # Try to get the parameter value first if it has one.
+        if parameter.value:
+            value = parameter.value
+        else:
+            value = self._get_from_cache(parameter, config_section)
 
         if not value:
             try:
