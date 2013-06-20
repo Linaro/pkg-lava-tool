@@ -27,3 +27,4 @@ class Parameter(object):
         self.id = id
         self.value = value
         self.depends = depends
+        self.asked = False
