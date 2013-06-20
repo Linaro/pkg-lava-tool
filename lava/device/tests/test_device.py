@@ -24,6 +24,12 @@ import sys
 
 from StringIO import StringIO
 
+from lava.device.templates import (
+    HOSTNAME_PARAMETER,
+    DEVICE_TYPE_PARAMETER,
+    CONNECTION_COMMAND_PARMETER,
+)
+from lava.tests.test_config import MockedConfig
 from lava.device import (
     Device,
     get_known_device,
@@ -38,71 +44,79 @@ class DeviceTest(HelperTest):
         # User creates a new device with a guessable name for a device.
         instance = get_known_device('panda_new_01')
         self.assertIsInstance(instance, Device)
-        self.assertEqual(instance.template['device_type'], 'panda')
-        self.assertIsNone(instance.device_type)
+        self.assertEqual(instance.template['device_type'].value, 'panda')
 
     def test_get_known_device_panda_1(self):
         # User creates a new device with a guessable name for a device.
         # Name passed has capital letters.
         instance = get_known_device('new_PanDa_02')
         self.assertIsInstance(instance, Device)
-        self.assertEqual(instance.template['device_type'], 'panda')
-        self.assertIsNone(instance.device_type)
+        self.assertEqual(instance.template['device_type'].value, 'panda')
 
     def test_get_known_device_vexpress_0(self):
         # User creates a new device with a guessable name for a device.
         # Name passed has capital letters.
         instance = get_known_device('a_VexPress_Device')
         self.assertIsInstance(instance, Device)
-        self.assertEqual(instance.template['device_type'], 'vexpress')
-        self.assertIsNone(instance.device_type)
+        self.assertEqual(instance.template['device_type'].value, 'vexpress')
 
     def test_get_known_device_vexpress_1(self):
         # User creates a new device with a guessable name for a device.
         instance = get_known_device('another-vexpress')
         self.assertIsInstance(instance, Device)
-        self.assertEqual(instance.template['device_type'], 'vexpress')
-        self.assertIsNone(instance.device_type)
+        self.assertEqual(instance.template['device_type'].value, 'vexpress')
 
-    def test_instance_update(self):
-        # Tests that when calling the _update() function with an known device
-        # it does not update the device_type instance attribute, and that the
-        # template contains the correct name.
-        instance = get_known_device('Another_PanDa_device')
-        instance._update()
-        self.assertIsInstance(instance, Device)
-        self.assertEqual(instance.template['device_type'], 'panda')
-        self.assertIsNone(instance.device_type)
+    def test_device_update_0(self):
+        # Tests that when updating the device value we are passing a correct
+        # Config instance, otherwise raise CommandError.
+        instance = get_known_device("panda_device")
+        config = ""
+        self.assertRaises(CommandError, instance.update, config)
 
-    def test_get_known_device_unknown(self):
-        # User tries to create a new device with an unknown device type. She
-        # is asked to insert the device type and types 'a_fake_device'.
-        sys.stdin = StringIO('a_fake_device')
-        instance = get_known_device('a_fake_device')
-        self.assertIsInstance(instance, Device)
-        self.assertEqual(instance.device_type, 'a_fake_device')
+    def test_device_update_1(self):
+        # Tests that when calling update() on a Device, the template gets
+        # updated with the correct values from a Config instance.
+        hostname = "panda_device"
 
-    def test_get_known_device_known(self):
-        # User tries to create a new device with a not recognizable name.
-        # She is asked to insert the device type and types 'panda'.
-        sys.stdin = StringIO("panda")
-        instance = get_known_device("another_fake_device")
-        self.assertIsInstance(instance, Device)
-        self.assertEqual(instance.template["device_type"], "panda")
+        config = MockedConfig(self.temp_file.name)
+        config.put_parameter(HOSTNAME_PARAMETER, hostname)
+        config.put_parameter(DEVICE_TYPE_PARAMETER, "panda")
+        config.put_parameter(CONNECTION_COMMAND_PARMETER, "test")
 
-    def test_get_known_device_raises(self):
-        # User tries to create a new device, but in some way nothing is passed
-        # on the command line when asked.
-        sys.stdin = StringIO("\n")
-        self.assertRaises(CommandError, get_known_device, 'a_fake_device')
+        expected = {
+            "hostname": hostname,
+            "device_type": "panda",
+            "connection_command": "test"
+        }
+
+        instance = get_known_device(hostname)
+        instance.update(config)
+
+        self.assertEqual(expected, instance.template)
 
     def test_device_write(self):
         # User tries to create a new panda device. The conf file is written
         # and contains the expected results.
-        expected = ("hostname = panda02\nconnection_command = \n"
-                    "device_type = panda\n")
-        instance = get_known_device("panda02")
+        hostname = "panda_device"
+
+        config = MockedConfig(self.temp_file.name)
+        config.put_parameter(HOSTNAME_PARAMETER, hostname)
+        config.put_parameter(DEVICE_TYPE_PARAMETER, "panda")
+        config.put_parameter(CONNECTION_COMMAND_PARMETER, "test")
+
+        expected = {
+            "hostname": hostname,
+            "device_type": "panda",
+            "connection_command": "test"
+        }
+
+        instance = get_known_device(hostname)
+        instance.update(config)
         instance.write(self.temp_file.name)
+
+        expected = ("hostname = panda_device\nconnection_command = test\n"
+                    "device_type = panda\n")
+
         obtained = ""
         with open(self.temp_file.name) as f:
             obtained = f.read()
