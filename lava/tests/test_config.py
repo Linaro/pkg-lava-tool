@@ -17,7 +17,7 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Config class unit tests.
+lava.config unit tests.
 """
 
 import os
@@ -25,7 +25,6 @@ import sys
 import tempfile
 
 from StringIO import StringIO
-from unittest import TestCase
 from mock import MagicMock, patch, call
 
 from lava.config import (
@@ -34,6 +33,8 @@ from lava.config import (
     ConfigParser,
     Parameter,
 )
+
+from lava.helper.tests.helper_test import HelperTest
 
 
 class MockedConfig(Config):
@@ -58,18 +59,26 @@ class MockedInteractiveConfig(InteractiveConfig):
         self._force_interactive = force_interactive
 
 
-class ConfigTest(TestCase):
-
+class ConfigTestCase(HelperTest):
+    """General test case class for the different Config classes."""
     def setUp(self):
+        super(ConfigTestCase, self).setUp()
         self.config_file = tempfile.NamedTemporaryFile(delete=False)
-        self.config = MockedConfig(self.config_file.name)
 
         self.param1 = Parameter("foo")
         self.param2 = Parameter("bar", depends=self.param1)
 
     def tearDown(self):
+        super(ConfigTestCase, self).tearDown()
         if os.path.isfile(self.config_file.name):
             os.unlink(self.config_file.name)
+
+
+class ConfigTest(ConfigTestCase):
+
+    def setUp(self):
+        super(ConfigTest, self).setUp()
+        self.config = MockedConfig(self.config_file.name)
 
     def test_assert_temp_config_file(self):
         # Dummy test to make sure we are overriding correctly the Config class.
@@ -159,25 +168,12 @@ class ConfigTest(TestCase):
         self.assertEqual(expected, mocked_calls.mock_calls)
 
 
-class InteractiveConfigTest(TestCase):
+class InteractiveConfigTest(ConfigTestCase):
 
     def setUp(self):
-        self.config_file = tempfile.NamedTemporaryFile(delete=False)
-        self.config = MockedInteractiveConfig(config_file=self.config_file.name)
-
-        self.original_stdin = sys.stdin
-        self.original_stdout = sys.stdout
-        sys.stdout = open(os.path.devnull, "w")
-        self.original_stderr = sys.stderr
-        sys.stderr = open(os.path.devnull, "w")
-
-    def tearDown(self):
-        if os.path.isfile(self.config_file.name):
-            os.unlink(self.config_file.name)
-
-        sys.stdin = self.original_stdin
-        sys.stdout = self.original_stdout
-        sys.stderr = self.original_stderr
+        super(InteractiveConfigTest, self).setUp()
+        self.config = MockedInteractiveConfig(
+            config_file=self.config_file.name)
 
     @patch("lava.config.Config.get", new=MagicMock(return_value=None))
     def test_non_interactive_config_0(self):
@@ -219,3 +215,47 @@ class InteractiveConfigTest(TestCase):
         sys.stdin = StringIO("\n")
         value = self.config.get(Parameter("foo"))
         self.assertEqual("value", value)
+
+    def test_calculate_config_section_0(self):
+        self.config._force_interactive = True
+        obtained = self.config._calculate_config_section(self.param1)
+        expected = "DEFAULT"
+        self.assertEqual(expected, obtained)
+
+    def test_calculate_config_section_1(self):
+        self.config._force_interactive = True
+        self.config.put_parameter(self.param1, "foo")
+        obtained = self.config._calculate_config_section(self.param2)
+        expected = "foo=foo"
+        self.assertEqual(expected, obtained)
+
+    def test_calculate_config_section_2(self):
+        self.config._force_interactive = True
+        self.config._config_backend.get = MagicMock(return_value=None)
+        sys.stdin = StringIO("baz")
+        expected = "foo=baz"
+        obtained = self.config._calculate_config_section(self.param2)
+        self.assertEqual(expected, obtained)
+
+    def test_calculate_config_section_3(self):
+        # Tests that when a parameter has its value in the cache and also on
+        # file, we honor the cached version.
+        self.config._force_interactive = True
+        self.config._get_from_cache = MagicMock(return_value="bar")
+        self.config._config_backend.get = MagicMock(return_value="baz")
+        expected = "foo=bar"
+        obtained = self.config._calculate_config_section(self.param2)
+        self.assertEqual(expected, obtained)
+
+    @patch("lava.config.Config.get", new=MagicMock(return_value=None))
+    @patch("lava.config.sys.exit")
+    @patch("lava.config.raw_input", create=True)
+    def test_interactive_config_exit(self, mocked_raw, mocked_sys_exit):
+        self.config._calculate_config_section = MagicMock(
+            return_value="DEFAULT")
+
+        mocked_raw.side_effect = KeyboardInterrupt()
+
+        self.config._force_interactive = True
+        self.config.get(self.param1)
+        self.assertTrue(mocked_sys_exit.called)
