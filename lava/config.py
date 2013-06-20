@@ -50,13 +50,6 @@ def _run_at_exit():
 atexit.register(_run_at_exit)
 
 
-class Parameter(object):
-    """A parameter with optional dependencies."""
-    def __init__(self, id, depends=None):
-        self.id = id
-        self.depends = depends
-
-
 class Config(object):
     """A generic config object."""
     def __init__(self):
@@ -76,13 +69,13 @@ class Config(object):
         :type Parameter
         :return The config section.
         """
-        config_section = DEFAULT_SECTION
+        section = DEFAULT_SECTION
         if parameter.depends:
-            config_section = "{0}={1}".format(parameter.depends.id,
-                                              self.get(parameter.depends))
-        return config_section
+            section = "{0}={1}".format(parameter.depends.id,
+                                       self.get(parameter.depends))
+        return section
 
-    def get(self, parameter):
+    def get(self, parameter, section=None):
         """Retrieves a Parameter value.
 
         The value is taken either from the Parameter itself, or from the cache,
@@ -92,19 +85,30 @@ class Config(object):
         :type Parameter
         :return The parameter value, or None if it is not found.
         """
-        config_section = self._calculate_config_section(parameter)
+        if not section:
+            section = self._calculate_config_section(parameter)
         # Try to get the parameter value first if it has one.
         if parameter.value:
             value = parameter.value
         else:
-            value = self._get_from_cache(parameter, config_section)
+            value = self._get_from_cache(parameter, section)
 
         if not value:
-            try:
-                value = self._config_backend.get(config_section, parameter.id)
-            except (NoOptionError, NoSectionError):
-                # Ignore, we return None since value is already None.
-                pass
+            value = self._get_from_backend(parameter, section)
+        return value
+
+    def _get_from_backend(self, parameter, section):
+        """Gets the parameter value from the config backed.
+
+        :param parameter: The Parameter to look up.
+        :param section: The section in the Config.
+        """
+        value = None
+        try:
+            value = self._config_backend.get(section, parameter.id)
+        except (NoOptionError, NoSectionError):
+            # Ignore, we return None.
+            pass
         return value
 
     def _get_from_cache(self, parameter, section):
@@ -120,7 +124,7 @@ class Config(object):
                 value = self._cache[section][parameter.id]
         return value
 
-    def _put_in_cache(self, key, value, section):
+    def _put_in_cache(self, key, value, section=DEFAULT_SECTION):
         """Insert the passed parameter in the internal cache.
 
         :param parameter: The parameter to insert.
@@ -146,14 +150,15 @@ class Config(object):
         # Store in the cache too.
         self._put_in_cache(key, value, section)
 
-    def put_parameter(self, parameter, value):
+    def put_parameter(self, parameter, value, section=None):
         """Adds a Parameter to the config file and cache.
 
         :param Parameter: The parameter to add.
         :param value: The value of the parameter.
         """
-        config_section = self._calculate_config_section(parameter)
-        self.put(parameter.id, value, config_section)
+        if not section:
+            section = self._calculate_config_section(parameter)
+        self.put(parameter.id, value, section)
 
     def save(self):
         """Saves the config to file."""
@@ -178,7 +183,7 @@ class InteractiveConfig(Config):
         :type Parameter
         :return The config section.
         """
-        config_section = DEFAULT_SECTION
+        section = DEFAULT_SECTION
         if parameter.depends:
             # This is mostly relevant to the InteractiveConfig class.
             # If a parameter has a dependency we do as follows:
@@ -186,28 +191,30 @@ class InteractiveConfig(Config):
             # - Get the dependency value from the config file
             # - If both are None, it means the dependency has not been inserted
             #   yet, and we ask for it.
-            cached_value = self._get_from_cache(
-                parameter.depends,
-                self._calculate_config_section(parameter.depends))
+            depend_section = self._calculate_config_section(parameter.depends)
 
-            config_value = self._config_backend.get(
-                self._calculate_config_section(parameter.depends),
-                parameter.depends.id)
+            cached_value = self._get_from_cache(parameter.depends,
+                                                depend_section)
+            config_value = self._get_from_backend(parameter.depends,
+                                                  depend_section)
 
             # Honor the cached value.
             value = cached_value or config_value
             if not value:
                 value = self.get(parameter.depends)
-            config_section = "{0}={1}".format(parameter.depends.id, value)
-        return config_section
+                parameter.depends.asked = True
+            section = "{0}={1}".format(parameter.depends.id, value)
+        return section
 
-    def get(self, parameter):
+    def get(self, parameter, section=None):
         """Overrides the parent one.
 
         The only difference with the parent one, is that it will ask to type
         a parameter value in case it is not found.
         """
-        value = super(InteractiveConfig, self).get(parameter)
+        if not section:
+            section = self._calculate_config_section(parameter)
+        value = super(InteractiveConfig, self).get(parameter, section)
 
         if value and self._force_interactive:
             prompt = "Reinsert value for {0} [was: {1}]: ".format(
@@ -216,18 +223,17 @@ class InteractiveConfig(Config):
         else:
             prompt = "Insert value for {0}: ".format(parameter.id)
 
-        if not value or self._force_interactive:
-            config_section = self._calculate_config_section(parameter)
+        if not (value and parameter.asked):
+            if not value or self._force_interactive:
+                user_input = None
+                try:
+                    user_input = raw_input(prompt).strip()
+                except EOFError:
+                    pass
+                except KeyboardInterrupt:
+                    sys.exit(-1)
 
-            user_input = None
-            try:
-                user_input = raw_input(prompt).strip()
-            except EOFError:
-                pass
-            except KeyboardInterrupt:
-                sys.exit(-1)
-
-            if user_input:
-                value = user_input
-                self.put(parameter.id, value, config_section)
+                if user_input:
+                    value = user_input
+                    self.put(parameter.id, value, section)
         return value
