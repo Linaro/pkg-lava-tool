@@ -18,9 +18,14 @@
 
 import re
 
+from copy import deepcopy
+
+from lava.config import Config
 from lava.device.templates import (
-    KNOWN_TEMPLATES,
     DEFAULT_TEMPLATE,
+    HOSTNAME_PARAMETER,
+    KNOWN_TEMPLATES,
+    update_template,
 )
 from lava.tool.errors import CommandError
 
@@ -44,59 +49,37 @@ KNOWN_DEVICES = dict([(device, (__re_compile(device), template))
 
 class Device(object):
     """A generic device."""
-    def __init__(self, hostname, template):
-        self.device_type = None
+    def __init__(self, hostname=None, template=None):
         self.hostname = hostname
-        self.template = template.copy()
+        self.template = deepcopy(template)
 
     def write(self, conf_file):
         """Writes the object to file.
 
         :param conf_file: The full path of the file where to write."""
         with open(conf_file, 'w') as write_file:
-            write_file.write(self.__str__())
+            write_file.write(str(self))
 
-    def _update(self):
-        """Updates the template with the values specified for this class.
+    def update(self, config):
+        """Updates the Device object values based on the provided config.
 
-        Subclasses need to override this when they add more specific
-        attributes.
+        :param config: A Config instance.
         """
-        # This is needed for the 'default' behavior. If we matched a known
-        # device, we do not need to update its device_type, since its already
-        # defined in the template.
-        if self.device_type:
-            self.template.update(hostname=self.hostname,
-                                 device_type=self.device_type)
-        else:
-            self.template.update(hostname=self.hostname)
+        if not isinstance(config, Config):
+            raise CommandError("Error updating the device values.")
+
+        # We should always have a hostname, since it defaults to the name
+        # given on the command line for the config file.
+        if self.hostname:
+            config.put_parameter(HOSTNAME_PARAMETER, self.hostname)
+
+        update_template(self.template, config)
 
     def __str__(self):
-        self._update()
         string_list = []
         for key, value in self.template.iteritems():
-            if not value:
-                value = ''
             string_list.append("{0} = {1}\n".format(str(key), str(value)))
         return "".join(string_list)
-
-    def __repr__(self):
-        self._update()
-        return str(self.template)
-
-
-def _get_device_type_from_user():
-    """Makes the user write what kind of device this is.
-
-    If something goes wrong, raises CommandError.
-    """
-    try:
-        dev_type = raw_input("Please specify the device type: ").strip()
-    except (EOFError, KeyboardInterrupt):
-        dev_type = None
-    if not dev_type:
-        raise CommandError("DEVICE name not specified or not correct.")
-    return dev_type
 
 
 def get_known_device(name):
@@ -105,20 +88,9 @@ def get_known_device(name):
     :param name: The name of the device we want matched to a real device.
     :return A Device instance.
         """
-    instance = None
+    instance = Device(name, DEFAULT_TEMPLATE)
     for known_dev, (matcher, dev_template) in KNOWN_DEVICES.iteritems():
         if matcher.match(name):
             instance = Device(name, dev_template)
-    if not instance:
-        dev_type = _get_device_type_from_user()
-        known_dev = KNOWN_DEVICES.get(dev_type, None)
-        if known_dev:
-            instance = Device(name, known_dev[1])
-        else:
-            print ("Device '{0}' does not match a known "
-                   "device.".format(dev_type))
-            instance = Device(name, DEFAULT_TEMPLATE)
-            # Not stricly necessary, users can fill up the field later.
-            instance.device_type = dev_type
-
+            break
     return instance
