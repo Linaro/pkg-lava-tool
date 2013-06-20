@@ -117,5 +117,4 @@ class config(BaseCommand):
         if device_conf and self.can_edit_file(device_conf):
             self.edit_file(device_conf)
         else:
-            raise CommandError("Cannot edit file '{0}' at: "
-                               "{1}.".format(real_file_name, device_conf))
+            raise CommandError("Cannot edit file '{0}'".format(real_file_name))
