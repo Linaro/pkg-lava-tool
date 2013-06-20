@@ -93,6 +93,7 @@ class DeviceTest(HelperTest):
     def test_get_known_device_raises(self):
         # User tries to create a new device, but in some way nothing is passed
         # on the command line when asked.
+        sys.stdin = StringIO("\n")
         self.assertRaises(CommandError, get_known_device, 'a_fake_device')
 
     def test_device_write(self):
