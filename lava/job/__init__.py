@@ -19,7 +19,7 @@
 from copy import deepcopy
 import json
 
-from lava.job.templates import Parameter
+from lava.parameter import Parameter
 
 
 class Job:
