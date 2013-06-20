@@ -26,11 +26,11 @@ import xmlrpclib
 
 from lava.helper.command import BaseCommand
 
-from lava.config import Parameter
 from lava.job import Job
 from lava.job.templates import (
     BOOT_TEST,
 )
+from lava.parameter import Parameter
 from lava.tool.command import CommandGroup
 from lava.tool.errors import CommandError
 from lava_tool.authtoken import AuthenticatingServerProxy, KeyringAuthBackend
