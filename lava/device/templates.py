@@ -24,6 +24,7 @@ will be used to serialize a Device object.
 from lava.config import Config
 from lava.parameter import Parameter
 
+# The hostname parameter is always in the DEFAULT config section.
 HOSTNAME_PARAMETER = Parameter("hostname")
 DEVICE_TYPE_PARAMETER = Parameter("device_type", depends=HOSTNAME_PARAMETER)
 CONNECTION_COMMAND_PARMETER = Parameter("connection_command",
