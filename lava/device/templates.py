@@ -21,22 +21,60 @@ This is just a place where to store a template like dictionary that
 will be used to serialize a Device object.
 """
 
+from lava.config import Config
+from lava.parameter import Parameter
+
+HOSTNAME_PARAMETER = Parameter("hostname")
+DEVICE_TYPE_PARAMETER = Parameter("device_type", depends=HOSTNAME_PARAMETER)
+CONNECTION_COMMAND_PARMETER = Parameter("connection_command",
+                                        depends=DEVICE_TYPE_PARAMETER)
+
 DEFAULT_TEMPLATE = {
-    'device_type': None,
-    'hostname': None,
-    'connection_command': None,
+    'hostname': HOSTNAME_PARAMETER,
+    'device_type': DEVICE_TYPE_PARAMETER,
+    'connection_command': CONNECTION_COMMAND_PARMETER,
 }
 
 # Dictionary with templates of known devices.
 KNOWN_TEMPLATES = {
     'panda': {
-        'device_type': 'panda',
-        'hostname': None,
-        'connection_command': None,
+        'hostname': HOSTNAME_PARAMETER,
+        'device_type': Parameter("device_type", depends=HOSTNAME_PARAMETER,
+                                 value="panda"),
+        'connection_command': CONNECTION_COMMAND_PARMETER,
     },
     'vexpress': {
-        'device_type': 'vexpress',
-        'hostname': None,
-        'connection_command': None,
+        'hostname': HOSTNAME_PARAMETER,
+        'device_type': Parameter("device_type", depends=HOSTNAME_PARAMETER,
+                                 value="vexpress"),
+        'connection_command': CONNECTION_COMMAND_PARMETER,
     },
 }
+
+
+def update_template(template, config):
+    """Updates a template based on the values from the provided config.
+
+    :param template: A template to be updated.
+    :param config: A Config instance where values should be taken.
+    """
+
+    # Really make sure.
+    assert isinstance(config, Config)
+
+    def update(data):
+        """Internal recursive function."""
+        if isinstance(data, dict):
+            keys = data.keys()
+        elif isinstance(data, list):
+            keys = range(len(data))
+        else:
+            return
+        for key in keys:
+            entry = data[key]
+            if isinstance(entry, Parameter):
+                data[key] = config.get(entry)
+            else:
+                update(entry)
+
+    update(template)
