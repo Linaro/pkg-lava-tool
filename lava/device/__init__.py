@@ -71,7 +71,7 @@ class Device(object):
         # We should always have a hostname, since it defaults to the name
         # given on the command line for the config file.
         if self.hostname:
-            config.put_parameter(HOSTNAME_PARAMETER, self.hostname)
+            config._put_in_cache(HOSTNAME_PARAMETER.id, self.hostname, "DEFAULT")
 
         update_template(self.template, config)
 
