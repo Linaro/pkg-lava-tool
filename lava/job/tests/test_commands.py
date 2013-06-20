@@ -25,15 +25,14 @@ import os
 
 from mock import MagicMock, patch
 
-from lava.config import Config, Parameter
-
+from lava.config import Config
+from lava.helper.tests.helper_test import HelperTest
 from lava.job.commands import (
     new,
     run,
     submit,
 )
-
-from lava.helper.tests.helper_test import HelperTest
+from lava.parameter import Parameter
 from lava.tool.errors import CommandError
 
 

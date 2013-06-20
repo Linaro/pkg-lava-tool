@@ -20,20 +20,17 @@
 Unit tests for the Job class
 """
 
-import os
 import json
+import os
 import tempfile
-from unittest import TestCase
-from StringIO import StringIO
 
-from lava.config import (
-    Config,
-    Parameter,
-)
-from lava.job.templates import (
-    BOOT_TEST
-)
+from StringIO import StringIO
+from unittest import TestCase
+
+from lava.config import Config
 from lava.job import Job
+from lava.job.templates import BOOT_TEST
+from lava.parameter import Parameter
 
 
 class JobTest(TestCase):

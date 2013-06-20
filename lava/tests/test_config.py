@@ -31,10 +31,9 @@ from lava.config import (
     Config,
     InteractiveConfig,
     ConfigParser,
-    Parameter,
 )
-
 from lava.helper.tests.helper_test import HelperTest
+from lava.parameter import Parameter
 
 
 class MockedConfig(Config):
