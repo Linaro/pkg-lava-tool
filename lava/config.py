@@ -160,7 +160,7 @@ class InteractiveConfig(Config):
     If a value is not found in the config file, it will ask it and then stores
     it.
     """
-    def __init__(self, force_interactive=False):
+    def __init__(self, force_interactive=True):
         super(InteractiveConfig, self).__init__()
         self._force_interactive = force_interactive
 
@@ -174,7 +174,7 @@ class InteractiveConfig(Config):
         config_section = DEFAULT_SECTION
         if parameter.depends:
             # This is mostly relevant to the InteractiveConfig class.
-            # If a parameter has a dependencies we do as follows:
+            # If a parameter has a dependency we do as follows:
             # - Get the dependency cached value
             # - Get the dependency value from the config file
             # - If both are None, it means the dependency has not been inserted
@@ -187,6 +187,7 @@ class InteractiveConfig(Config):
                 self._calculate_config_section(parameter.depends),
                 parameter.depends.id)
 
+            # Honor the cached value.
             value = cached_value or config_value
             if not value:
                 value = self.get(parameter.depends)
@@ -211,10 +212,11 @@ class InteractiveConfig(Config):
         if not value or self._force_interactive:
             config_section = self._calculate_config_section(parameter)
 
+            user_input = None
             try:
                 user_input = raw_input(prompt).strip()
             except EOFError:
-                user_input = None
+                pass
             except KeyboardInterrupt:
                 sys.exit(-1)
 
