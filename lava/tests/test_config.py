@@ -34,6 +34,7 @@ from lava.config import (
 )
 from lava.helper.tests.helper_test import HelperTest
 from lava.parameter import Parameter
+from lava.tool.errors import CommandError
 
 
 class MockedConfig(Config):
@@ -112,6 +113,21 @@ class ConfigTest(ConfigTestCase):
         expected = "foo"
         obtained = self.config._config_backend.get("bar", "foo")
         self.assertEqual(expected, obtained)
+
+    def test_config_put_parameter_0(self):
+        self.config._calculate_config_section = MagicMock(return_value="")
+        self.assertRaises(CommandError, self.config.put_parameter, self.param1)
+
+    @patch("lava.config.Config.put")
+    def test_config_put_parameter_1(self, mocked_config_put):
+        self.config._calculate_config_section = MagicMock(
+            return_value="DEFAULT")
+
+        self.param1.value = "bar"
+        self.config.put_parameter(self.param1)
+
+        self.assertEqual(mocked_config_put.mock_calls,
+                         [call("foo", "bar", "DEFAULT")])
 
     def test_config_get_0(self):
         # Tests that with a non existing parameter, it returns None.
