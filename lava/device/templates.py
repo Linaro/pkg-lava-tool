@@ -21,6 +21,8 @@ This is just a place where to store a template like dictionary that
 will be used to serialize a Device object.
 """
 
+from copy import deepcopy
+
 from lava.config import Config
 from lava.parameter import Parameter
 
@@ -36,19 +38,35 @@ DEFAULT_TEMPLATE = {
     'connection_command': CONNECTION_COMMAND_PARMETER,
 }
 
+# Specialized copies of the parameters.
+# We need this or we might end up asking the user twice the same parameter due
+# to different object references when one Parameter depends on a "specialized"
+# one, different from the defaults.
+PANDA_DEVICE_TYPE = deepcopy(DEVICE_TYPE_PARAMETER)
+PANDA_DEVICE_TYPE.value = "panda"
+PANDA_DEVICE_TYPE.asked = True
+
+PANDA_CONNECTION_COMMAND = deepcopy(CONNECTION_COMMAND_PARMETER)
+PANDA_CONNECTION_COMMAND.depends = PANDA_DEVICE_TYPE
+
+VEXPRESS_DEVICE_TYPE = deepcopy(DEVICE_TYPE_PARAMETER)
+VEXPRESS_DEVICE_TYPE.value = "vexpress"
+VEXPRESS_DEVICE_TYPE.asked = True
+
+VEXPRESS_CONNECTION_COMMAND = deepcopy(CONNECTION_COMMAND_PARMETER)
+VEXPRESS_CONNECTION_COMMAND.depends = VEXPRESS_DEVICE_TYPE
+
 # Dictionary with templates of known devices.
 KNOWN_TEMPLATES = {
     'panda': {
         'hostname': HOSTNAME_PARAMETER,
-        'device_type': Parameter("device_type", depends=HOSTNAME_PARAMETER,
-                                 value="panda"),
-        'connection_command': CONNECTION_COMMAND_PARMETER,
+        'device_type': PANDA_DEVICE_TYPE,
+        'connection_command': PANDA_CONNECTION_COMMAND,
     },
     'vexpress': {
         'hostname': HOSTNAME_PARAMETER,
-        'device_type': Parameter("device_type", depends=HOSTNAME_PARAMETER,
-                                 value="vexpress"),
-        'connection_command': CONNECTION_COMMAND_PARMETER,
+        'device_type': VEXPRESS_DEVICE_TYPE,
+        'connection_command': VEXPRESS_CONNECTION_COMMAND,
     },
 }
 
