@@ -49,9 +49,9 @@ KNOWN_DEVICES = dict([(device, (__re_compile(device), template))
 
 class Device(object):
     """A generic device."""
-    def __init__(self, hostname=None, template=None):
+    def __init__(self, template, hostname=None):
+        self.data = deepcopy(template)
         self.hostname = hostname
-        self.template = deepcopy(template)
 
     def write(self, conf_file):
         """Writes the object to file.
@@ -70,14 +70,16 @@ class Device(object):
 
         # We should always have a hostname, since it defaults to the name
         # given on the command line for the config file.
-        if self.hostname:
-            config._put_in_cache(HOSTNAME_PARAMETER.id, self.hostname, "DEFAULT")
+        if self.hostname is not None:
+            # We do not ask the user again this parameter.
+            self.data[HOSTNAME_PARAMETER.id].asked = True
+            config.put(HOSTNAME_PARAMETER.id, self.hostname)
 
-        update_template(self.template, config)
+        update_template(self.data, config)
 
     def __str__(self):
         string_list = []
-        for key, value in self.template.iteritems():
+        for key, value in self.data.iteritems():
             string_list.append("{0} = {1}\n".format(str(key), str(value)))
         return "".join(string_list)
 
@@ -88,9 +90,9 @@ def get_known_device(name):
     :param name: The name of the device we want matched to a real device.
     :return A Device instance.
         """
-    instance = Device(name, DEFAULT_TEMPLATE)
+    instance = Device(DEFAULT_TEMPLATE, name)
     for known_dev, (matcher, dev_template) in KNOWN_DEVICES.iteritems():
         if matcher.match(name):
-            instance = Device(name, dev_template)
+            instance = Device(dev_template, name)
             break
     return instance
