@@ -25,8 +25,9 @@ import os
 import readline
 import sys
 
-
 from ConfigParser import ConfigParser, NoOptionError, NoSectionError
+
+from lava.tool.errors import CommandError
 
 __all__ = ['Config', 'InteractiveConfig']
 
@@ -93,7 +94,7 @@ class Config(object):
         else:
             value = self._get_from_cache(parameter, section)
 
-        if not value:
+        if value is None:
             value = self._get_from_backend(parameter, section)
         return value
 
@@ -150,14 +151,22 @@ class Config(object):
         # Store in the cache too.
         self._put_in_cache(key, value, section)
 
-    def put_parameter(self, parameter, value, section=None):
+    def put_parameter(self, parameter, value=None, section=None):
         """Adds a Parameter to the config file and cache.
 
         :param Parameter: The parameter to add.
-        :param value: The value of the parameter.
+        :param value: The value of the parameter. Defaults to None.
+        :param section: The section where this parameter should be stored.
+                        Defaults to None.
         """
         if not section:
             section = self._calculate_config_section(parameter)
+
+        if value is None and parameter.value is not None:
+            value = parameter.value
+        elif value is None:
+            raise CommandError("No value assigned to '{0}".format(
+                parameter.id))
         self.put(parameter.id, value, section)
 
     def save(self):
@@ -201,7 +210,8 @@ class InteractiveConfig(Config):
             # Honor the cached value.
             value = cached_value or config_value
             if not value:
-                value = self.get(parameter.depends)
+                value = self.get(parameter.depends, depend_section)
+                # Do not ask again the same parameter.
                 parameter.depends.asked = True
             section = "{0}={1}".format(parameter.depends.id, value)
         return section
@@ -216,14 +226,14 @@ class InteractiveConfig(Config):
             section = self._calculate_config_section(parameter)
         value = super(InteractiveConfig, self).get(parameter, section)
 
-        if value and self._force_interactive:
+        if value is not None and self._force_interactive:
             prompt = "Reinsert value for {0} [was: {1}]: ".format(
                 parameter.id,
                 value)
         else:
             prompt = "Insert value for {0}: ".format(parameter.id)
 
-        if not (value and parameter.asked):
+        if not (value is not None and parameter.asked):
             if not value or self._force_interactive:
                 user_input = None
                 try:
@@ -233,7 +243,13 @@ class InteractiveConfig(Config):
                 except KeyboardInterrupt:
                     sys.exit(-1)
 
-                if user_input:
-                    value = user_input
-                    self.put(parameter.id, value, section)
+                if user_input is not None:
+                    if len(user_input) == 0 and value:
+                        # Keep the old value when user press enter or another
+                        # whitespace char.
+                        pass
+                    else:
+                        value = user_input
+        if value is not None:
+            self.put(parameter.id, value, section)
         return value
