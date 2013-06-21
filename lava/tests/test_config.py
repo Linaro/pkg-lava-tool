@@ -176,12 +176,12 @@ class InteractiveConfigTest(ConfigTestCase):
 
     @patch("lava.config.Config.get", new=MagicMock(return_value=None))
     def test_non_interactive_config_0(self):
-        # Default is not to be interactive.
+        # Mocked config default is not to be interactive.
         # Try to get a value that does not exists, users just press enter when
-        # asked for a value.
+        # asked for a value. Value will be empty.
         sys.stdin = StringIO("\n")
         value = self.config.get(Parameter("foo"))
-        self.assertEqual(None, value)
+        self.assertEqual("", value)
 
     @patch("lava.config.Config.get", new=MagicMock(return_value="value"))
     def test_non_interactive_config_1(self):

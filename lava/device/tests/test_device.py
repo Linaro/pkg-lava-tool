@@ -20,14 +20,11 @@
 Device class unit tests.
 """
 
-import sys
-
-from StringIO import StringIO
-
+from lava.parameter import Parameter
 from lava.device.templates import (
     HOSTNAME_PARAMETER,
-    DEVICE_TYPE_PARAMETER,
-    CONNECTION_COMMAND_PARMETER,
+    PANDA_DEVICE_TYPE,
+    PANDA_CONNECTION_COMMAND,
 )
 from lava.tests.test_config import MockedConfig
 from lava.device import (
@@ -44,27 +41,28 @@ class DeviceTest(HelperTest):
         # User creates a new device with a guessable name for a device.
         instance = get_known_device('panda_new_01')
         self.assertIsInstance(instance, Device)
-        self.assertEqual(instance.template['device_type'].value, 'panda')
+        self.assertEqual(instance.data['device_type'].value, 'panda')
 
     def test_get_known_device_panda_1(self):
         # User creates a new device with a guessable name for a device.
         # Name passed has capital letters.
         instance = get_known_device('new_PanDa_02')
         self.assertIsInstance(instance, Device)
-        self.assertEqual(instance.template['device_type'].value, 'panda')
+        self.assertEqual(instance.data['device_type'].value, 'panda')
 
     def test_get_known_device_vexpress_0(self):
         # User creates a new device with a guessable name for a device.
         # Name passed has capital letters.
         instance = get_known_device('a_VexPress_Device')
         self.assertIsInstance(instance, Device)
-        self.assertEqual(instance.template['device_type'].value, 'vexpress')
+        self.assertEqual(instance.data['device_type'].value, 'vexpress')
 
     def test_get_known_device_vexpress_1(self):
         # User creates a new device with a guessable name for a device.
         instance = get_known_device('another-vexpress')
         self.assertIsInstance(instance, Device)
-        self.assertEqual(instance.template['device_type'].value, 'vexpress')
+        self.assertIsInstance(instance.data['device_type'], Parameter)
+        self.assertEqual(instance.data['device_type'].value, 'vexpress')
 
     def test_device_update_0(self):
         # Tests that when updating the device value we are passing a correct
@@ -80,8 +78,8 @@ class DeviceTest(HelperTest):
 
         config = MockedConfig(self.temp_file.name)
         config.put_parameter(HOSTNAME_PARAMETER, hostname)
-        config.put_parameter(DEVICE_TYPE_PARAMETER, "panda")
-        config.put_parameter(CONNECTION_COMMAND_PARMETER, "test")
+        config.put_parameter(PANDA_DEVICE_TYPE, "panda")
+        config.put_parameter(PANDA_CONNECTION_COMMAND, "test")
 
         expected = {
             "hostname": hostname,
@@ -92,7 +90,7 @@ class DeviceTest(HelperTest):
         instance = get_known_device(hostname)
         instance.update(config)
 
-        self.assertEqual(expected, instance.template)
+        self.assertEqual(expected, instance.data)
 
     def test_device_write(self):
         # User tries to create a new panda device. The conf file is written
@@ -101,8 +99,8 @@ class DeviceTest(HelperTest):
 
         config = MockedConfig(self.temp_file.name)
         config.put_parameter(HOSTNAME_PARAMETER, hostname)
-        config.put_parameter(DEVICE_TYPE_PARAMETER, "panda")
-        config.put_parameter(CONNECTION_COMMAND_PARMETER, "test")
+        config.put_parameter(PANDA_DEVICE_TYPE, "panda")
+        config.put_parameter(PANDA_CONNECTION_COMMAND, "test")
 
         expected = {
             "hostname": hostname,

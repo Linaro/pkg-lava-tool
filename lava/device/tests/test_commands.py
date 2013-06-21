@@ -35,6 +35,7 @@ from lava.tool.errors import CommandError
 
 class CommandsTest(HelperTest):
 
+    @patch("lava.device.Device.__str__", new=MagicMock(return_value=""))
     @patch("lava.device.Device.update", new=MagicMock())
     @patch("lava.device.commands.get_device_file",
            new=MagicMock(return_value=None))
@@ -52,6 +53,7 @@ class CommandsTest(HelperTest):
                                      ".".join([self.device, "conf"]))
         self.assertTrue(os.path.isfile(expected_path))
 
+    @patch("lava.device.Device.__str__", new=MagicMock(return_value=""))
     @patch("lava.device.Device.update", new=MagicMock())
     @patch("lava.device.commands.get_device_file")
     @patch("lava.device.commands.get_devices_path")
