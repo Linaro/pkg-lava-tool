@@ -185,37 +185,6 @@ class InteractiveConfig(Config):
         super(InteractiveConfig, self).__init__()
         self._force_interactive = force_interactive
 
-    def _calculate_config_section(self, parameter):
-        """Calculates the config section of the specified parameter.
-
-        :param parameter: The parameter to calculate the section of.
-        :type Parameter
-        :return The config section.
-        """
-        section = DEFAULT_SECTION
-        if parameter.depends:
-            # This is mostly relevant to the InteractiveConfig class.
-            # If a parameter has a dependency we do as follows:
-            # - Get the dependency cached value
-            # - Get the dependency value from the config file
-            # - If both are None, it means the dependency has not been inserted
-            #   yet, and we ask for it.
-            depend_section = self._calculate_config_section(parameter.depends)
-
-            cached_value = self._get_from_cache(parameter.depends,
-                                                depend_section)
-            config_value = self._get_from_backend(parameter.depends,
-                                                  depend_section)
-
-            # Honor the cached value.
-            value = cached_value or config_value
-            if not value:
-                value = self.get(parameter.depends, depend_section)
-                # Do not ask again the same parameter.
-                parameter.depends.asked = True
-            section = "{0}={1}".format(parameter.depends.id, value)
-        return section
-
     def get(self, parameter, section=None):
         """Overrides the parent one.
 
