@@ -45,6 +45,7 @@ def test_modules():
         'lava.device.tests.test_device',
         'lava.device.tests.test_commands',
         'lava.tests.test_config',
+        'lava.tests.test_parameter',
         'lava.helper.tests.test_command',
         'lava.helper.tests.test_dispatcher',
     ]

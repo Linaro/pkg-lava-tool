@@ -238,8 +238,9 @@ class InteractiveConfigTest(ConfigTestCase):
         self.assertEqual(expected, obtained)
 
     def test_calculate_config_section_1(self):
+        self.param2.depends.asked = True
         self.config._force_interactive = True
-        self.config.put_parameter(self.param1, "foo")
+        self.config.put(self.param1.id, "foo")
         obtained = self.config._calculate_config_section(self.param2)
         expected = "foo=foo"
         self.assertEqual(expected, obtained)
@@ -255,6 +256,7 @@ class InteractiveConfigTest(ConfigTestCase):
     def test_calculate_config_section_3(self):
         # Tests that when a parameter has its value in the cache and also on
         # file, we honor the cached version.
+        self.param2.depends.asked = True
         self.config._force_interactive = True
         self.config._get_from_cache = MagicMock(return_value="bar")
         self.config._config_backend.get = MagicMock(return_value="baz")
@@ -263,8 +265,8 @@ class InteractiveConfigTest(ConfigTestCase):
         self.assertEqual(expected, obtained)
 
     @patch("lava.config.Config.get", new=MagicMock(return_value=None))
-    @patch("lava.config.sys.exit")
-    @patch("lava.config.raw_input", create=True)
+    @patch("lava.parameter.sys.exit")
+    @patch("lava.parameter.raw_input", create=True)
     def test_interactive_config_exit(self, mocked_raw, mocked_sys_exit):
         self.config._calculate_config_section = MagicMock(
             return_value="DEFAULT")

@@ -195,22 +195,13 @@ class InteractiveConfig(Config):
             section = self._calculate_config_section(parameter)
         value = super(InteractiveConfig, self).get(parameter, section)
 
-        if value is not None and self._force_interactive:
-            prompt = "Reinsert value for {0} [was: {1}]: ".format(
-                parameter.id,
-                value)
-        else:
-            prompt = "Insert value for {0}: ".format(parameter.id)
-
         if not (value is not None and parameter.asked):
             if not value or self._force_interactive:
                 user_input = None
-                try:
-                    user_input = raw_input(prompt).strip()
-                except EOFError:
-                    pass
-                except KeyboardInterrupt:
-                    sys.exit(-1)
+                if self._force_interactive:
+                    user_input = parameter.prompt(reask=True)
+                else:
+                    user_input = parameter.prompt()
 
                 if user_input is not None:
                     if len(user_input) == 0 and value:
