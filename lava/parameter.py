@@ -37,6 +37,7 @@ class Parameter(object):
         self.id = id
         self.value = value
         self.depends = depends
+        self.asked = False
 
     def prompt(self, old_value=None):
         """Gets the parameter value from the user.
@@ -69,4 +70,6 @@ class Parameter(object):
                 self.value = old_value
             else:
                 self.value = user_input
+
+        self.asked = True
         return self.value
