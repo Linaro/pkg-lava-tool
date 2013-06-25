@@ -64,13 +64,6 @@ class DeviceTest(HelperTest):
         self.assertIsInstance(instance.data['device_type'], Parameter)
         self.assertEqual(instance.data['device_type'].value, 'vexpress')
 
-    def test_device_update_0(self):
-        # Tests that when updating the device value we are passing a correct
-        # Config instance, otherwise raise CommandError.
-        instance = get_known_device("panda_device")
-        config = ""
-        self.assertRaises(CommandError, instance.update, config)
-
     def test_device_update_1(self):
         # Tests that when calling update() on a Device, the template gets
         # updated with the correct values from a Config instance.
