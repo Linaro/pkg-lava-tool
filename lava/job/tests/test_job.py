@@ -21,14 +21,28 @@ Unit tests for the Job class
 """
 
 import json
-from unittest import TestCase
-from StringIO import StringIO
+import os
+import tempfile
 
-from lava.config import NonInteractiveConfig
-from lava.job.templates import *
+from StringIO import StringIO
+from unittest import TestCase
+
+from lava.config import Config
 from lava.job import Job
+from lava.job.templates import BOOT_TEST
+from lava.parameter import Parameter
+
 
 class JobTest(TestCase):
+
+    def setUp(self):
+        self.config_file = tempfile.NamedTemporaryFile(delete=False)
+        self.config = Config()
+        self.config._config_file = self.config_file.name
+
+    def tearDown(self):
+        if os.path.isfile(self.config_file.name):
+            os.unlink(self.config_file.name)
 
     def test_from_template(self):
         template = {}
@@ -37,21 +51,20 @@ class JobTest(TestCase):
         self.assertIsNot(job.data, template)
 
     def test_fill_in_data(self):
-        job = Job(BOOT_TEST)
         image = "/path/to/panda.img"
-        config = NonInteractiveConfig(
-            {
-                "device_type": "panda",
-                "prebuilt_image": image,
-            }
-        )
-        job.fill_in(config)
+        param1 = Parameter("device_type")
+        param2 = Parameter("prebuilt_image", depends=param1)
+        self.config.put_parameter(param1, "panda")
+        self.config.put_parameter(param2, image)
+
+        job = Job(BOOT_TEST)
+        job.fill_in(self.config)
 
         self.assertEqual(job.data['device_type'], "panda")
         self.assertEqual(job.data['actions'][0]["parameters"]["image"], image)
 
     def test_write(self):
-        orig_data = { "foo": "bar" }
+        orig_data = {"foo": "bar"}
         job = Job(orig_data)
         output = StringIO()
         job.write(output)
@@ -60,7 +73,7 @@ class JobTest(TestCase):
         self.assertEqual(data, orig_data)
 
     def test_writes_nicely_formatted_json(self):
-        orig_data = { "foo": "bar" }
+        orig_data = {"foo": "bar"}
         job = Job(orig_data)
         output = StringIO()
         job.write(output)

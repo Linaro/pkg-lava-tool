@@ -16,80 +16,195 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Config class.
+"""
+
 import atexit
-from ConfigParser import ConfigParser, NoOptionError, NoSectionError
 import os
 import readline
+import sys
 
-__all__ = ['InteractiveConfig', 'NonInteractiveConfig']
+from ConfigParser import ConfigParser, NoOptionError, NoSectionError
 
-history = os.path.join(os.path.expanduser("~"), ".lava_history")
+from lava.tool.errors import CommandError
+
+__all__ = ['Config', 'InteractiveConfig']
+
+# Store for function calls to be made at exit time.
+AT_EXIT_CALLS = set()
+# Config default section.
+DEFAULT_SECTION = "DEFAULT"
+
+HISTORY = os.path.join(os.path.expanduser("~"), ".lava_history")
 try:
-    readline.read_history_file(history)
+    readline.read_history_file(HISTORY)
 except IOError:
     pass
-atexit.register(readline.write_history_file, history)
+atexit.register(readline.write_history_file, HISTORY)
 
-config_file = os.environ.get('LAVACONFIG') or os.path.join(os.path.expanduser('~'), '.lavaconfig')
-config_backend = ConfigParser()
-config_backend.read([config_file])
-def save_config():
-    with open(config_file, 'w') as f:
-        config_backend.write(f)
-atexit.register(save_config)
 
-class InteractiveConfig(object):
+def _run_at_exit():
+    """Runs all the function at exit."""
+    for call in list(AT_EXIT_CALLS):
+        call()
+atexit.register(_run_at_exit)
 
-    def __init__(self, force_interactive=False):
-        self._force_interactive = force_interactive
+
+class Config(object):
+    """A generic config object."""
+    def __init__(self):
+        # The cache where to store parameters.
         self._cache = {}
+        self._config_file = (os.environ.get('LAVACONFIG') or
+                             os.path.join(os.path.expanduser('~'),
+                                          '.lavaconfig'))
+        self._config_backend = ConfigParser()
+        self._config_backend.read([self._config_file])
+        AT_EXIT_CALLS.add(self.save)
 
-    def get(self, parameter):
-        key = parameter.id
-        value = None
+    def _calculate_config_section(self, parameter):
+        """Calculates the config section of the specified parameter.
+
+        :param parameter: The parameter to calculate the section of.
+        :type Parameter
+        :return The config section.
+        """
+        section = DEFAULT_SECTION
         if parameter.depends:
-            pass
-            config_section = parameter.depends.id + '=' + self.get(parameter.depends)
+            section = "{0}={1}".format(parameter.depends.id,
+                                       self.get(parameter.depends))
+        return section
+
+    def get(self, parameter, section=None):
+        """Retrieves a Parameter value.
+
+        The value is taken either from the Parameter itself, or from the cache,
+        or from the config file.
+
+        :param parameter: The parameter to search.
+        :type Parameter
+        :return The parameter value, or None if it is not found.
+        """
+        if not section:
+            section = self._calculate_config_section(parameter)
+        # Try to get the parameter value first if it has one.
+        if parameter.value:
+            value = parameter.value
         else:
-            config_section = "DEFAULT"
+            value = self._get_from_cache(parameter, section)
 
-        if config_section in self._cache:
-            if key in self._cache[config_section]:
-                return self._cache[config_section][key]
+        if value is None:
+            value = self._get_from_backend(parameter, section)
+        return value
 
-        prompt = '%s: ' % key
+    def _get_from_backend(self, parameter, section):
+        """Gets the parameter value from the config backend.
 
+        :param parameter: The Parameter to look up.
+        :param section: The section in the Config.
+        """
+        value = None
         try:
-            value = config_backend.get(config_section, key)
+            value = self._config_backend.get(section, parameter.id)
         except (NoOptionError, NoSectionError):
+            # Ignore, we return None.
             pass
-        if value:
-            if self._force_interactive:
-                prompt = "%s[%s]: " % (key, value)
-            else:
-                return value
-        try:
-            user_input = raw_input(prompt).strip()
-        except EOFError:
-            user_input = None
-        if user_input:
-            value = user_input
-            if not config_backend.has_section(config_section) and config_section != 'DEFAULT':
-                config_backend.add_section(config_section)
-            config_backend.set(config_section, key, value)
+        return value
 
-        if value:
-            if config_section not in self._cache:
-                self._cache[config_section] = {}
-            self._cache[config_section][key] = value
-            return value
-        else:
-            raise KeyError(key)
+    def _get_from_cache(self, parameter, section):
+        """Looks for the specified parameter in the internal cache.
 
-class NonInteractiveConfig(object):
+        :param parameter: The parameter to search.
+        :type Parameter
+        :return The parameter value, of None if it is not found.
+        """
+        value = None
+        if section in self._cache.keys():
+            if parameter.id in self._cache[section].keys():
+                value = self._cache[section][parameter.id]
+        return value
 
-    def __init__(self, data):
-        self.data = data
+    def _put_in_cache(self, key, value, section=DEFAULT_SECTION):
+        """Insert the passed parameter in the internal cache.
 
-    def get(self, parameter):
-        return self.data[parameter.id]
+        :param parameter: The parameter to insert.
+        :type Parameter
+        :param section: The name of the section in the config file.
+        :type str
+        """
+        if section not in self._cache.keys():
+            self._cache[section] = {}
+        self._cache[section][key] = value
+
+    def put(self, key, value, section=DEFAULT_SECTION):
+        """Adds a parameter to the config file.
+
+        :param key: The key to add.
+        :param value: The value to add.
+        :param section: The name of the section as in the config file.
+        """
+        if (not self._config_backend.has_section(section) and
+                section != DEFAULT_SECTION):
+            self._config_backend.add_section(section)
+        self._config_backend.set(section, key, value)
+        # Store in the cache too.
+        self._put_in_cache(key, value, section)
+
+    def put_parameter(self, parameter, value=None, section=None):
+        """Adds a Parameter to the config file and cache.
+
+        :param Parameter: The parameter to add.
+        :param value: The value of the parameter. Defaults to None.
+        :param section: The section where this parameter should be stored.
+                        Defaults to None.
+        """
+        if not section:
+            section = self._calculate_config_section(parameter)
+
+        if value is None and parameter.value is not None:
+            value = parameter.value
+        elif value is None:
+            raise CommandError("No value assigned to '{0}'.".format(
+                parameter.id))
+        self.put(parameter.id, value, section)
+
+    def save(self):
+        """Saves the config to file."""
+        with open(self._config_file, "w") as write_file:
+            self._config_backend.write(write_file)
+
+
+class InteractiveConfig(Config):
+    """An interactive config.
+
+    If a value is not found in the config file, it will ask it and then stores
+    it.
+    """
+    def __init__(self, force_interactive=True):
+        super(InteractiveConfig, self).__init__()
+        self._force_interactive = force_interactive
+
+    def get(self, parameter, section=None):
+        """Overrides the parent one.
+
+        The only difference with the parent one, is that it will ask to type
+        a parameter value in case it is not found.
+        """
+        if not section:
+            section = self._calculate_config_section(parameter)
+        value = super(InteractiveConfig, self).get(parameter, section)
+
+        if not value or self._force_interactive:
+            user_input = parameter.prompt(old_value=value)
+
+            if user_input is not None:
+                if len(user_input) == 0 and value:
+                    # Keep the old value when user press enter or another
+                    # whitespace char.
+                    pass
+                else:
+                    value = user_input
+        if value is not None:
+            self.put(parameter.id, value, section)
+        return value

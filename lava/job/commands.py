@@ -16,40 +16,34 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
-from os.path import exists
+"""
+LAVA job commands.
+"""
 
-from lava.config import InteractiveConfig
-from lava.job import Job
-from lava.job.templates import *
-from lava.tool.command import Command, CommandGroup
-from lava.tool.errors import CommandError
-
-from lava_tool.authtoken import AuthenticatingServerProxy, KeyringAuthBackend
+import os
+import sys
 import xmlrpclib
 
-class job(CommandGroup):
-    """
-    LAVA job file handling
-    """
+from lava.helper.command import BaseCommand
 
+from lava.job import Job
+from lava.job.templates import (
+    BOOT_TEST,
+)
+from lava.parameter import Parameter
+from lava.tool.command import CommandGroup
+from lava.tool.errors import CommandError
+from lava_tool.authtoken import AuthenticatingServerProxy, KeyringAuthBackend
+from lava_tool.utils import has_command
+
+
+class job(CommandGroup):
+    """LAVA job file handling."""
     namespace = 'lava.job.commands'
 
-class BaseCommand(Command):
-
-    def __init__(self, parser, args):
-        super(BaseCommand, self).__init__(parser, args)
-        self.config = InteractiveConfig(force_interactive=self.args.interactive)
-
-    @classmethod
-    def register_arguments(cls, parser):
-        super(BaseCommand, cls).register_arguments(parser)
-        parser.add_argument(
-            "-i", "--interactive",
-            action='store_true',
-            help=("Forces asking for input parameters even if we already "
-                  "have them cached."))
 
 class new(BaseCommand):
+    """Creates a new job file."""
 
     @classmethod
     def register_arguments(cls, parser):
@@ -57,20 +51,22 @@ class new(BaseCommand):
         parser.add_argument("FILE", help=("Job file to be created."))
 
     def invoke(self):
-        if exists(self.args.FILE):
-            raise CommandError('%s already exists' % self.args.FILE)
+        if os.path.exists(self.args.FILE):
+            raise CommandError('{0} already exists.'.format(self.args.FILE))
 
-        with open(self.args.FILE, 'w') as f:
-            job = Job(BOOT_TEST)
-            job.fill_in(self.config)
-            job.write(f)
+        with open(self.args.FILE, 'w') as job_file:
+            job_instance = Job(BOOT_TEST)
+            job_instance.fill_in(self.config)
+            job_instance.write(job_file)
 
 
 class submit(BaseCommand):
+    """Submits the specified job file."""
+
     @classmethod
     def register_arguments(cls, parser):
         super(submit, cls).register_arguments(parser)
-        parser.add_argument("FILE", help=("The job file to submit"))
+        parser.add_argument("FILE", help=("The job file to submit."))
 
     def invoke(self):
         jobfile = self.args.FILE
@@ -85,10 +81,61 @@ class submit(BaseCommand):
                                            auth_backend=KeyringAuthBackend())
         try:
             job_id = server.scheduler.submit_job(jobdata)
-            print "Job submitted with job ID %d" % job_id
-        except xmlrpclib.Fault, e:
-            raise CommandError(str(e))
+            print >> sys.stdout, "Job submitted with job ID {0}".format(job_id)
+        except xmlrpclib.Fault, exc:
+            raise CommandError(str(exc))
+
 
 class run(BaseCommand):
+    """Runs the specified job file on the local dispatcher."""
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(run, cls).register_arguments(parser)
+        parser.add_argument("FILE", help=("The job file to submit."))
+
+    @classmethod
+    def _choose_device(cls, devices):
+        """Let the user choose the device to use.
+
+        :param devices: The list of available devices.
+        :return The selected device.
+        """
+        devices_len = len(devices)
+        output_list = []
+        for device, number in zip(devices, range(1, devices_len + 1)):
+            output_list.append("\t{0}. {1}\n".format(number, device.hostname))
+
+        print >> sys.stdout, ("More than one local device found. "
+                              "Please choose one:\n")
+        print >> sys.stdout, "".join(output_list)
+
+        while True:
+            try:
+                user_input = raw_input("Device number to use: ").strip()
+
+                if user_input in [str(x) for x in range(1, devices_len + 1)]:
+                    return devices[int(user_input) - 1].hostname
+                else:
+                    continue
+            except EOFError:
+                user_input = None
+            except KeyboardInterrupt:
+                sys.exit(-1)
+
     def invoke(self):
-        print("hello world")
+        if os.path.isfile(self.args.FILE):
+            if has_command("lava-dispatch"):
+                devices = self.get_devices()
+                if devices:
+                    if len(devices) > 1:
+                        device = self._choose_device(devices)
+                    else:
+                        device = devices[0].hostname
+                    self.run(["lava-dispatch", "--target", device,
+                              self.args.FILE])
+            else:
+                raise CommandError("Cannot find lava-dispatcher installation.")
+        else:
+            raise CommandError("The file '{0}' does not exists. or is not "
+                               "a file.".format(self.args.FILE))

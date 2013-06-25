@@ -26,22 +26,29 @@ import unittest
 
 def app_modules():
     return [
-            'lava_tool.commands',
-            'lava_tool.dispatcher',
-            'lava_tool.interface',
-            'lava_dashboard_tool.commands',
-            ]
+        'lava_tool.commands',
+        'lava_tool.dispatcher',
+        'lava_tool.interface',
+        'lava_dashboard_tool.commands',
+    ]
 
 
 def test_modules():
     return [
-            'lava_tool.tests.test_authtoken',
-            'lava_tool.tests.test_auth_commands',
-            'lava_tool.tests.test_commands',
-            'lava_dashboard_tool.tests.test_commands',
-            'lava.job.tests.test_job',
-            'lava.job.tests.test_commands',
-            ]
+        'lava_tool.tests.test_authtoken',
+        'lava_tool.tests.test_auth_commands',
+        'lava_tool.tests.test_commands',
+        'lava_tool.tests.test_utils',
+        'lava_dashboard_tool.tests.test_commands',
+        'lava.job.tests.test_job',
+        'lava.job.tests.test_commands',
+        'lava.device.tests.test_device',
+        'lava.device.tests.test_commands',
+        'lava.tests.test_config',
+        'lava.tests.test_parameter',
+        'lava.helper.tests.test_command',
+        'lava.helper.tests.test_dispatcher',
+    ]
 
 
 def test_suite():
@@ -52,6 +59,7 @@ def test_suite():
     modules = app_modules() + test_modules()
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
+
     for name in modules:
         unit_suite = loader.loadTestsFromName(name)
         suite.addTests(unit_suite)

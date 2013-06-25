@@ -53,5 +53,8 @@ setup(
         'versiontools >= 1.3.1'
     ],
     setup_requires=['versiontools >= 1.3.1'],
-    tests_require=['mocker >= 1.0'],
+    tests_require=[
+        'mocker >= 1.0',
+        'mock >= 0.7.2'
+    ],
     zip_safe=True)

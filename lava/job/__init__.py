@@ -19,14 +19,15 @@
 from copy import deepcopy
 import json
 
-from lava.job.templates import Parameter
+from lava.parameter import Parameter
+
 
 class Job:
-
     def __init__(self, template):
         self.data = deepcopy(template)
 
     def fill_in(self, config):
+
         def insert_data(data):
             if isinstance(data, dict):
                 keys = data.keys()
@@ -44,4 +45,3 @@ class Job:
 
     def write(self, stream):
         stream.write(json.dumps(self.data, indent=4))
-
