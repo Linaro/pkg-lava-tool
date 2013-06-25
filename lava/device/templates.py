@@ -21,9 +21,8 @@ This is just a place where to store a template like dictionary that
 will be used to serialize a Device object.
 """
 
-from copy import deepcopy
+from copy import copy
 
-from lava.config import Config
 from lava.parameter import Parameter
 
 # The hostname parameter is always in the DEFAULT config section.
@@ -42,18 +41,18 @@ DEFAULT_TEMPLATE = {
 # We need this or we might end up asking the user twice the same parameter due
 # to different object references when one Parameter depends on a "specialized"
 # one, different from the defaults.
-PANDA_DEVICE_TYPE = deepcopy(DEVICE_TYPE_PARAMETER)
+PANDA_DEVICE_TYPE = copy(DEVICE_TYPE_PARAMETER)
 PANDA_DEVICE_TYPE.value = "panda"
 PANDA_DEVICE_TYPE.asked = True
 
-PANDA_CONNECTION_COMMAND = deepcopy(CONNECTION_COMMAND_PARMETER)
+PANDA_CONNECTION_COMMAND = copy(CONNECTION_COMMAND_PARMETER)
 PANDA_CONNECTION_COMMAND.depends = PANDA_DEVICE_TYPE
 
-VEXPRESS_DEVICE_TYPE = deepcopy(DEVICE_TYPE_PARAMETER)
+VEXPRESS_DEVICE_TYPE = copy(DEVICE_TYPE_PARAMETER)
 VEXPRESS_DEVICE_TYPE.value = "vexpress"
 VEXPRESS_DEVICE_TYPE.asked = True
 
-VEXPRESS_CONNECTION_COMMAND = deepcopy(CONNECTION_COMMAND_PARMETER)
+VEXPRESS_CONNECTION_COMMAND = copy(CONNECTION_COMMAND_PARMETER)
 VEXPRESS_CONNECTION_COMMAND.depends = VEXPRESS_DEVICE_TYPE
 
 # Dictionary with templates of known devices.
@@ -77,9 +76,6 @@ def update_template(template, config):
     :param template: A template to be updated.
     :param config: A Config instance where values should be taken.
     """
-
-    # Really make sure.
-    assert isinstance(config, Config)
 
     def update(data):
         """Internal recursive function."""
