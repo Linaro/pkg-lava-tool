@@ -37,9 +37,8 @@ class Parameter(object):
         self.id = id
         self.value = value
         self.depends = depends
-        self.asked = False
 
-    def prompt(self, reask=False):
+    def prompt(self, old_value=None):
         """Gets the parameter value from the user.
 
         To get user input, the builtin `raw_input` function will be used. Input
@@ -47,12 +46,11 @@ class Parameter(object):
         sort of whitespace chars in typed, the old Parameter value will be
         returned.
 
-        :param reask: If the parameter has to be reasked.
-        :type bool
-        :return The input as typed by the user, or the old Parameter value.
+        :param old_value: The old parameter value.
+        :return The input as typed by the user, or the old value.
         """
-        if reask:
-            prompt = "{0} [{1}]: ".format(self.id, self.value)
+        if old_value is not None:
+            prompt = "{0} [{1}]: ".format(self.id, old_value)
         else:
             prompt = "{0}: ".format(self.id)
 
@@ -65,10 +63,10 @@ class Parameter(object):
             sys.exit(-1)
 
         if user_input is not None:
-            if len(user_input) == 0 and self.value:
+            if len(user_input) == 0 and old_value:
                 # Keep the old value when user press enter or another
                 # whitespace char.
-                pass
+                self.value = old_value
             else:
                 self.value = user_input
         return self.value
