@@ -28,13 +28,13 @@ from lava.parameter import Parameter
 # The hostname parameter is always in the DEFAULT config section.
 HOSTNAME_PARAMETER = Parameter("hostname")
 DEVICE_TYPE_PARAMETER = Parameter("device_type", depends=HOSTNAME_PARAMETER)
-CONNECTION_COMMAND_PARMETER = Parameter("connection_command",
-                                        depends=DEVICE_TYPE_PARAMETER)
+CONNECTION_COMMAND_PARMAETER = Parameter("connection_command",
+                                         depends=DEVICE_TYPE_PARAMETER)
 
 DEFAULT_TEMPLATE = {
     'hostname': HOSTNAME_PARAMETER,
     'device_type': DEVICE_TYPE_PARAMETER,
-    'connection_command': CONNECTION_COMMAND_PARMETER,
+    'connection_command': CONNECTION_COMMAND_PARMAETER,
 }
 
 # Specialized copies of the parameters.
@@ -45,14 +45,14 @@ PANDA_DEVICE_TYPE = copy(DEVICE_TYPE_PARAMETER)
 PANDA_DEVICE_TYPE.value = "panda"
 PANDA_DEVICE_TYPE.asked = True
 
-PANDA_CONNECTION_COMMAND = copy(CONNECTION_COMMAND_PARMETER)
+PANDA_CONNECTION_COMMAND = copy(CONNECTION_COMMAND_PARMAETER)
 PANDA_CONNECTION_COMMAND.depends = PANDA_DEVICE_TYPE
 
 VEXPRESS_DEVICE_TYPE = copy(DEVICE_TYPE_PARAMETER)
 VEXPRESS_DEVICE_TYPE.value = "vexpress"
 VEXPRESS_DEVICE_TYPE.asked = True
 
-VEXPRESS_CONNECTION_COMMAND = copy(CONNECTION_COMMAND_PARMETER)
+VEXPRESS_CONNECTION_COMMAND = copy(CONNECTION_COMMAND_PARMAETER)
 VEXPRESS_CONNECTION_COMMAND.depends = VEXPRESS_DEVICE_TYPE
 
 # Dictionary with templates of known devices.
@@ -70,7 +70,7 @@ KNOWN_TEMPLATES = {
 }
 
 
-def update_template(template, config):
+def expand_template(template, config):
     """Updates a template based on the values from the provided config.
 
     :param template: A template to be updated.

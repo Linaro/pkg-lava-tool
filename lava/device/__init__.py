@@ -20,14 +20,12 @@ import re
 
 from copy import deepcopy
 
-from lava.config import Config
 from lava.device.templates import (
     DEFAULT_TEMPLATE,
     HOSTNAME_PARAMETER,
     KNOWN_TEMPLATES,
-    update_template,
+    expand_template,
 )
-from lava.tool.errors import CommandError
 
 
 def __re_compile(name):
@@ -65,9 +63,6 @@ class Device(object):
 
         :param config: A Config instance.
         """
-        if not isinstance(config, Config):
-            raise CommandError("Error updating the device values.")
-
         # We should always have a hostname, since it defaults to the name
         # given on the command line for the config file.
         if self.hostname is not None:
@@ -75,7 +70,7 @@ class Device(object):
             self.data[HOSTNAME_PARAMETER.id].asked = True
             config.put(HOSTNAME_PARAMETER.id, self.hostname)
 
-        update_template(self.data, config)
+        expand_template(self.data, config)
 
     def __str__(self):
         string_list = []
