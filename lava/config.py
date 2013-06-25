@@ -165,7 +165,7 @@ class Config(object):
         if value is None and parameter.value is not None:
             value = parameter.value
         elif value is None:
-            raise CommandError("No value assigned to '{0}".format(
+            raise CommandError("No value assigned to '{0}'.".format(
                 parameter.id))
         self.put(parameter.id, value, section)
 
@@ -195,21 +195,16 @@ class InteractiveConfig(Config):
             section = self._calculate_config_section(parameter)
         value = super(InteractiveConfig, self).get(parameter, section)
 
-        if not (value is not None and parameter.asked):
-            if not value or self._force_interactive:
-                user_input = None
-                if self._force_interactive:
-                    user_input = parameter.prompt(reask=True)
-                else:
-                    user_input = parameter.prompt()
+        if not value or self._force_interactive:
+            user_input = parameter.prompt(old_value=value)
 
-                if user_input is not None:
-                    if len(user_input) == 0 and value:
-                        # Keep the old value when user press enter or another
-                        # whitespace char.
-                        pass
-                    else:
-                        value = user_input
+            if user_input is not None:
+                if len(user_input) == 0 and value:
+                    # Keep the old value when user press enter or another
+                    # whitespace char.
+                    pass
+                else:
+                    value = user_input
         if value is not None:
             self.put(parameter.id, value, section)
         return value
