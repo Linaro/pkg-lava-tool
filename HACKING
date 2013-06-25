@@ -8,7 +8,7 @@ To have a nicely HTML viewable report on tests code coverage, do as follows:
 
     python-coverage run -m unittest lava_tool.tests.test_suite 2>/dev/null && python-coverage html
 
-* The report will be save in a directory called `lava_tool_coverage`: open 
+* The report will be saved in a directory called `lava_tool_coverage`: open 
 the `index.html` file in there to see the report.
 
 Notes:

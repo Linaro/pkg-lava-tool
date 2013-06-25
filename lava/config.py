@@ -99,7 +99,7 @@ class Config(object):
         return value
 
     def _get_from_backend(self, parameter, section):
-        """Gets the parameter value from the config backed.
+        """Gets the parameter value from the config backend.
 
         :param parameter: The Parameter to look up.
         :param section: The section in the Config.
