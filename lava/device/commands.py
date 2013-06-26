@@ -56,7 +56,7 @@ class add(BaseCommand):
     def invoke(self):
         real_file_name = ".".join([self.args.DEVICE, DEVICE_FILE_SUFFIX])
 
-        if get_device_file(real_file_name):
+        if get_device_file(real_file_name) is not None:
             print >> sys.stdout, ("A device configuration file named '{0}' "
                                   "already exists.".format(real_file_name))
             print >> sys.stdout, ("Use 'lava device config {0}' to edit "
