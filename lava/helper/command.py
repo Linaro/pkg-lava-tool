@@ -93,7 +93,7 @@ class BaseCommand(Command):
         :return The command execution return code.
         """
         if not isinstance(cmd_args, list):
-            cmd_args = list(cmd_args)
+            cmd_args = [cmd_args]
         try:
             return subprocess.check_call(cmd_args)
         except subprocess.CalledProcessError:
