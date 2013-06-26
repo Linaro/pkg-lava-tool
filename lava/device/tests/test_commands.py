@@ -33,14 +33,25 @@ from lava.helper.tests.helper_test import HelperTest
 from lava.tool.errors import CommandError
 
 
-class CommandsTest(HelperTest):
+class AddCommandTest(HelperTest):
+
+    def test_register_argument(self):
+        # Make sure that the parser add_argument is called and we have the
+        # correct argument.
+        add_command = add(self.parser, self.args)
+        add_command.register_arguments(self.parser)
+        name, args, kwargs = self.parser.method_calls[0]
+        self.assertIn("--non-interactive", args)
+
+        name, args, kwargs = self.parser.method_calls[1]
+        self.assertIn("DEVICE", args)
 
     @patch("lava.device.Device.__str__", new=MagicMock(return_value=""))
     @patch("lava.device.Device.update", new=MagicMock())
     @patch("lava.device.commands.get_device_file",
            new=MagicMock(return_value=None))
     @patch("lava.device.commands.get_devices_path")
-    def test_add_invoke(self, get_devices_path_mock):
+    def test_add_invoke_0(self, get_devices_path_mock):
         # Tests invocation of the add command. Verifies that the conf file is
         # written to disk.
         get_devices_path_mock.return_value = self.temp_dir
@@ -52,6 +63,35 @@ class CommandsTest(HelperTest):
         expected_path = os.path.join(self.temp_dir,
                                      ".".join([self.device, "conf"]))
         self.assertTrue(os.path.isfile(expected_path))
+
+    @patch("lava.device.commands.get_known_device")
+    @patch("lava.device.commands.get_devices_path")
+    @patch("lava.device.commands.sys.exit")
+    @patch("lava.device.commands.get_device_file")
+    def test_add_invoke_1(self, mocked_get_device_file, mocked_sys_exit,
+                          mocked_get_devices_path, mocked_get_known_device):
+        mocked_get_devices_path.return_value = self.temp_dir
+        mocked_get_device_file.return_value = self.temp_file.name
+
+        add_command = add(self.parser, self.args)
+        add_command.edit_file = MagicMock()
+        add_command.invoke()
+
+        self.assertTrue(mocked_sys_exit.called)
+
+
+class RemoveCommandTests(HelperTest):
+
+    def test_register_argument(self):
+        # Make sure that the parser add_argument is called and we have the
+        # correct argument.
+        command = remove(self.parser, self.args)
+        command.register_arguments(self.parser)
+        name, args, kwargs = self.parser.method_calls[0]
+        self.assertIn("--non-interactive", args)
+
+        name, args, kwargs = self.parser.method_calls[1]
+        self.assertIn("DEVICE", args)
 
     @patch("lava.device.Device.__str__", new=MagicMock(return_value=""))
     @patch("lava.device.Device.update", new=MagicMock())
@@ -86,6 +126,20 @@ class CommandsTest(HelperTest):
         # configuration file.
         remove_command = remove(self.parser, self.args)
         self.assertRaises(CommandError, remove_command.invoke)
+
+
+class ConfigCommanTests(HelperTest):
+
+    def test_register_argument(self):
+        # Make sure that the parser add_argument is called and we have the
+        # correct argument.
+        command = config(self.parser, self.args)
+        command.register_arguments(self.parser)
+        name, args, kwargs = self.parser.method_calls[0]
+        self.assertIn("--non-interactive", args)
+
+        name, args, kwargs = self.parser.method_calls[1]
+        self.assertIn("DEVICE", args)
 
     @patch("lava.device.commands.get_device_file",
            new=MagicMock(return_value=None))
