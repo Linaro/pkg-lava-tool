@@ -24,8 +24,8 @@ from lava.device.templates import (
     DEFAULT_TEMPLATE,
     HOSTNAME_PARAMETER,
     KNOWN_TEMPLATES,
-    expand_template,
 )
+from lava.helper.template import expand_template
 
 
 def __re_compile(name):

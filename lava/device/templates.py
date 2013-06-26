@@ -68,28 +68,3 @@ KNOWN_TEMPLATES = {
         'connection_command': VEXPRESS_CONNECTION_COMMAND,
     },
 }
-
-
-def expand_template(template, config):
-    """Updates a template based on the values from the provided config.
-
-    :param template: A template to be updated.
-    :param config: A Config instance where values should be taken.
-    """
-
-    def update(data):
-        """Internal recursive function."""
-        if isinstance(data, dict):
-            keys = data.keys()
-        elif isinstance(data, list):
-            keys = range(len(data))
-        else:
-            return
-        for key in keys:
-            entry = data[key]
-            if isinstance(entry, Parameter):
-                data[key] = config.get(entry)
-            else:
-                update(entry)
-
-    update(template)

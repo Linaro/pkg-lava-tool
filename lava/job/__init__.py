@@ -19,7 +19,7 @@
 from copy import deepcopy
 import json
 
-from lava.parameter import Parameter
+from lava.helper.template import expand_template
 
 
 class Job:
@@ -27,21 +27,7 @@ class Job:
         self.data = deepcopy(template)
 
     def fill_in(self, config):
-
-        def insert_data(data):
-            if isinstance(data, dict):
-                keys = data.keys()
-            elif isinstance(data, list):
-                keys = range(len(data))
-            else:
-                return
-            for key in keys:
-                entry = data[key]
-                if isinstance(entry, Parameter):
-                    data[key] = config.get(entry)
-                else:
-                    insert_data(entry)
-        insert_data(self.data)
+        expand_template(self.data, config)
 
     def write(self, stream):
         stream.write(json.dumps(self.data, indent=4))
