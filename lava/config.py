@@ -23,9 +23,12 @@ Config class.
 import atexit
 import os
 import readline
-import sys
 
-from ConfigParser import ConfigParser, NoOptionError, NoSectionError
+from ConfigParser import (
+    ConfigParser,
+    NoOptionError,
+    NoSectionError,
+)
 
 from lava.tool.errors import CommandError
 
