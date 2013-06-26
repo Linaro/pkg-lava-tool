@@ -22,7 +22,11 @@ lava.device.commands unit tests.
 
 import os
 
-from mock import MagicMock, patch
+from mock import (
+    MagicMock,
+    call,
+    patch,
+)
 
 from lava.device.commands import (
     add,
@@ -140,6 +144,19 @@ class ConfigCommanTests(HelperTest):
 
         name, args, kwargs = self.parser.method_calls[1]
         self.assertIn("DEVICE", args)
+
+    @patch("lava.device.commands.get_device_file")
+    def test_config_invoke_0(self, mocked_get_device_file):
+        command = config(self.parser, self.args)
+
+        mocked_get_device_file.return_value = self.temp_file.name
+        command.can_edit_file = MagicMock(return_value=True)
+        command.edit_file = MagicMock()
+        command.invoke()
+
+        self.assertTrue(command.edit_file.called)
+        self.assertEqual([call(self.temp_file.name)],
+                         command.edit_file.call_args_list)
 
     @patch("lava.device.commands.get_device_file",
            new=MagicMock(return_value=None))
