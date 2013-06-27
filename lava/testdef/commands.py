@@ -21,11 +21,12 @@ Test definition commands class.
 """
 
 from lava.helper.command import BaseCommand
+from lava.testdef import TestDefinition
 from lava.tool.command import CommandGroup
 
 
 class testdef(CommandGroup):
-    """LAVA devices handling."""
+    """LAVA test definitions handling."""
 
     namespace = "lava.testdef.commands"
 
@@ -38,4 +39,5 @@ class new(BaseCommand):
         parser.add_argument("FILE", help="Test definition file to be created.")
 
     def invoke(self):
-        pass
+        testdef = TestDefinition(self.args.FILE)
+        testdef.write()
