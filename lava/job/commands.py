@@ -25,6 +25,7 @@ import sys
 import xmlrpclib
 
 from lava.helper.command import BaseCommand
+from lava.helper.dispatcher import get_devices
 
 from lava.job import Job
 from lava.job.templates import (
@@ -126,7 +127,7 @@ class run(BaseCommand):
     def invoke(self):
         if os.path.isfile(self.args.FILE):
             if has_command("lava-dispatch"):
-                devices = self.get_devices()
+                devices = get_devices()
                 if devices:
                     if len(devices) > 1:
                         device = self._choose_device(devices)
