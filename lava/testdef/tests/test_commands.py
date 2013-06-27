@@ -20,6 +20,9 @@
 Tests for the lava.testdef commands.
 """
 
+import os
+import tempfile
+
 from lava.helper.tests.helper_test import HelperTest
 from lava.testdef.commands import (
     new,
@@ -27,6 +30,17 @@ from lava.testdef.commands import (
 
 
 class NewCommandTest(HelperTest):
+
+    def setUp(self):
+        super(NewCommandTest, self).setUp()
+        self.file_name = "fake_testdef.yaml"
+        self.file_path = os.path.join(tempfile.gettempdir(), self.file_name)
+        self.args.FILE = self.file_path
+
+    def tearDown(self):
+        super(NewCommandTest, self).tearDown()
+        if os.path.isfile(self.file_path):
+            os.unlink(self.file_path)
 
     def test_register_arguments(self):
         # Make sure that the parser add_argument is called and we have the
@@ -42,3 +56,10 @@ class NewCommandTest(HelperTest):
 
         name, args, kwargs = self.parser.method_calls[1]
         self.assertIn("FILE", args)
+
+    def test_invoke_0(self):
+        # Test that passing a file on the command line, it is created on the
+        # file system.
+        new_command = new(self.parser, self.args)
+        new_command.invoke()
+        self.assertTrue(os.path.exists(self.file_path))
