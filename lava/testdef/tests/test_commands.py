@@ -27,6 +27,7 @@ from lava.helper.tests.helper_test import HelperTest
 from lava.testdef.commands import (
     new,
 )
+from lava.tool.errors import CommandError
 
 
 class NewCommandTest(HelperTest):
@@ -63,3 +64,10 @@ class NewCommandTest(HelperTest):
         new_command = new(self.parser, self.args)
         new_command.invoke()
         self.assertTrue(os.path.exists(self.file_path))
+
+    def test_invoke_1(self):
+        # Test that when passing an already existing file, an exception is
+        # thrown.
+        self.args.FILE = self.temp_file.name
+        new_command = new(self.parser, self.args)
+        self.assertRaises(CommandError, new_command.invoke)

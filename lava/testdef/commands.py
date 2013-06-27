@@ -20,9 +20,12 @@
 Test definition commands class.
 """
 
+import os
+
 from lava.helper.command import BaseCommand
 from lava.testdef import TestDefinition
 from lava.tool.command import CommandGroup
+from lava.tool.errors import CommandError
 
 
 class testdef(CommandGroup):
@@ -39,5 +42,8 @@ class new(BaseCommand):
         parser.add_argument("FILE", help="Test definition file to be created.")
 
     def invoke(self):
+        if os.path.exists(self.args.FILE):
+            raise CommandError("Test definition file '{0}' already "
+                               "exists.".format(self.args.FILE))
         testdef = TestDefinition(self.args.FILE)
         testdef.write()
