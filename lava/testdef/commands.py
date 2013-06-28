@@ -24,6 +24,7 @@ import os
 
 from lava.helper.command import BaseCommand
 from lava.testdef import TestDefinition
+from lava.testdef.templates import TESTDEF_TEMPLATE
 from lava.tool.command import CommandGroup
 from lava.tool.errors import CommandError
 
@@ -45,5 +46,6 @@ class new(BaseCommand):
         if os.path.exists(self.args.FILE):
             raise CommandError("Test definition file '{0}' already "
                                "exists.".format(self.args.FILE))
-        testdef = TestDefinition(self.args.FILE)
+        testdef = TestDefinition(self.args.FILE, TESTDEF_TEMPLATE)
+        testdef.update(self.config)
         testdef.write()

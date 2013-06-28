@@ -23,12 +23,13 @@ from lava.parameter import Parameter
 
 DEFAULT_TESTDEF_VERSION = "1.0"
 DEFAULT_TESTDEF_FORMAT = "Lava-Test Test Definition 1.0"
+DEFAULT_TESTDEF_ENVIRONMENT = "lava-test-shell"
 
 NAME_PARAMETER = Parameter("name")
 DESCRIPTION_PARAMETER = Parameter("description", depends=NAME_PARAMETER)
 ENVIRONMENT_PARAMETER = Parameter("environment",
                                   depends=NAME_PARAMETER,
-                                  value="lava-test-shell")
+                                  value=DEFAULT_TESTDEF_ENVIRONMENT)
 
 
 TESTDEF_TEMPLATE = {
@@ -42,5 +43,4 @@ TESTDEF_TEMPLATE = {
     "run": {
         "steps": []
     }
-
 }
