@@ -17,12 +17,18 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Tests for the lava.testdef commands.
+Tests for lava.testdef.commands.
 """
 
 import os
 import tempfile
+import yaml
 
+from mock import (
+    patch,
+)
+
+from lava.tests.test_config import MockedInteractiveConfig
 from lava.helper.tests.helper_test import HelperTest
 from lava.testdef.commands import (
     new,
@@ -38,10 +44,15 @@ class NewCommandTest(HelperTest):
         self.file_path = os.path.join(tempfile.gettempdir(), self.file_name)
         self.args.FILE = self.file_path
 
+        self.config_file = tempfile.NamedTemporaryFile(delete=False)
+        self.config = MockedInteractiveConfig(self.config_file.name,
+                                              force_interactive=True)
+
     def tearDown(self):
         super(NewCommandTest, self).tearDown()
         if os.path.isfile(self.file_path):
             os.unlink(self.file_path)
+        os.unlink(self.config_file.name)
 
     def test_register_arguments(self):
         # Make sure that the parser add_argument is called and we have the
@@ -58,7 +69,8 @@ class NewCommandTest(HelperTest):
         name, args, kwargs = self.parser.method_calls[1]
         self.assertIn("FILE", args)
 
-    def test_invoke_0(self):
+    @patch("lava.parameter.raw_input", create=True, return_value="\n")
+    def test_invoke_0(self, mocked_raw_input):
         # Test that passing a file on the command line, it is created on the
         # file system.
         new_command = new(self.parser, self.args)
@@ -71,3 +83,23 @@ class NewCommandTest(HelperTest):
         self.args.FILE = self.temp_file.name
         new_command = new(self.parser, self.args)
         self.assertRaises(CommandError, new_command.invoke)
+
+    @patch("lava.parameter.raw_input", create=True)
+    def test_invoke_2(self, mocked_raw_input):
+        # Tests that when adding a new test definition and writing it to file
+        # a correct YAML structure is created.
+        mocked_raw_input.return_value = "\n"
+        new_command = new(self.parser, self.args)
+        new_command.invoke()
+        expected = {'run': {'steps': []},
+                    'metadata': {
+                        'environment': 'lava-test-shell',
+                        'format': 'Lava-Test Test Definition 1.0',
+                        'version': '1.0',
+                        'description': '',
+                        'name': ''}
+                    }
+        obtained = None
+        with open(self.file_path, 'r') as read_file:
+            obtained = yaml.load(read_file)
+        self.assertEqual(expected, obtained)
