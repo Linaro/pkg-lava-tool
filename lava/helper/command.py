@@ -21,6 +21,7 @@
 import os
 import subprocess
 import sys
+import types
 
 
 from lava.config import InteractiveConfig
@@ -92,8 +93,10 @@ class BaseCommand(Command):
         :param cmd_args: The command, and its optional arguments, to run.
         :return The command execution return code.
         """
-        if not isinstance(cmd_args, list):
+        if isinstance(cmd_args, types.StringType):
             cmd_args = [cmd_args]
+        else:
+            cmd_args = list(cmd_args)
         try:
             return subprocess.check_call(cmd_args)
         except subprocess.CalledProcessError:
