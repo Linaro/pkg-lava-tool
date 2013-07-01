@@ -174,6 +174,7 @@ class Config(object):
 
     def save(self):
         """Saves the config to file."""
+        # TODO: need a way to convert list parameters.
         with open(self._config_file, "w") as write_file:
             self._config_backend.write(write_file)
 

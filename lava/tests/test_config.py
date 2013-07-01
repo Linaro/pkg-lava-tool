@@ -33,7 +33,10 @@ from lava.config import (
     ConfigParser,
 )
 from lava.helper.tests.helper_test import HelperTest
-from lava.parameter import Parameter
+from lava.parameter import (
+    Parameter,
+    ListParameter,
+)
 from lava.tool.errors import CommandError
 
 
@@ -276,3 +279,30 @@ class InteractiveConfigTest(ConfigTestCase):
         self.config._force_interactive = True
         self.config.get(self.param1)
         self.assertTrue(mocked_sys_exit.called)
+
+    @patch("lava.parameter.raw_input", create=True)
+    def test_interactive_config_with_list_parameter(self, mocked_raw_input):
+        # Tests that we get a list back in the Config class when using
+        # ListParameter and that it contains the expected values.
+        expected = ["foo", "bar"]
+        mocked_raw_input.side_effect = expected + ["\n"]
+        obtained = self.config.get(ListParameter("list"))
+        self.assertIsInstance(obtained, list)
+        self.assertEqual(expected, obtained)
+
+    def test_interactive_save_list_param(self):
+        # Tests that when saved to file, the ListParameter parameter is stored
+        # correctly.
+        param_values = ["foo", "more than one words", "bar"]
+        list_param = ListParameter("list")
+        list_param.value = param_values
+
+        self.config.put_parameter(list_param, param_values)
+        self.config.save()
+
+        # TODO: this is temporary, need a way to convert list better.
+        expected = "[DEFAULT]\nlist = " + str(param_values) + "\n\n"
+        obtained = ""
+        with open(self.config_file.name, "r") as read_file:
+            obtained = read_file.read()
+        self.assertEqual(expected, obtained)

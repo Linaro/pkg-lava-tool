@@ -83,8 +83,8 @@ class ListParameterTest(GeneralParameterTest):
         self.assertEqual(expected, obtained)
 
     def test_prompt_1(self):
-        # Tests that when passing 3 values, a list which contains them is
-        # returned.
+        # Tests that when passing 3 values, a list with those values
+        # is returned
         expected = ["foo", "bar", "foobar"]
         self.mocked_raw_input.side_effect = expected + ["\n"]
         obtained = self.list_parameter.prompt()
