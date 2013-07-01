@@ -46,6 +46,10 @@ class new(BaseCommand):
         if os.path.exists(self.args.FILE):
             raise CommandError("Test definition file '{0}' already "
                                "exists.".format(self.args.FILE))
-        testdef = TestDefinition(self.args.FILE, TESTDEF_TEMPLATE)
-        testdef.update(self.config)
-        testdef.write()
+        try:
+            testdef = TestDefinition(self.args.FILE, TESTDEF_TEMPLATE)
+            testdef.update(self.config)
+            testdef.write()
+        except IOError:
+            raise CommandError("Cannot write file '{0}': permission "
+                               "denied".format(self.args.FILE))

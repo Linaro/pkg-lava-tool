@@ -103,3 +103,12 @@ class NewCommandTest(HelperTest):
         with open(self.file_path, 'r') as read_file:
             obtained = yaml.load(read_file)
         self.assertEqual(expected, obtained)
+
+    @patch("lava.parameter.raw_input", create=True)
+    def test_invoke_3(self, mocked_raw_input):
+        # Tests that when adding a new test definition and writing it to file
+        # a correct YAML structure is created.
+        self.args.FILE = "/test_file.yaml"
+        mocked_raw_input.return_value = "\n"
+        new_command = new(self.parser, self.args)
+        self.assertRaises(CommandError, new_command.invoke)

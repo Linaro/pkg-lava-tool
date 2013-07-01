@@ -23,7 +23,6 @@ import subprocess
 import sys
 import types
 
-
 from lava.config import InteractiveConfig
 from lava.tool.command import Command
 from lava.tool.errors import CommandError
