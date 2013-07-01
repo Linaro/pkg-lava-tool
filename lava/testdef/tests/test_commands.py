@@ -37,6 +37,7 @@ from lava.tool.errors import CommandError
 
 
 class NewCommandTest(HelperTest):
+    """Class for the lava.testdef new command tests."""
 
     def setUp(self):
         super(NewCommandTest, self).setUp()
@@ -106,8 +107,8 @@ class NewCommandTest(HelperTest):
 
     @patch("lava.parameter.raw_input", create=True)
     def test_invoke_3(self, mocked_raw_input):
-        # Tests that when adding a new test definition and writing it to file
-        # a correct YAML structure is created.
+        # Tests that when adding a new test definition and writing it to a file
+        # in a directory withour permissions, exception is raised.
         self.args.FILE = "/test_file.yaml"
         mocked_raw_input.return_value = "\n"
         new_command = new(self.parser, self.args)
