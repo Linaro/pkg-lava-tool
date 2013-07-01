@@ -93,11 +93,19 @@ class ListParameter(Parameter):
         # TODO handle old values and parameters re-insertion.
         user_input = None
         while True:
-            # TODO: think about a prompt.
-            user_input = raw_input("").strip()
-            if user_input in string.whitespace:
-                # Input is terminated with an empty string.
+            try:
+                # TODO: think about a prompt.
+                user_input = raw_input("").strip()
+            except EOFError:
                 break
-            elif user_input is not None:
-                self.value.append(user_input)
+            except KeyboardInterrupt:
+                sys.exit(-1)
+
+            if user_input is not None:
+                if user_input in string.whitespace:
+                    # Input is terminated with an empty string.
+                    break
+                else:
+                    self.value.append(user_input)
+
         return self.value
