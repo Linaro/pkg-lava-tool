@@ -64,14 +64,14 @@ class NewCommandTest(HelperTest):
         # Make sure we do not forget about this test.
         self.assertEqual(2, len(self.parser.method_calls))
 
-        name, args, kwargs = self.parser.method_calls[0]
+        _, args, _ = self.parser.method_calls[0]
         self.assertIn("--non-interactive", args)
 
-        name, args, kwargs = self.parser.method_calls[1]
+        _, args, _ = self.parser.method_calls[1]
         self.assertIn("FILE", args)
 
     @patch("lava.parameter.raw_input", create=True, return_value="\n")
-    def test_invoke_0(self, mocked_raw_input):
+    def test_invoke_0(self, _):
         # Test that passing a file on the command line, it is created on the
         # file system.
         new_command = new(self.parser, self.args)
