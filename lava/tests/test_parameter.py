@@ -55,7 +55,7 @@ class ParameterTest(GeneralParameterTest):
     def test_prompt_0(self):
         # Tests that when we have a value in the parameters and the user press
         # Enter, we get the old value back.
-        sys.stdin = StringIO("\n")
+        self.mocked_raw_input.return_value = "\n"
         obtained = self.parameter1.prompt()
         self.assertEqual(self.parameter1.value, obtained)
 

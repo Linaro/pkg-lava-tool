@@ -48,12 +48,16 @@ class NewCommandTest(HelperTest):
         self.config_file = tempfile.NamedTemporaryFile(delete=False)
         self.config = MockedInteractiveConfig(self.config_file.name,
                                               force_interactive=True)
+        # Patch class raw_input, start it, and stop it on tearDown.
+        self.patcher1 = patch("lava.parameter.raw_input", create=True)
+        self.mocked_raw_input = self.patcher1.start()
 
     def tearDown(self):
         super(NewCommandTest, self).tearDown()
         if os.path.isfile(self.file_path):
             os.unlink(self.file_path)
         os.unlink(self.config_file.name)
+        self.patcher1.stop()
 
     def test_register_arguments(self):
         # Make sure that the parser add_argument is called and we have the
@@ -70,10 +74,10 @@ class NewCommandTest(HelperTest):
         _, args, _ = self.parser.method_calls[1]
         self.assertIn("FILE", args)
 
-    @patch("lava.parameter.raw_input", create=True, return_value="\n")
-    def test_invoke_0(self, _):
+    def test_invoke_0(self):
         # Test that passing a file on the command line, it is created on the
         # file system.
+        self.mocked_raw_input.return_value = "\n"
         new_command = new(self.parser, self.args)
         new_command.invoke()
         self.assertTrue(os.path.exists(self.file_path))
@@ -85,11 +89,10 @@ class NewCommandTest(HelperTest):
         new_command = new(self.parser, self.args)
         self.assertRaises(CommandError, new_command.invoke)
 
-    @patch("lava.parameter.raw_input", create=True)
-    def test_invoke_2(self, mocked_raw_input):
+    def test_invoke_2(self):
         # Tests that when adding a new test definition and writing it to file
         # a correct YAML structure is created.
-        mocked_raw_input.return_value = "\n"
+        self.mocked_raw_input.return_value = "\n"
         new_command = new(self.parser, self.args)
         new_command.invoke()
         expected = {'run': {'steps': []},
@@ -105,12 +108,31 @@ class NewCommandTest(HelperTest):
             obtained = yaml.load(read_file)
         self.assertEqual(expected, obtained)
 
-    @patch("lava.parameter.raw_input", create=True)
-    def test_invoke_3(self, mocked_raw_input):
+    def test_invoke_3(self):
         # Tests that when adding a new test definition and writing it to a file
         # in a directory withour permissions, exception is raised.
         self.args.FILE = "/test_file.yaml"
-        mocked_raw_input.return_value = "\n"
+        self.mocked_raw_input.return_value = "\n"
         new_command = new(self.parser, self.args)
         self.assertRaises(CommandError, new_command.invoke)
         self.assertFalse(os.path.exists(self.args.FILE))
+
+    def test_invoke_4(self):
+        # Tests that when passing values for the "steps" ListParameter, we get
+        # back the correct data structure.
+        self.mocked_raw_input.side_effect = ["foo", "bar", "baz", "\n", "\n",
+                                             "\n", "\n"]
+        new_command = new(self.parser, self.args)
+        new_command.invoke()
+        expected = {'run': {'steps': ["foo", "bar", "baz"]},
+                    'metadata': {
+                        'environment': 'lava-test-shell',
+                        'format': 'Lava-Test Test Definition 1.0',
+                        'version': '1.0',
+                        'description': '',
+                        'name': ''}
+                    }
+        obtained = None
+        with open(self.file_path, 'r') as read_file:
+            obtained = yaml.load(read_file)
+        self.assertEqual(expected, obtained)
