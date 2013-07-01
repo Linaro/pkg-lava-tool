@@ -26,10 +26,27 @@ from StringIO import StringIO
 from mock import patch
 
 from lava.helper.tests.helper_test import HelperTest
-from lava.parameter import Parameter
+from lava.parameter import (
+    ListParameter,
+    Parameter,
+)
 
 
-class ParameterTest(HelperTest):
+class GeneralParameterTest(HelperTest):
+    """General class with setUp and tearDown methods for Parameter tests."""
+    def setUp(self):
+        super(GeneralParameterTest, self).setUp()
+        # Patch class raw_input, start it, and stop it on tearDown.
+        self.patcher1 = patch("lava.parameter.raw_input", create=True)
+        self.mocked_raw_input = self.patcher1.start()
+
+    def tearDown(self):
+        super(GeneralParameterTest, self).tearDown()
+        self.patcher1.stop()
+
+
+class ParameterTest(GeneralParameterTest):
+    """Tests for the Parameter class."""
 
     def setUp(self):
         super(ParameterTest, self).setUp()
@@ -42,10 +59,33 @@ class ParameterTest(HelperTest):
         obtained = self.parameter1.prompt()
         self.assertEqual(self.parameter1.value, obtained)
 
-    @patch("lava.parameter.raw_input", create=True)
-    def test_prompt_1(self, mocked_raw_input):
+    def test_prompt_1(self,):
         # Tests that with a value stored in the parameter, if and EOFError is
         # raised when getting user input, we get back the old value.
-        mocked_raw_input.side_effect = EOFError()
+        self.mocked_raw_input.side_effect = EOFError()
         obtained = self.parameter1.prompt()
         self.assertEqual(self.parameter1.value, obtained)
+
+
+class ListParameterTest(GeneralParameterTest):
+    """Tests for the specialized ListParameter class."""
+
+    def setUp(self):
+        super(ListParameterTest, self).setUp()
+        self.list_parameter = ListParameter("list")
+
+    def test_prompt_0(self):
+        # Test that when pressing Enter, the prompt stops and the list is
+        # returned.
+        expected = []
+        self.mocked_raw_input.return_value = "\n"
+        obtained = self.list_parameter.prompt()
+        self.assertEqual(expected, obtained)
+
+    def test_prompt_1(self):
+        # Tests that when passing 3 values, a list which contains them is
+        # returned.
+        expected = ["foo", "bar", "foobar"]
+        self.mocked_raw_input.side_effect = expected + ["\n"]
+        obtained = self.list_parameter.prompt()
+        self.assertEqual(expected, obtained)

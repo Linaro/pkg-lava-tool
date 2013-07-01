@@ -21,6 +21,7 @@ Parameter class and its accessory methods/functions.
 """
 
 import sys
+import string
 
 
 class Parameter(object):
@@ -72,4 +73,31 @@ class Parameter(object):
                 self.value = user_input
 
         self.asked = True
+        return self.value
+
+
+class ListParameter(Parameter):
+    """A specialized Parameter to handle list values."""
+
+    def __init__(self, id, depends=None):
+        super(ListParameter, self).__init__(id)
+        self.value = []
+
+    def prompt(self, old_value=None):
+        """Gets the parameter in a list form.
+
+        To exit the input procedure it is necessary to insert an empty line.
+
+        :return The list of values.
+        """
+        # TODO handle old values and parameters re-insertion.
+        user_input = None
+        while True:
+            # TODO: think about a prompt.
+            user_input = raw_input("").strip()
+            if user_input in string.whitespace:
+                # Input is terminated with an empty string.
+                break
+            elif user_input is not None:
+                self.value.append(user_input)
         return self.value

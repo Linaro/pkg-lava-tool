@@ -18,7 +18,10 @@
 
 """Test definition templates."""
 
-from lava.parameter import Parameter
+from lava.parameter import (
+    ListParameter,
+    Parameter,
+)
 
 
 DEFAULT_TESTDEF_VERSION = "1.0"
@@ -30,7 +33,7 @@ DESCRIPTION_PARAMETER = Parameter("description", depends=NAME_PARAMETER)
 ENVIRONMENT_PARAMETER = Parameter("environment",
                                   depends=NAME_PARAMETER,
                                   value=DEFAULT_TESTDEF_ENVIRONMENT)
-
+STEPS_PARAMETER = ListParameter("steps", depends=NAME_PARAMETER)
 
 TESTDEF_TEMPLATE = {
     "metadata": {
@@ -41,6 +44,6 @@ TESTDEF_TEMPLATE = {
         "environment": ENVIRONMENT_PARAMETER,
     },
     "run": {
-        "steps": []
-    }
+        "steps": STEPS_PARAMETER,
+    },
 }
