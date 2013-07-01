@@ -20,9 +20,6 @@
 lava.parameter unit tests.
 """
 
-import sys
-
-from StringIO import StringIO
 from mock import patch
 
 from lava.helper.tests.helper_test import HelperTest
@@ -88,4 +85,34 @@ class ListParameterTest(GeneralParameterTest):
         expected = ["foo", "bar", "foobar"]
         self.mocked_raw_input.side_effect = expected + ["\n"]
         obtained = self.list_parameter.prompt()
+        self.assertEqual(expected, obtained)
+
+    def test_serialize_0(self):
+        # Tests the serialize method of ListParameter passing a list.
+        expected = "foo,bar,baz,1"
+        to_serialize = ["foo", "bar", "baz", "", 1]
+
+        obtained = self.list_parameter.serialize(to_serialize)
+        self.assertEqual(expected, obtained)
+
+    def test_serialize_1(self):
+        # Tests the serialize method of ListParameter passing an int.
+        expected = "1"
+        to_serialize = 1
+
+        obtained = self.list_parameter.serialize(to_serialize)
+        self.assertEqual(expected, obtained)
+
+    def test_deserialize_0(self):
+        # Tests the deserialize method of ListParameter with a string
+        # of values.
+        expected = ["foo", "bar", "baz"]
+        to_deserialize = "foo,bar,,baz,"
+        obtained = self.list_parameter.deserialize(to_deserialize)
+        self.assertEqual(expected, obtained)
+
+    def test_deserialize_1(self):
+        # Tests the deserialization method of ListParameter passing a list.
+        expected = ["foo", 1, "", "bar"]
+        obtained = self.list_parameter.deserialize(expected)
         self.assertEqual(expected, obtained)

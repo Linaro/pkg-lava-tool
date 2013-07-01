@@ -300,8 +300,7 @@ class InteractiveConfigTest(ConfigTestCase):
         self.config.put_parameter(list_param, param_values)
         self.config.save()
 
-        # TODO: this is temporary, need a way to convert list better.
-        expected = "[DEFAULT]\nlist = " + str(param_values) + "\n\n"
+        expected = "[DEFAULT]\nlist = " + ",".join(param_values) + "\n\n"
         obtained = ""
         with open(self.config_file.name, "r") as read_file:
             obtained = read_file.read()

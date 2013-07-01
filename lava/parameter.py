@@ -21,7 +21,7 @@ Parameter class and its accessory methods/functions.
 """
 
 import sys
-import string
+import types
 
 
 class Parameter(object):
@@ -75,6 +75,22 @@ class Parameter(object):
         self.asked = True
         return self.value
 
+    @classmethod
+    def serialize(cls, value):
+        """Serializes the passed value to be friendly written to file.
+
+        Lists are serialized as a comma separated string of values.
+
+        :param value: The value to serialize.
+        :return The serialized value as string.
+        """
+        serialized = ""
+        if isinstance(value, list):
+            serialized = ",".join(str(x) for x in value if x)
+        else:
+            serialized = str(value)
+        return serialized
+
 
 class ListParameter(Parameter):
     """A specialized Parameter to handle list values."""
@@ -83,6 +99,23 @@ class ListParameter(Parameter):
         super(ListParameter, self).__init__(id)
         self.value = []
 
+    def deserialize(self, value):
+        """Deserialize a value into a list.
+
+        The value must have been serialized with the class instance serialize()
+        method.
+
+        :param value: The string value to be deserialized.
+        :type str
+        :return A list of values.
+        """
+        deserialized = []
+        if isinstance(value, types.StringType):
+            deserialized = filter(None, (x.strip() for x in value.split(",")))
+        else:
+            deserialized = list(value)
+        return deserialized
+
     def prompt(self, old_value=None):
         """Gets the parameter in a list form.
 
@@ -90,22 +123,37 @@ class ListParameter(Parameter):
 
         :return The list of values.
         """
-        # TODO handle old values and parameters re-insertion.
-        user_input = None
+        if old_value is not None:
+            # We might get the old value read from file via ConfigParser, and
+            # usually it comes in string format.
+            old_value = self.deserialize(old_value)
+
+        print >> sys.stdout, "Values for '{0}': ".format(self.id)
+
+        index = 1
         while True:
+            user_input = None
             try:
-                # TODO: think about a prompt.
-                user_input = raw_input("").strip()
+                if old_value is not None and (0 < len(old_value) < index):
+                    prompt = "{0:>3d}.\n\told: {1}\n\tnew: "
+                    user_input = raw_input(
+                        prompt.format(index, old_value[index-1])).strip()
+                else:
+                    prompt = "{0:>3d}. : "
+                    user_input = raw_input(prompt.format(index)).strip()
             except EOFError:
                 break
             except KeyboardInterrupt:
                 sys.exit(-1)
 
             if user_input is not None:
-                if user_input in string.whitespace:
-                    # Input is terminated with an empty string.
-                    break
-                else:
-                    self.value.append(user_input)
+                if len(user_input) == 0:
+                    if old_value is not None and (0 < len(old_value) < index):
+                        user_input = old_value[index-1]
+                    else:
+                        break
+
+                self.value.append(user_input)
+                index += 1
 
         return self.value

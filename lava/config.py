@@ -30,6 +30,7 @@ from ConfigParser import (
     NoSectionError,
 )
 
+from lava.parameter import Parameter
 from lava.tool.errors import CommandError
 
 __all__ = ['Config', 'InteractiveConfig']
@@ -150,6 +151,13 @@ class Config(object):
         if (not self._config_backend.has_section(section) and
                 section != DEFAULT_SECTION):
             self._config_backend.add_section(section)
+
+        # This is done to serialize a list when ConfigParser is written to
+        # file. Since there is no real support for list in ConfigParser, we
+        # serialized it in a common way that can get easily deserialized.
+        if isinstance(value, list):
+            value = Parameter.serialize(value)
+
         self._config_backend.set(section, key, value)
         # Store in the cache too.
         self._put_in_cache(key, value, section)
