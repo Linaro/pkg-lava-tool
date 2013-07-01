@@ -158,6 +158,7 @@ class Config(object):
         """Adds a Parameter to the config file and cache.
 
         :param Parameter: The parameter to add.
+        :type Parameter
         :param value: The value of the parameter. Defaults to None.
         :param section: The section where this parameter should be stored.
                         Defaults to None.
