@@ -113,3 +113,4 @@ class NewCommandTest(HelperTest):
         mocked_raw_input.return_value = "\n"
         new_command = new(self.parser, self.args)
         self.assertRaises(CommandError, new_command.invoke)
+        self.assertFalse(os.path.exists(self.args.FILE))
