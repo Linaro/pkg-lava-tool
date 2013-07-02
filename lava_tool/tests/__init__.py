@@ -42,6 +42,7 @@ def test_modules():
         'lava.job.tests.test_commands',
         'lava.job.tests.test_job',
         'lava.testdef.tests.test_commands',
+        'lava.tests.test_commands',
         'lava.tests.test_config',
         'lava.tests.test_parameter',
         'lava_dashboard_tool.tests.test_commands',

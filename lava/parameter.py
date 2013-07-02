@@ -99,7 +99,8 @@ class ListParameter(Parameter):
         super(ListParameter, self).__init__(id, depends=depends)
         self.value = []
 
-    def deserialize(self, value):
+    @classmethod
+    def deserialize(cls, value):
         """Deserialize a value into a list.
 
         The value must have been serialized with the class instance serialize()
