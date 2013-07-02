@@ -33,7 +33,7 @@ DESCRIPTION_PARAMETER = Parameter("description", depends=NAME_PARAMETER)
 ENVIRONMENT_PARAMETER = Parameter("environment",
                                   depends=NAME_PARAMETER,
                                   value=DEFAULT_TESTDEF_ENVIRONMENT)
-STEPS_PARAMETER = ListParameter("steps", depends=NAME_PARAMETER)
+STEPS_PARAMETER = ListParameter("steps")
 
 TESTDEF_TEMPLATE = {
     "metadata": {

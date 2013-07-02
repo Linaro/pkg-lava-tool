@@ -134,12 +134,12 @@ class ListParameter(Parameter):
         while True:
             user_input = None
             try:
-                if old_value is not None and (0 < len(old_value) < index):
+                if old_value is not None and (0 < len(old_value) >= index):
                     prompt = "{0:>3d}.\n\told: {1}\n\tnew: "
                     user_input = raw_input(
                         prompt.format(index, old_value[index-1])).strip()
                 else:
-                    prompt = "{0:>3d}. : "
+                    prompt = "{0:>3d}. "
                     user_input = raw_input(prompt.format(index)).strip()
             except EOFError:
                 break
@@ -148,7 +148,7 @@ class ListParameter(Parameter):
 
             if user_input is not None:
                 if len(user_input) == 0:
-                    if old_value is not None and (0 < len(old_value) < index):
+                    if old_value is not None and (0 < len(old_value) >= index):
                         user_input = old_value[index-1]
                     else:
                         break
@@ -156,4 +156,5 @@ class ListParameter(Parameter):
                 self.value.append(user_input)
                 index += 1
 
+        self.asked = True
         return self.value
