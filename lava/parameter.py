@@ -96,7 +96,7 @@ class ListParameter(Parameter):
     """A specialized Parameter to handle list values."""
 
     def __init__(self, id, depends=None):
-        super(ListParameter, self).__init__(id)
+        super(ListParameter, self).__init__(id, depends=depends)
         self.value = []
 
     def deserialize(self, value):

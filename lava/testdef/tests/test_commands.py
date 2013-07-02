@@ -124,13 +124,13 @@ class NewCommandTest(HelperTest):
                                              "\n", "\n"]
         new_command = new(self.parser, self.args)
         new_command.invoke()
-        expected = {'run': {'steps': ["foo", "bar", "baz"]},
+        expected = {'run': {'steps': ["bar", "baz"]},
                     'metadata': {
                         'environment': 'lava-test-shell',
                         'format': 'Lava-Test Test Definition 1.0',
                         'version': '1.0',
                         'description': '',
-                        'name': ''}
+                        'name': 'foo'}
                     }
         obtained = None
         with open(self.file_path, 'r') as read_file:
