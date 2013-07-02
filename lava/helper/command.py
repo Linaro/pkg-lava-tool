@@ -92,7 +92,7 @@ class BaseCommand(Command):
         :param cmd_args: The command, and its optional arguments, to run.
         :return The command execution return code.
         """
-        if isinstance(cmd_args, types.StringType):
+        if isinstance(cmd_args, types.StringTypes):
             cmd_args = [cmd_args]
         else:
             cmd_args = list(cmd_args)
