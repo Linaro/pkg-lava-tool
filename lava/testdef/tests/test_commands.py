@@ -94,6 +94,7 @@ class NewCommandTest(HelperTest):
         # a correct YAML structure is created.
         self.mocked_raw_input.return_value = "\n"
         new_command = new(self.parser, self.args)
+        new_command.config = self.config
         new_command.invoke()
         expected = {'run': {'steps': []},
                     'metadata': {
