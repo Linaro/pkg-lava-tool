@@ -99,12 +99,6 @@ class ListParameter(Parameter):
         super(ListParameter, self).__init__(id, depends=depends)
         self.value = []
 
-        if value:
-            if isinstance(value, types.StringTypes):
-                self.value = [value]
-            else:
-                self.value = list(value)
-
     def deserialize(self, value):
         """Deserialize a value into a list.
 
