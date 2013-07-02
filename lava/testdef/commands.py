@@ -36,6 +36,7 @@ class testdef(CommandGroup):
 
 
 class new(BaseCommand):
+    """Creates a new test definition file."""
 
     @classmethod
     def register_arguments(cls, parser):
