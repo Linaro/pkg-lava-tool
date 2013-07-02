@@ -95,9 +95,15 @@ class Parameter(object):
 class ListParameter(Parameter):
     """A specialized Parameter to handle list values."""
 
-    def __init__(self, id, depends=None):
+    def __init__(self, id, value=None, depends=None):
         super(ListParameter, self).__init__(id, depends=depends)
         self.value = []
+
+        if value:
+            if isinstance(value, types.StringTypes):
+                self.value = [value]
+            else:
+                self.value = list(value)
 
     def deserialize(self, value):
         """Deserialize a value into a list.
@@ -110,7 +116,7 @@ class ListParameter(Parameter):
         :return A list of values.
         """
         deserialized = []
-        if isinstance(value, types.StringType):
+        if isinstance(value, types.StringTypes):
             deserialized = filter(None, (x.strip() for x in value.split(",")))
         else:
             deserialized = list(value)

@@ -98,7 +98,7 @@ class NewCommandTest(HelperTest):
         new_command.invoke()
         expected = {'run': {'steps': []},
                     'metadata': {
-                        'environment': 'lava-test-shell',
+                        'environment': ['lava-test-shell'],
                         'format': 'Lava-Test Test Definition 1.0',
                         'version': '1.0',
                         'description': '',
@@ -127,7 +127,7 @@ class NewCommandTest(HelperTest):
         new_command.invoke()
         expected = {'run': {'steps': ["bar", "baz"]},
                     'metadata': {
-                        'environment': 'lava-test-shell',
+                        'environment': ['lava-test-shell'],
                         'format': 'Lava-Test Test Definition 1.0',
                         'version': '1.0',
                         'description': '',
