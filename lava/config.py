@@ -55,8 +55,29 @@ def _run_at_exit():
 atexit.register(_run_at_exit)
 
 
+class Singleton(type):
+    """A singleton implementation.
+
+    Configuration should be shared among the various call. The other approach
+    would be to turn this into a module or a class with only static/class
+    methods.
+    """
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
 class Config(object):
     """A generic config object."""
+    # Between all the various singleton Python patterns, the metaclass one
+    # looks like is the one that works better with inheritance.
+    # In Python3 this would go into the class declaration as follows:
+    # class Config(object, metaclass=Singleton)
+    __metaclass__ = Singleton
+
     def __init__(self):
         # The cache where to store parameters.
         self._cache = {}
