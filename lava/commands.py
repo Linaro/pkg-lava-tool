@@ -32,15 +32,18 @@ from lava.parameter import (
 )
 from lava.tool.errors import CommandError
 
+DIRNAME = "dirname"
+JOBFILE = "jobfile"
+TESTS = "tests"
 
-DIRNAME_PARAMETER = Parameter("dirname")
-JOBFILE_PARAMETER = ListParameter("jobfiles")
-TESTFILE_PARAMETER = ListParameter("testfiles")
+DIRNAME_PARAMETER = Parameter(DIRNAME)
+JOBFILE_PARAMETER = Parameter(JOBFILE)
+TESTFILE_PARAMETER = ListParameter(TESTS)
 
 INIT_TEMPLATE = {
-    "dirname": DIRNAME_PARAMETER,
-    "jobfiles": JOBFILE_PARAMETER,
-    "testfiles": TESTFILE_PARAMETER,
+    DIRNAME: DIRNAME_PARAMETER,
+    JOBFILE: JOBFILE_PARAMETER,
+    TESTS: TESTFILE_PARAMETER,
 }
 
 
@@ -80,19 +83,18 @@ class init(BaseCommand):
         data = copy.deepcopy(INIT_TEMPLATE)
 
         # Do not ask again the dirname parameter.
-        data["dirname"].value = self.args.DIR
-        data["dirname"].asked = True
+        data[DIRNAME].value = self.args.DIR
+        data[DIRNAME].asked = True
 
         expand_template(data, self.config)
         return data
 
     def _create_dir_structure(self, data, full_path):
-        job_files = ListParameter.deserialize(data["jobfiles"])
-        test_files = ListParameter.deserialize(data["testfiles"])
+        test_files = ListParameter.deserialize(data[TESTS])
 
-        for job in job_files:
-            print >> sys.stdout, "\nCreating job file '{0}':".format(job)
-            self._create_job_file(os.path.join(full_path, job))
+        job = data[JOBFILE]
+        print >> sys.stdout, "\nCreating job file '{0}':".format(job)
+        self._create_job_file(os.path.join(full_path, job))
 
         for test in test_files:
             print >> sys.stdout, ("\nCreating test definition file "
@@ -100,11 +102,10 @@ class init(BaseCommand):
             self._create_test_file(os.path.join(full_path, test))
 
     def _create_job_file(self, job_file):
-        """Creates the job file on the filesystem.
+        """Creates the job file on the filesystem."""
 
-        Invoke the command to create new job files: make a copy of the local
-        args and add what is necessary for the command.
-        """
+        # Invoke the command to create new job files: make a copy of the local
+        # args and add what is necessary for the command.
         from lava.job.commands import new
 
         args = copy.copy(self.args)
@@ -114,11 +115,10 @@ class init(BaseCommand):
         job_cmd.invoke()
 
     def _create_test_file(self, test_file):
-        """Creates the test definition file on the filesystem.
+        """Creates the test definition file on the filesystem."""
 
-        Invoke the command to create new testdef files: make a copy of the
-        local args and add what is necessary for the command.
-        """
+        # Invoke the command to create new testdef files: make a copy of the
+        # local args and add what is necessary for the command.
         from lava.testdef.commands import new
 
         args = copy.copy(self.args)
