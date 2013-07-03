@@ -22,6 +22,8 @@ Parameter class and its accessory methods/functions.
 
 import sys
 import types
+import urllib
+import urlparse
 
 
 class Parameter(object):
@@ -124,6 +126,7 @@ class ListParameter(Parameter):
 
         :return The list of values.
         """
+
         if old_value is not None:
             # We might get the old value read from file via ConfigParser, and
             # usually it comes in string format.
@@ -159,3 +162,62 @@ class ListParameter(Parameter):
 
         self.asked = True
         return self.value
+
+
+class UrlParameter(ListParameter):
+
+    def __init__(self, id, value=None, depends=None):
+        super(UrlParameter, self).__init__(id, depends=depends)
+        # The supported URL schemes:
+        #   file: normal file URL
+        #   data: base64 encoded string of the file pointed to
+        self.url_types = ["file", "data"]
+        self.urls = []
+
+    @classmethod
+    def base64encode(cls):
+        pass
+
+    @classmethod
+    def base64decode(cls):
+        pass
+
+    def prompt(self, old_value=None):
+        """First asks the URL scheme, then asks the URL."""
+        types_len = len(self.url_types)
+
+        # TODO: need to handle old_values here too.
+        # TODO: need to encode/decode in base64 when using data
+        print >> sys.stdout, "\nType of URL:"
+
+        index = 1
+        for url_type in self.url_types:
+            print >> sys.stdout, "\t{0:d}. {1}".format(index, url_type)
+            index += 1
+
+        user_input = None
+        while True:
+            try:
+                user_input = raw_input("Choose URL type: ").strip()
+            except EOFError:
+                continue
+            except KeyboardInterrupt:
+                sys.exit(-1)
+
+            if user_input not in [str(x) for x in range(1, types_len + 1)]:
+                continue
+            else:
+                # Create the correct ULR scheme.
+                url_scheme = self.url_types[int(user_input) - 1] + ":"
+
+                # Now really ask the list of files.
+                super(UrlParameter, self).prompt(old_value=old_value)
+
+                if self.value is not None:
+                    for path in self.value:
+                        url = urlparse.urljoin(url_scheme,
+                                               urllib.pathname2url(path))
+                        self.urls.append(url)
+                break
+
+        return self.urls
