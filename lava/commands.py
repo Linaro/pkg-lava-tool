@@ -22,21 +22,20 @@ Lava init commands.
 
 import copy
 import os
+import sys
 
 from lava.helper.command import BaseCommand
 from lava.helper.template import expand_template
-from lava.job.commands import new as new_job
 from lava.parameter import (
     Parameter,
     ListParameter,
 )
-from lava.testdef.commands import new as new_testdef
 from lava.tool.errors import CommandError
 
 
 DIRNAME_PARAMETER = Parameter("dirname")
-JOBFILE_PARAMETER = ListParameter("jobfiles", depends=DIRNAME_PARAMETER)
-TESTFILE_PARAMETER = ListParameter("testfiles", depends=DIRNAME_PARAMETER)
+JOBFILE_PARAMETER = ListParameter("jobfiles")
+TESTFILE_PARAMETER = ListParameter("testfiles")
 
 INIT_TEMPLATE = {
     "dirname": DIRNAME_PARAMETER,
@@ -90,19 +89,40 @@ class init(BaseCommand):
     def _create_dir_structure(self, data, full_path):
         job_files = ListParameter.deserialize(data["jobfiles"])
         test_files = ListParameter.deserialize(data["testfiles"])
+
         for job in job_files:
+            print >> sys.stdout, "\nCreating job file '{0}':".format(job)
             self._create_job_file(os.path.join(full_path, job))
 
         for test in test_files:
+            print >> sys.stdout, ("\nCreating test definition file "
+                                  "'{0}':".format(test))
             self._create_test_file(os.path.join(full_path, test))
 
     def _create_job_file(self, job_file):
+        """Creates the job file on the filesystem.
+
+        Invoke the command to create new job files: make a copy of the local
+        args and add what is necessary for the command.
+        """
+        from lava.job.commands import new
+
         args = copy.copy(self.args)
         args.FILE = job_file
-        job_cmd = new_job(self.parser, args)
+
+        job_cmd = new(self.parser, args)
         job_cmd.invoke()
-        print job_file
 
     def _create_test_file(self, test_file):
-        testdef_cmd = new_testdef(self.parser, self.args)
-        print test_file
+        """Creates the test definition file on the filesystem.
+
+        Invoke the command to create new testdef files: make a copy of the
+        local args and add what is necessary for the command.
+        """
+        from lava.testdef.commands import new
+
+        args = copy.copy(self.args)
+        args.FILE = test_file
+
+        testdef_cmd = new(self.parser, args)
+        testdef_cmd.invoke()
