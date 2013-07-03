@@ -20,13 +20,13 @@
 Device class unit tests.
 """
 
+from lava.config import Config
 from lava.parameter import Parameter
 from lava.device.templates import (
     HOSTNAME_PARAMETER,
     PANDA_DEVICE_TYPE,
     PANDA_CONNECTION_COMMAND,
 )
-from lava.tests.test_config import MockedConfig
 from lava.device import (
     Device,
     get_known_device,
@@ -69,7 +69,7 @@ class DeviceTest(HelperTest):
         # updated with the correct values from a Config instance.
         hostname = "panda_device"
 
-        config = MockedConfig(self.temp_file.name)
+        config = Config(config_file=self.temp_file.name)
         config.put_parameter(HOSTNAME_PARAMETER, hostname)
         config.put_parameter(PANDA_DEVICE_TYPE, "panda")
         config.put_parameter(PANDA_CONNECTION_COMMAND, "test")
@@ -83,6 +83,10 @@ class DeviceTest(HelperTest):
         instance = get_known_device(hostname)
         instance.update(config)
 
+        # This is necessary to clean up the state of the "singleton", and
+        # always get back a fresh object.
+        config.__metaclass__._drop()
+
         self.assertEqual(expected, instance.data)
 
     def test_device_write(self):
@@ -90,7 +94,7 @@ class DeviceTest(HelperTest):
         # and contains the expected results.
         hostname = "panda_device"
 
-        config = MockedConfig(self.temp_file.name)
+        config = Config(config_file=self.temp_file.name)
         config.put_parameter(HOSTNAME_PARAMETER, hostname)
         config.put_parameter(PANDA_DEVICE_TYPE, "panda")
         config.put_parameter(PANDA_CONNECTION_COMMAND, "test")
@@ -107,6 +111,10 @@ class DeviceTest(HelperTest):
 
         expected = ("hostname = panda_device\nconnection_command = test\n"
                     "device_type = panda\n")
+
+        # This is necessary to clean up the state of the "singleton", and
+        # always get back a fresh object.
+        config.__metaclass__._drop()
 
         obtained = ""
         with open(self.temp_file.name) as f:

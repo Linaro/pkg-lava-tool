@@ -69,6 +69,11 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
+    @classmethod
+    def _drop(cls):
+        "Drop the instance (for testing purposes)."
+        Singleton._instances = {}
+
 
 class Config(object):
     """A generic config object."""
@@ -78,12 +83,16 @@ class Config(object):
     # class Config(object, metaclass=Singleton)
     __metaclass__ = Singleton
 
-    def __init__(self):
+    def __init__(self, config_file=None):
         # The cache where to store parameters.
         self._cache = {}
-        self._config_file = (os.environ.get('LAVACONFIG') or
-                             os.path.join(os.path.expanduser('~'),
-                                          '.lavaconfig'))
+        # Mostly needed for testing purposes.
+        if config_file is not None:
+            self._config_file = config_file
+        else:
+            self._config_file = (os.environ.get('LAVACONFIG') or
+                                 os.path.join(os.path.expanduser('~'),
+                                              '.lavaconfig'))
         self._config_backend = ConfigParser()
         self._config_backend.read([self._config_file])
         AT_EXIT_CALLS.add(self.save)
@@ -214,8 +223,8 @@ class InteractiveConfig(Config):
     If a value is not found in the config file, it will ask it and then stores
     it.
     """
-    def __init__(self, force_interactive=True):
-        super(InteractiveConfig, self).__init__()
+    def __init__(self, config_file=None, force_interactive=True):
+        super(InteractiveConfig, self).__init__(config_file=config_file)
         self._force_interactive = force_interactive
 
     def get(self, parameter, section=None):

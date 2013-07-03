@@ -22,18 +22,11 @@ Tests for lava.commands.
 
 import os
 import tempfile
-import yaml
 
-from mock import (
-    patch,
-)
-
-from lava.tests.test_config import MockedInteractiveConfig
 from lava.helper.tests.helper_test import HelperTest
 from lava.commands import (
     init,
 )
-from lava.tool.errors import CommandError
 
 
 class InitCommandTests(HelperTest):

@@ -50,9 +50,6 @@ class HelperTest(TestCase):
         self.args.interactive = MagicMock(return_value=False)
         self.args.DEVICE = self.device
 
-        self.config = MagicMock()
-        self.config.get = MagicMock(return_value=self.temp_dir)
-
     def tearDown(self):
         sys.stdin = self.original_stdin
         sys.stdout = self.original_stdout

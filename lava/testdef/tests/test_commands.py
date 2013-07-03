@@ -28,7 +28,7 @@ from mock import (
     patch,
 )
 
-from lava.tests.test_config import MockedInteractiveConfig
+from lava.config import InteractiveConfig
 from lava.helper.tests.helper_test import HelperTest
 from lava.testdef.commands import (
     new,
@@ -46,8 +46,7 @@ class NewCommandTest(HelperTest):
         self.args.FILE = self.file_path
 
         self.config_file = tempfile.NamedTemporaryFile(delete=False)
-        self.config = MockedInteractiveConfig(self.config_file.name,
-                                              force_interactive=True)
+        self.config = InteractiveConfig(config_file=self.config_file.name)
         # Patch class raw_input, start it, and stop it on tearDown.
         self.patcher1 = patch("lava.parameter.raw_input", create=True)
         self.mocked_raw_input = self.patcher1.start()
@@ -58,6 +57,7 @@ class NewCommandTest(HelperTest):
             os.unlink(self.file_path)
         os.unlink(self.config_file.name)
         self.patcher1.stop()
+        self.config.__metaclass__._drop()
 
     def test_register_arguments(self):
         # Make sure that the parser add_argument is called and we have the

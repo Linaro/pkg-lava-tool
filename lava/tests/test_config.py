@@ -20,9 +20,7 @@
 lava.config unit tests.
 """
 
-import os
 import sys
-import tempfile
 
 from StringIO import StringIO
 from mock import MagicMock, patch, call
@@ -30,7 +28,6 @@ from mock import MagicMock, patch, call
 from lava.config import (
     Config,
     InteractiveConfig,
-    ConfigParser,
 )
 from lava.helper.tests.helper_test import HelperTest
 from lava.parameter import (
@@ -40,52 +37,29 @@ from lava.parameter import (
 from lava.tool.errors import CommandError
 
 
-class MockedConfig(Config):
-    """A subclass of the original Config class.
-
-    Used to test the Config class, but to not have the same constructor in
-    order to use temporary files for the configuration.
-    """
-    def __init__(self, config_file):
-        self._cache = {}
-        self._config_file = config_file
-        self._config_backend = ConfigParser()
-        self._config_backend.read([self._config_file])
-
-
-class MockedInteractiveConfig(InteractiveConfig):
-    def __init__(self, config_file, force_interactive=False):
-        self._cache = {}
-        self._config_file = config_file
-        self._config_backend = ConfigParser()
-        self._config_backend.read([self._config_file])
-        self._force_interactive = force_interactive
-
-
 class ConfigTestCase(HelperTest):
     """General test case class for the different Config classes."""
     def setUp(self):
         super(ConfigTestCase, self).setUp()
-        self.config_file = tempfile.NamedTemporaryFile(delete=False)
-
         self.param1 = Parameter("foo")
         self.param2 = Parameter("bar", depends=self.param1)
-
-    def tearDown(self):
-        super(ConfigTestCase, self).tearDown()
-        if os.path.isfile(self.config_file.name):
-            os.unlink(self.config_file.name)
 
 
 class ConfigTest(ConfigTestCase):
 
     def setUp(self):
         super(ConfigTest, self).setUp()
-        self.config = MockedConfig(self.config_file.name)
+        self.config = Config(config_file=self.temp_file.name)
+
+    def tearDown(self):
+        super(ConfigTest, self).tearDown()
+        # This is necessary to clean up the state of the "singleton", and
+        # always get back a fresh object.
+        self.config.__metaclass__._drop()
 
     def test_assert_temp_config_file(self):
         # Dummy test to make sure we are overriding correctly the Config class.
-        self.assertEqual(self.config._config_file, self.config_file.name)
+        self.assertEqual(self.config._config_file, self.temp_file.name)
 
     def test_config_put_in_cache_0(self):
         self.config._put_in_cache("key", "value", "section")
@@ -170,46 +144,42 @@ class ConfigTest(ConfigTestCase):
 
         expected = "[DEFAULT]\nfoo = foo\n\n"
         obtained = ""
-        with open(self.config_file.name) as tmp_file:
+        with open(self.temp_file.name) as tmp_file:
             obtained = tmp_file.read()
         self.assertEqual(expected, obtained)
-
-    @patch("lava.config.AT_EXIT_CALLS", spec=set)
-    def test_config_atexit_call_list(self, mocked_calls):
-        # Tests that the save() method is added to the set of atexit calls.
-        config = Config()
-        config._config_file = self.config_file.name
-        config.put_parameter(self.param1, "foo")
-
-        expected = [call.add(config.save)]
-
-        self.assertEqual(expected, mocked_calls.mock_calls)
 
 
 class InteractiveConfigTest(ConfigTestCase):
 
     def setUp(self):
         super(InteractiveConfigTest, self).setUp()
-        self.config = MockedInteractiveConfig(
-            config_file=self.config_file.name)
+        self.config = InteractiveConfig(config_file=self.temp_file.name)
+
+    def tearDown(self):
+        super(InteractiveConfigTest, self).tearDown()
+        # This is necessary to clean up the state of the "singleton", and
+        # always get back a fresh object.
+        self.config.__metaclass__._drop()
 
     @patch("lava.config.Config.get", new=MagicMock(return_value=None))
     def test_non_interactive_config_0(self):
-        # Mocked config default is not to be interactive.
         # Try to get a value that does not exists, users just press enter when
         # asked for a value. Value will be empty.
+        self.config._force_interactive = False
         sys.stdin = StringIO("\n")
         value = self.config.get(Parameter("foo"))
         self.assertEqual("", value)
 
     @patch("lava.config.Config.get", new=MagicMock(return_value="value"))
     def test_non_interactive_config_1(self):
-        # Parent class config returns a value, but we are not interactive.
+        # Parent class config returns value, but we are not interactive.
+        self.config._force_interactive = False
         value = self.config.get(Parameter("foo"))
         self.assertEqual("value", value)
 
     @patch("lava.config.Config.get", new=MagicMock(return_value=None))
     def test_non_interactive_config_2(self):
+        self.config._force_interactive = False
         expected = "bar"
         sys.stdin = StringIO(expected)
         value = self.config.get(Parameter("foo"))
@@ -302,6 +272,6 @@ class InteractiveConfigTest(ConfigTestCase):
 
         expected = "[DEFAULT]\nlist = " + ",".join(param_values) + "\n\n"
         obtained = ""
-        with open(self.config_file.name, "r") as read_file:
+        with open(self.temp_file.name, "r") as read_file:
             obtained = read_file.read()
         self.assertEqual(expected, obtained)
