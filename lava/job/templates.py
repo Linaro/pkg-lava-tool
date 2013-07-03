@@ -16,19 +16,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
-from lava.parameter import Parameter
+from lava.parameter import (
+    Parameter,
+    UrlParameter,
+)
 
-device_type = Parameter("device_type")
-prebuilt_image = Parameter("prebuilt_image", depends=device_type)
+DEVICE_TYPE = Parameter("device_type")
+PREBUILT_IMAGE = Parameter("prebuilt_image", depends=DEVICE_TYPE)
+TESTDEF_URL = UrlParameter("testdef_urls", depends=DEVICE_TYPE)
 
 BOOT_TEST = {
     "job_name": "Boot test",
-    "device_type": device_type,
+    "device_type": DEVICE_TYPE,
     "actions": [
         {
             "command": "deploy_linaro_image",
             "parameters": {
-                "image": prebuilt_image
+                "image": PREBUILT_IMAGE
             }
         },
         {
@@ -39,20 +43,18 @@ BOOT_TEST = {
 
 LAVA_TEST_SHELL = {
     "job_name": "LAVA Test Shell",
-    "device_type": device_type,
+    "device_type": DEVICE_TYPE,
     "actions": [
         {
             "command": "deploy_linaro_image",
             "parameters": {
-                "image": prebuilt_image,
+                "image": PREBUILT_IMAGE,
             }
         },
         {
             "command": "lava_test_shell",
             "parameters": {
-                "testdef_urls": [
-                    Parameter("testdef_url")
-                ]
+                "testdef_urls": TESTDEF_URL,
             }
         }
     ]
