@@ -29,7 +29,7 @@ from lava.helper.dispatcher import get_devices
 
 from lava.job import Job
 from lava.job.templates import (
-    BOOT_TEST,
+    LAVA_TEST_SHELL,
 )
 from lava.parameter import Parameter
 from lava.tool.command import CommandGroup
@@ -56,7 +56,7 @@ class new(BaseCommand):
             raise CommandError('{0} already exists.'.format(self.args.FILE))
 
         with open(self.args.FILE, 'w') as job_file:
-            job_instance = Job(BOOT_TEST)
+            job_instance = Job(LAVA_TEST_SHELL)
             job_instance.fill_in(self.config)
             job_instance.write(job_file)
 
