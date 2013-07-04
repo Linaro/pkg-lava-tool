@@ -176,6 +176,7 @@ class UrlParameter(ListParameter):
 
     FILE_SCHEME = "file"
     DATA_SCHEME = "data"
+    DELIMITER = ":"
 
     def __init__(self, id, value=None, depends=None):
         super(UrlParameter, self).__init__(id, depends=depends)
@@ -194,7 +195,7 @@ class UrlParameter(ListParameter):
 
         If string is a path to an existing file, the encoding will work in this
         way: it will encode the path, and the content of the file. The result
-        will be a string with the two encoded values joined by a comma: the
+        will be a string with the two encoded values joined by a colon: the
         first value is the path, the second the content.
 
         :param string: What to encode.
@@ -209,8 +210,8 @@ class UrlParameter(ListParameter):
             encoded_content = StringIO.StringIO()
             with open(string, "r") as read_file:
                 base64.encode(read_file, encoded_content)
-            encoded_string = ",".join([encoded_path,
-                                       encoded_content.getvalue()])
+            encoded_string = cls.DELIMITER.join([encoded_path,
+                                                 encoded_content.getvalue()])
         else:
             encoded_string = base64.encodestring(string)
         return encoded_string
@@ -219,7 +220,7 @@ class UrlParameter(ListParameter):
     def base64decode(cls, string):
         """Decodes the provided string."""
         decoded_string = ""
-        split_string = string.split(",")
+        split_string = string.split(cls.DELIMITER)
         if len(split_string) > 1:
             decoded_string = base64.decodestring(split_string[0])
         else:
@@ -230,7 +231,7 @@ class UrlParameter(ListParameter):
         """First asks the URL scheme, then asks the URL."""
         types_len = len(self.url_types)
 
-        if old_value is not None and len(old_value) > 0:
+        if old_value and isinstance(old_value, list):
             # Get the old scheme used, just pick the first value.
             old_scheme = urlparse.urlparse(old_value[0]).scheme
 

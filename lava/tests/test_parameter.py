@@ -151,7 +151,7 @@ class UrlParameterTests(GeneralParameterTest):
         encoded_path = base64.encodestring(self.temp_file.name)
         encoded_content = base64.encodestring(string_2_encode)
 
-        expected = ",".join([encoded_path, encoded_content])
+        expected = ":".join([encoded_path, encoded_content])
         obtained = UrlParameter.base64encode(self.temp_file.name)
 
         self.assertEqual(expected, obtained)
@@ -171,6 +171,6 @@ class UrlParameterTests(GeneralParameterTest):
         expected = self.temp_file.name
         encoded_path = base64.encodestring(expected)
         encoded_content = base64.encodestring("some content")
-        string_2_decode = ",".join([encoded_path, encoded_content])
+        string_2_decode = ":".join([encoded_path, encoded_content])
         obtained = UrlParameter.base64decode(string_2_decode)
         self.assertEqual(expected, obtained)
