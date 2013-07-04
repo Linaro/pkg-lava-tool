@@ -25,7 +25,6 @@ import base64
 import os
 import sys
 import types
-import urllib
 import urlparse
 
 from lava.tool.errors import CommandError
