@@ -252,11 +252,11 @@ class UrlParameter(ListParameter):
         for value in old_value:
             # If we have a data scheme, decode the string and get the path.
             if old_scheme == self.DATA_SCHEME:
-                value = self.base64decode(value)
+                value = self.base64decode(urlparse.urlparse(value).path)
             path = urlparse.urlparse(value).path
             cleaned_values.append(path)
 
-        return old_scheme, cleaned_values
+        return (old_scheme, cleaned_values)
 
     def _get_url_scheme(self, old_scheme=None):
         """Asks the user the URL scheme to adopt."""

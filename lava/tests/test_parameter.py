@@ -161,6 +161,35 @@ class UrlParameterTests(GeneralParameterTest):
         obtained = self.url_parameter.prompt()
         self.assertEqual(expected, obtained)
 
+    def test_calculate_old_values_0(self):
+        # Tests the _calculate_old_values method with "file" URL scheme.
+        old_value = "file:///tmp/file1,file:///tmp/file2"
+        expected = ("file", ["/tmp/file1", "/tmp/file2"])
+        obtained = self.url_parameter._calculate_old_values(old_value)
+        self.assertEqual(expected, obtained)
+
+    def test_calculate_old_values_1(self):
+        # Tests the _calculate_old_values method with "data" URL scheme.
+        content_1 = "some content"
+        encoded_content_1 = base64.encodestring(content_1).strip()
+        fake_file_1 = "/tmp/file1"
+        encoded_file_1 = base64.encodestring(fake_file_1).strip()
+        old_content_1 = ";".join([encoded_file_1, encoded_content_1])
+        old_value_1 = "data:" + old_content_1
+
+        content_2 = "some more content"
+        encoded_content_2 = base64.encodestring(content_2).strip()
+        fake_file_2 = "/tmp/file2"
+        encoded_file_2 = base64.encodestring(fake_file_2).strip()
+        old_content_2 = ";".join([encoded_file_2, encoded_content_2])
+        old_value_2 = "data:" + old_content_2
+
+        old_value = ",".join([old_value_1, old_value_2])
+
+        expected = ("data", [fake_file_1, fake_file_2])
+        obtained = self.url_parameter._calculate_old_values(old_value)
+        self.assertEqual(expected, obtained)
+
     def test_base64_encode_with_no_file(self):
         # Pass a simple string and make sure it is encoded correctly.
         fake_file = "a_fake_non_existing_file.txt"
