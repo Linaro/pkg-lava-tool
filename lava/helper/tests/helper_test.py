@@ -29,12 +29,20 @@ import sys
 import tempfile
 
 from unittest import TestCase
-from mock import MagicMock
+from mock import (
+    MagicMock,
+    patch
+)
 
 
 class HelperTest(TestCase):
     """Helper test class that all tests under the lava package can inherit."""
+
     def setUp(self):
+        # Need to patch it here, not as a decorator, or running the tests
+        # via `./setup.py test` will fail.
+        self.at_exit_patcher = patch("lava.config.AT_EXIT_CALLS", spec=set)
+        self.at_exit_patcher.start()
         self.original_stdout = sys.stdout
         sys.stdout = open("/dev/null", "w")
         self.original_stderr = sys.stderr
@@ -51,6 +59,7 @@ class HelperTest(TestCase):
         self.args.DEVICE = self.device
 
     def tearDown(self):
+        self.at_exit_patcher.stop()
         sys.stdin = self.original_stdin
         sys.stdout = self.original_stdout
         sys.stderr = self.original_stderr
