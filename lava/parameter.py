@@ -307,8 +307,3 @@ class UrlParameter(ListParameter):
             self.urls.append(url)
 
         return self.urls
-
-
-if __name__ == '__main__':
-    url_param = UrlParameter("param")
-    url_param.prompt()
