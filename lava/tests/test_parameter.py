@@ -20,7 +20,10 @@
 lava.parameter unit tests.
 """
 
+import StringIO
 import base64
+import copy
+import os
 
 from mock import patch
 
@@ -159,6 +162,43 @@ class UrlParameterTests(GeneralParameterTest):
         encoded_content = base64.encodestring(content_string).strip()
         expected = ["data:" + encoded_path + ";" + encoded_content]
         obtained = self.url_parameter.prompt()
+        self.assertEqual(expected, obtained)
+
+    def test_prompt_3(self):
+        # We pass old values to the prompt.
+        # User chooses the same URL scheme, accepts the old file path, and adds
+        # a new one.
+        self.mocked_raw_input.side_effect = ["2", "\n", self.temp_file.name,
+                                             "\n"]
+
+        content = "some text content"
+        files = [self.tmp("a_temp_file"), self.temp_file.name]
+
+        # Write something in the files.
+        for temp_file in files:
+            with open(temp_file, "w") as write_file:
+                write_file.write(content)
+
+        encoded_path = base64.encodestring(files[0]).strip()
+        encoded_content = StringIO.StringIO()
+
+        with open(files[0]) as read_file:
+            base64.encode(read_file, encoded_content)
+
+        old_value = ["data:" + encoded_path + ";" +
+                     encoded_content.getvalue().strip()]
+
+        expected = [copy.copy(old_value[0])]
+        encoded_path = base64.encodestring(files[1]).strip()
+        encoded_content_1 = StringIO.StringIO()
+
+        with open(files[1]) as read_file:
+            base64.encode(read_file, encoded_content_1)
+        url_string = "data:" + encoded_path + ";" + encoded_content_1.getvalue().strip()
+        expected.append(url_string)
+
+        obtained = self.url_parameter.prompt(old_value=old_value[0])
+        os.unlink(files[0])
         self.assertEqual(expected, obtained)
 
     def test_calculate_old_values_0(self):

@@ -49,14 +49,6 @@ class CommandTest(HelperTest):
         self.config.put_parameter(self.device_type, 'foo')
         self.config.put_parameter(self.prebuilt_image, 'bar')
 
-    def tmp(self, filename):
-        """Returns a path to a non existent file.
-
-        :param filename: The name the file should have.
-        :return A path.
-        """
-        return os.path.join(self.temp_dir, filename)
-
 
 class JobNewTest(CommandTest):
 

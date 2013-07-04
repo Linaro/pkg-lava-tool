@@ -56,3 +56,11 @@ class HelperTest(TestCase):
         sys.stderr = self.original_stderr
         shutil.rmtree(self.temp_dir)
         os.unlink(self.temp_file.name)
+
+    def tmp(self, filename):
+        """Returns a path to a non existent file.
+
+        :param filename: The name the file should have.
+        :return A path.
+        """
+        return os.path.join(tempfile.gettempdir(), filename)
