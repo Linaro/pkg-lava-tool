@@ -39,7 +39,8 @@ from lava.tool.errors import CommandError
 class NewCommandTest(HelperTest):
     """Class for the lava.testdef new command tests."""
 
-    def setUp(self):
+    @patch("lava.config.Config.save")
+    def setUp(self, mocked_save):
         super(NewCommandTest, self).setUp()
         self.file_name = "fake_testdef.yaml"
         self.file_path = os.path.join(tempfile.gettempdir(), self.file_name)

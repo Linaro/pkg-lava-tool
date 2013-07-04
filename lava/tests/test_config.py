@@ -47,7 +47,8 @@ class ConfigTestCase(HelperTest):
 
 class ConfigTest(ConfigTestCase):
 
-    def setUp(self):
+    @patch("lava.config.Config.save")
+    def setUp(self, mocked_save):
         super(ConfigTest, self).setUp()
         self.config = Config(config_file=self.temp_file.name)
 
@@ -151,7 +152,8 @@ class ConfigTest(ConfigTestCase):
 
 class InteractiveConfigTest(ConfigTestCase):
 
-    def setUp(self):
+    @patch("lava.config.Config.save")
+    def setUp(self, mocked_save):
         super(InteractiveConfigTest, self).setUp()
         self.config = InteractiveConfig(config_file=self.temp_file.name)
 
