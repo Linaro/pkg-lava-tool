@@ -95,7 +95,7 @@ class Parameter(object):
         """Asks the user for input data.
 
         :param prompt: The prompt that should be given to the user.
-        :return A string with what the user wrote.
+        :return A string with what the user typed.
         """
         data = None
         try:
@@ -110,6 +110,10 @@ class Parameter(object):
 
 class ListParameter(Parameter):
     """A specialized Parameter to handle list values."""
+
+    # This is used as a deletion character. When we have an old value and the
+    # user enters this char, it sort of deletes the value.
+    DELETE_CHAR = "-"
 
     def __init__(self, id, value=None, depends=None):
         super(ListParameter, self).__init__(id, depends=depends)
@@ -160,13 +164,21 @@ class ListParameter(Parameter):
                 user_input = self.get_user_input(prompt)
 
             if user_input is not None:
+                # The user has pressed Enter.
                 if len(user_input) == 0:
                     if old_value is not None and (0 < len(old_value) >= index):
                         user_input = old_value[index-1]
                     else:
                         break
 
-                self.value.append(user_input)
+                if len(user_input) == 1 and user_input == self.DELETE_CHAR \
+                        and (0 < len(old_value) >= index):
+                    # We have an old value, user presses the DELETE_CHAR
+                    # we do not store anything. This is done to delete an
+                    # old entry.
+                    pass
+                else:
+                    self.value.append(user_input)
                 index += 1
 
         self.asked = True
@@ -178,14 +190,15 @@ class UrlParameter(ListParameter):
 
     FILE_SCHEME = "file"
     DATA_SCHEME = "data"
-    # This is the delimiter used when encoding the values.
+    # This is the delimiter used when encoding the values using the
+    # data scheme.
     DELIMITER = ";"
 
     def __init__(self, id, value=None, depends=None):
         super(UrlParameter, self).__init__(id, depends=depends)
         # The supported URL schemes:
-        #   file: normal file URL
-        #   data: base64 encoded string of the file pointed to
+        #   file: normal file URL.
+        #   data: base64 encoded string of the file pointed to and its path.
         self.url_schemes = [
             self.FILE_SCHEME,
             self.DATA_SCHEME,
@@ -205,12 +218,13 @@ class UrlParameter(ListParameter):
         :return The encoded value.
         """
         encoded_string = ""
-        if os.path.isfile(path):
+        full_path = os.path.abspath(path)
+        if os.path.isfile(full_path):
             # The encoded string will be the file path plus its content.
             # We use a comma as a delimiter to separate the path from the
             # content.
             encoded_values = []
-            encoded_values.append(base64.encodestring(path).strip())
+            encoded_values.append(base64.encodestring(full_path).strip())
 
             try:
                 encoded_content = StringIO.StringIO()
@@ -299,7 +313,7 @@ class UrlParameter(ListParameter):
                 data = self.base64encode(path)
                 url = ":".join([url_scheme, data])
             else:
-                parts = list(urlparse.urlparse(path))
+                parts = list(urlparse.urlparse(os.path.abspath(path)))
                 parts[0] = url_scheme
                 url = urlparse.urlunparse(parts)
 
