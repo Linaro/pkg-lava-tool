@@ -92,14 +92,14 @@ class init(BaseCommand):
     def _create_dir_structure(self, data, full_path):
         test_files = ListParameter.deserialize(data[TESTS])
 
-        job = data[JOBFILE]
-        print >> sys.stdout, "\nCreating job file '{0}':".format(job)
-        self._create_job_file(os.path.join(full_path, job))
-
         for test in test_files:
             print >> sys.stdout, ("\nCreating test definition file "
                                   "'{0}':".format(test))
             self._create_test_file(os.path.join(full_path, test))
+
+        job = data[JOBFILE]
+        print >> sys.stdout, "\nCreating job file '{0}':".format(job)
+        self._create_job_file(os.path.join(full_path, job))
 
     def _create_job_file(self, job_file):
         """Creates the job file on the filesystem."""
