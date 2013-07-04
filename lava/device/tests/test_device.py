@@ -20,6 +20,8 @@
 Device class unit tests.
 """
 
+from mock import patch
+
 from lava.config import Config
 from lava.parameter import Parameter
 from lava.device.templates import (
@@ -31,7 +33,6 @@ from lava.device import (
     Device,
     get_known_device,
 )
-from lava.tool.errors import CommandError
 from lava.helper.tests.helper_test import HelperTest
 
 
@@ -64,7 +65,8 @@ class DeviceTest(HelperTest):
         self.assertIsInstance(instance.data['device_type'], Parameter)
         self.assertEqual(instance.data['device_type'].value, 'vexpress')
 
-    def test_device_update_1(self):
+    @patch("lava.config.Config.save")
+    def test_device_update_1(self, patched_save):
         # Tests that when calling update() on a Device, the template gets
         # updated with the correct values from a Config instance.
         hostname = "panda_device"
@@ -89,7 +91,8 @@ class DeviceTest(HelperTest):
 
         self.assertEqual(expected, instance.data)
 
-    def test_device_write(self):
+    @patch("lava.config.Config.save")
+    def test_device_write(self, mocked_save):
         # User tries to create a new panda device. The conf file is written
         # and contains the expected results.
         hostname = "panda_device"

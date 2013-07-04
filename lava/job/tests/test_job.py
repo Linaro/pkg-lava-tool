@@ -21,28 +21,27 @@ Unit tests for the Job class
 """
 
 import json
-import os
-import tempfile
 
+from mock import patch
 from StringIO import StringIO
-from unittest import TestCase
 
+from lava.helper.tests.helper_test import HelperTest
 from lava.config import Config
 from lava.job import Job
 from lava.job.templates import BOOT_TEST
 from lava.parameter import Parameter
 
 
-class JobTest(TestCase):
+class JobTest(HelperTest):
 
-    def setUp(self):
-        self.config_file = tempfile.NamedTemporaryFile(delete=False)
-        self.config = Config()
-        self.config._config_file = self.config_file.name
+    @patch("lava.config.Config.save")
+    def setUp(self, mocked_config):
+        super(JobTest, self).setUp()
+        self.config = Config(config_file=self.temp_file.name)
 
     def tearDown(self):
-        if os.path.isfile(self.config_file.name):
-            os.unlink(self.config_file.name)
+        super(JobTest, self).tearDown()
+        self.config.__metaclass__._drop()
 
     def test_from_template(self):
         template = {}
