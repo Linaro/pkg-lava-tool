@@ -20,6 +20,9 @@
 Parameter class and its accessory methods/functions.
 """
 
+import StringIO
+import base64
+import os
 import sys
 import types
 import urllib
@@ -58,13 +61,7 @@ class Parameter(object):
         else:
             prompt = "{0}: ".format(self.id)
 
-        user_input = None
-        try:
-            user_input = raw_input(prompt).strip()
-        except EOFError:
-            pass
-        except KeyboardInterrupt:
-            sys.exit(-1)
+        user_input = self.get_user_input(prompt)
 
         if user_input is not None:
             if len(user_input) == 0 and old_value:
@@ -92,6 +89,22 @@ class Parameter(object):
         else:
             serialized = str(value)
         return serialized
+
+    def get_user_input(self, prompt=""):
+        """Asks the user for input data.
+
+        :param prompt: The prompt that should be given to the user.
+        :return A string with what the user wrote.
+        """
+        data = None
+        try:
+            data = raw_input(prompt).strip()
+        except EOFError:
+            # Force to return None.
+            data = None
+        except KeyboardInterrupt:
+            sys.exit(-1)
+        return data
 
 
 class ListParameter(Parameter):
@@ -137,18 +150,13 @@ class ListParameter(Parameter):
         index = 1
         while True:
             user_input = None
-            try:
-                if old_value is not None and (0 < len(old_value) >= index):
-                    prompt = "{0:>3d}.\n\told: {1}\n\tnew: "
-                    user_input = raw_input(
-                        prompt.format(index, old_value[index-1])).strip()
-                else:
-                    prompt = "{0:>3d}. "
-                    user_input = raw_input(prompt.format(index)).strip()
-            except EOFError:
-                break
-            except KeyboardInterrupt:
-                sys.exit(-1)
+            if old_value is not None and (0 < len(old_value) >= index):
+                prompt = "{0:>3d}.\n\told: {1}\n\tnew: ".format(
+                    index, old_value[index-1])
+                user_input = self.get_user_input(prompt)
+            else:
+                prompt = "{0:>3d}. ".format(index)
+                user_input = self.get_user_input(prompt)
 
             if user_input is not None:
                 if len(user_input) == 0:
@@ -166,25 +174,72 @@ class ListParameter(Parameter):
 
 class UrlParameter(ListParameter):
 
+    FILE_SCHEME = "file"
+    DATA_SCHEME = "data"
+
     def __init__(self, id, value=None, depends=None):
         super(UrlParameter, self).__init__(id, depends=depends)
         # The supported URL schemes:
         #   file: normal file URL
         #   data: base64 encoded string of the file pointed to
-        self.url_types = ["file", "data"]
+        self.url_types = [
+            self.FILE_SCHEME,
+            self.DATA_SCHEME,
+        ]
         self.urls = []
 
     @classmethod
-    def base64encode(cls):
-        pass
+    def base64encode(cls, string):
+        """Encodes in base64 the provided string.
+
+        If string is a path to an existing file, the encoding will work in this
+        way: it will encode the path, and the content of the file. The result
+        will be a string with the two encoded values joined by a comma: the
+        first value is the path, the second the content.
+
+        :param string: What to encode.
+        :return The encoded value.
+        """
+        encoded_string = ""
+        if os.path.isfile(string):
+            # The encoded string will be the file path plus its content.
+            # We use a comma as a delimiter to separate the path from the
+            # content.
+            encoded_path = base64.encodestring(string)
+            encoded_content = StringIO.StringIO()
+            with open(string, "r") as read_file:
+                base64.encode(read_file, encoded_content)
+            encoded_string = ",".join([encoded_path,
+                                       encoded_content.getvalue()])
+        else:
+            encoded_string = base64.encodestring(string)
+        return encoded_string
 
     @classmethod
-    def base64decode(cls):
-        pass
+    def base64decode(cls, string):
+        """Decodes the provided string."""
+        decoded_string = ""
+        split_string = string.split(",")
+        if len(split_string) > 1:
+            decoded_string = base64.decodestring(split_string[0])
+        else:
+            decoded_string = base64.decodestring(string)
+        return decoded_string
 
     def prompt(self, old_value=None):
         """First asks the URL scheme, then asks the URL."""
         types_len = len(self.url_types)
+
+        if old_value is not None and len(old_value) > 0:
+            # Get the old scheme used, just pick the first value.
+            old_scheme = urlparse.urlparse(old_value[0]).scheme
+
+            # Clean up the paths
+            cleaned_values = []
+            for value in old_value:
+                path = urlparse.urlparse(value).path
+                cleaned_values.append(path)
+            old_value = cleaned_values
 
         # TODO: need to handle old_values here too.
         # TODO: need to encode/decode in base64 when using data
@@ -197,12 +252,7 @@ class UrlParameter(ListParameter):
 
         user_input = None
         while True:
-            try:
-                user_input = raw_input("Choose URL type: ").strip()
-            except EOFError:
-                continue
-            except KeyboardInterrupt:
-                sys.exit(-1)
+            user_input = self.get_user_input("Choose URL type")
 
             if user_input not in [str(x) for x in range(1, types_len + 1)]:
                 continue
@@ -215,6 +265,8 @@ class UrlParameter(ListParameter):
 
                 if self.value is not None:
                     for path in self.value:
+                        if url_scheme == self.DATA_SCHEME:
+                            path = self.base64encode(path)
                         url = urlparse.urljoin(url_scheme,
                                                urllib.pathname2url(path))
                         self.urls.append(url)
