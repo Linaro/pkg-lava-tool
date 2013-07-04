@@ -20,12 +20,15 @@
 lava.parameter unit tests.
 """
 
-from mock import patch
+import base64
+
+from mock import patch, MagicMock
 
 from lava.helper.tests.helper_test import HelperTest
 from lava.parameter import (
     ListParameter,
     Parameter,
+    UrlParameter,
 )
 
 
@@ -115,4 +118,59 @@ class ListParameterTest(GeneralParameterTest):
         # Tests the deserialization method of ListParameter passing a list.
         expected = ["foo", 1, "", "bar"]
         obtained = self.list_parameter.deserialize(expected)
+        self.assertEqual(expected, obtained)
+
+
+class UrlParameterTests(GeneralParameterTest):
+
+    def setUp(self):
+        super(UrlParameterTests, self).setUp()
+        self.url_parameter = UrlParameter("url_par")
+
+    def test_prompt_0(self):
+        # User is asked the type of URL scheme, chooses the first one, then
+        # enters the path of a file.
+        self.mocked_raw_input.side_effect = ["1", self.temp_file.name, "\n"]
+        expected = ["file://" + self.temp_file.name]
+        obtained = self.url_parameter.prompt()
+        self.assertEqual(expected, obtained)
+
+    def test_base64_encode(self):
+        # Pass a simple string and make sure it is encoded correctly.
+        string_2_encode = "a data string to encode"
+        expected = base64.encodestring(string_2_encode)
+        obtained = UrlParameter.base64encode(string_2_encode)
+        self.assertEqual(expected, obtained)
+
+    def test_base64_encode_with_file(self):
+        # Pass an existing file name, and make sure it is econded correctly.
+        string_2_encode = "a data string to encode"
+        with open(self.temp_file.name, "w") as write_file:
+            write_file.write(string_2_encode)
+
+        encoded_path = base64.encodestring(self.temp_file.name)
+        encoded_content = base64.encodestring(string_2_encode)
+
+        expected = ",".join([encoded_path, encoded_content])
+        obtained = UrlParameter.base64encode(self.temp_file.name)
+
+        self.assertEqual(expected, obtained)
+
+    def test_base64_decode_with_simple_string(self):
+        # Tests that when passing a simple encoded string, not a real file,
+        # it is correctly decoded.
+        expected = "another data string to encode"
+        encoded_string = base64.encodestring(expected)
+
+        obtained = UrlParameter.base64decode(encoded_string)
+        self.assertEqual(expected, obtained)
+
+    def test_base64_decode_with_file_content_string(self):
+        # Tests that when passing a encoded string of a file path and its
+        # content, only the file path is returned.
+        expected = self.temp_file.name
+        encoded_path = base64.encodestring(expected)
+        encoded_content = base64.encodestring("some content")
+        string_2_decode = ",".join([encoded_path, encoded_content])
+        obtained = UrlParameter.base64decode(string_2_decode)
         self.assertEqual(expected, obtained)
