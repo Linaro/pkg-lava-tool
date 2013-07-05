@@ -244,7 +244,7 @@ class ListParameter(Parameter):
         return self.value
 
 
-class UrlParameter(ListParameter):
+class UrlListParameter(ListParameter):
     """A parameter holding a list of URLs."""
 
     # This is the delimiter used when encoding the values using the
@@ -252,7 +252,7 @@ class UrlParameter(ListParameter):
     DELIMITER = ";"
 
     def __init__(self, id, value=None, depends=None):
-        super(UrlParameter, self).__init__(id, depends=depends)
+        super(UrlListParameter, self).__init__(id, depends=depends)
         # The scheme will be just one for all URLs.
         self.scheme = UrlSchemeParameter()
         self.urls = []
@@ -332,7 +332,7 @@ class UrlParameter(ListParameter):
         url_scheme = self.scheme.prompt(old_value=old_scheme)
         if url_scheme:
             # Now really ask the list of files.
-            super(UrlParameter, self).prompt(old_value=old_value)
+            super(UrlListParameter, self).prompt(old_value=old_value)
 
         for path in self.value:
             if url_scheme == self.scheme.DATA_SCHEME:

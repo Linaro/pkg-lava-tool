@@ -18,12 +18,12 @@
 
 from lava.parameter import (
     Parameter,
-    UrlParameter,
+    UrlListParameter,
 )
 
 DEVICE_TYPE = Parameter("device_type")
 PREBUILT_IMAGE = Parameter("prebuilt_image", depends=DEVICE_TYPE)
-TESTDEF_URL = UrlParameter("testdef_urls", depends=DEVICE_TYPE)
+TESTDEF_URL = UrlListParameter("testdef_urls", depends=DEVICE_TYPE)
 
 BOOT_TEST = {
     "job_name": "Boot test",

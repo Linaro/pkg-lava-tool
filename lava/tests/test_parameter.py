@@ -31,7 +31,7 @@ from lava.helper.tests.helper_test import HelperTest
 from lava.parameter import (
     ListParameter,
     Parameter,
-    UrlParameter,
+    UrlListParameter,
     UrlSchemeParameter,
 )
 from lava.tool.errors import CommandError
@@ -126,11 +126,11 @@ class ListParameterTest(GeneralParameterTest):
         self.assertEqual(expected, obtained)
 
 
-class UrlParameterTests(GeneralParameterTest):
+class UrlListParameterTests(GeneralParameterTest):
 
     def setUp(self):
-        super(UrlParameterTests, self).setUp()
-        self.url_parameter = UrlParameter("url_par")
+        super(UrlListParameterTests, self).setUp()
+        self.url_parameter = UrlListParameter("url_par")
 
     def test_prompt_0(self):
         # User is asked the type of URL scheme, chooses the first one, then
@@ -273,7 +273,7 @@ class UrlParameterTests(GeneralParameterTest):
     def test_base64_encode_with_no_file(self):
         # Pass a simple string and make sure it is encoded correctly.
         fake_file = "a_fake_non_existing_file.txt"
-        self.assertRaises(CommandError, UrlParameter.base64encode, fake_file)
+        self.assertRaises(CommandError, UrlListParameter.base64encode, fake_file)
 
     def test_base64_encode_with_file(self):
         # Pass an existing file name, and make sure it is econded correctly.
@@ -285,7 +285,7 @@ class UrlParameterTests(GeneralParameterTest):
         encoded_content = base64.encodestring(string_2_encode).strip()
 
         expected = ";".join([encoded_path, encoded_content])
-        obtained = UrlParameter.base64encode(self.temp_file.name)
+        obtained = UrlListParameter.base64encode(self.temp_file.name)
 
         self.assertEqual(expected, obtained)
 
@@ -296,7 +296,7 @@ class UrlParameterTests(GeneralParameterTest):
         encoded_path = base64.encodestring(expected).strip()
         encoded_content = base64.encodestring("some content").strip()
         string_2_decode = ";".join([encoded_path, encoded_content])
-        obtained = UrlParameter.base64decode(string_2_decode)
+        obtained = UrlListParameter.base64decode(string_2_decode)
         self.assertEqual(expected, obtained)
 
 
