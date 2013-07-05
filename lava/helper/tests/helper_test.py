@@ -66,10 +66,10 @@ class HelperTest(TestCase):
         shutil.rmtree(self.temp_dir)
         os.unlink(self.temp_file.name)
 
-    def tmp(self, filename):
-        """Returns a path to a non existent file.
+    def tmp(self, name):
+        """Returns a path to a non existent file/directory.
 
-        :param filename: The name the file should have.
+        :param name: The name the file/directory should have.
         :return A path.
         """
-        return os.path.join(tempfile.gettempdir(), filename)
+        return os.path.join(tempfile.gettempdir(), name)

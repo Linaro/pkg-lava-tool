@@ -59,10 +59,11 @@ class init(BaseCommand):
     def invoke(self):
         full_path = os.path.abspath(self.args.DIR)
 
-        if os.path.isdir(full_path):
-            raise CommandError("Directory '{0}' alraedy "
-                               "exists.".format(self.args.DIR))
-        else:
+        if os.path.isfile(full_path):
+            raise CommandError("'{0}' already exists, and is a "
+                               "file.".format(self.args.DIR))
+
+        if not os.path.isdir(full_path):
             try:
                 os.makedirs(full_path)
             except OSError:
