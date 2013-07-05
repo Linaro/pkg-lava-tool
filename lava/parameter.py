@@ -294,8 +294,7 @@ class UrlParameter(ListParameter):
             elif user_input in [str(x) for x in range(1, types_len + 1)]:
                 url_scheme = self.url_schemes[int(user_input) - 1]
                 break
-            else:
-                continue
+
         return url_scheme
 
     def prompt(self, old_value=None):
