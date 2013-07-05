@@ -71,7 +71,7 @@ class init(BaseCommand):
                                    "'{0}'.".format(self.args.DIR))
 
         data = self._update_data()
-        self._create_dir_structure(data, full_path)
+        self._create_files(data, full_path)
 
     def _update_data(self):
         """Updates the template and ask values to the user.
@@ -90,7 +90,7 @@ class init(BaseCommand):
         expand_template(data, self.config)
         return data
 
-    def _create_dir_structure(self, data, full_path):
+    def _create_files(self, data, full_path):
         test_files = ListParameter.deserialize(data[TESTS])
 
         for test in test_files:

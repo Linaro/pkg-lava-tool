@@ -73,7 +73,7 @@ class InitCommandTests(HelperTest):
         try:
             self.args.DIR = self.tmp("a_temp_dir")
             init_command = init(self.parser, self.args)
-            init_command._create_dir_structure = MagicMock()
+            init_command._create_files = MagicMock()
             init_command._update_data = MagicMock()
             init_command.invoke()
 
