@@ -288,7 +288,10 @@ class UrlParameter(ListParameter):
         while True:
             user_input = self.get_user_input("Choose URL scheme: ")
 
-            if user_input in [str(x) for x in range(1, types_len + 1)]:
+            if old_scheme is not None and len(user_input) == 0:
+                url_scheme = old_scheme
+                break
+            elif user_input in [str(x) for x in range(1, types_len + 1)]:
                 url_scheme = self.url_schemes[int(user_input) - 1]
                 break
             else:
