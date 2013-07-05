@@ -48,13 +48,16 @@ INIT_TEMPLATE = {
 
 
 class init(BaseCommand):
-    """Setup the base directory structure."""
+    """Set ups the base directory structure."""
 
     @classmethod
     def register_arguments(cls, parser):
         super(init, cls).register_arguments(parser)
-        parser.add_argument("DIR", help="The name of the directory to be "
-                            "initialized.")
+        parser.add_argument("DIR",
+                            help=("The name of the directory to be "
+                                  "initialized."),
+                            nargs="?",
+                            default=os.getcwd())
 
     def invoke(self):
         full_path = os.path.abspath(self.args.DIR)
