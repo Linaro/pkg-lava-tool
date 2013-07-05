@@ -173,7 +173,7 @@ class ListParameter(Parameter):
 
                 if len(user_input) == 1 and user_input == self.DELETE_CHAR \
                         and (0 < len(old_value) >= index):
-                    # We have an old value, user presses the DELETE_CHAR
+                    # We have an old value, user presses the DELETE_CHAR and
                     # we do not store anything. This is done to delete an
                     # old entry.
                     pass
