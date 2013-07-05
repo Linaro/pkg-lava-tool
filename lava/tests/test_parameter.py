@@ -32,6 +32,7 @@ from lava.parameter import (
     ListParameter,
     Parameter,
     UrlParameter,
+    UrlSchemeParameter,
 )
 from lava.tool.errors import CommandError
 
@@ -298,10 +299,17 @@ class UrlParameterTests(GeneralParameterTest):
         obtained = UrlParameter.base64decode(string_2_decode)
         self.assertEqual(expected, obtained)
 
+
+class UrlSchemeParameterTests(GeneralParameterTest):
+
+    def setUp(self):
+        super(UrlSchemeParameterTests, self).setUp()
+        self.url_scheme_parameter = UrlSchemeParameter()
+
     def test_get_url_scheme_with_old_scheme(self):
         # Tests the _get_url_scheme method with an old value.
         # User presses Enter and the old scheme is returned.
         old_scheme = "file"
         self.mocked_raw_input.side_effect = ["\n"]
-        obtained = self.url_parameter._get_url_scheme(old_scheme=old_scheme)
+        obtained = self.url_scheme_parameter.prompt(old_value=old_scheme)
         self.assertEqual("file", obtained)

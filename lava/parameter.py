@@ -108,6 +108,65 @@ class Parameter(object):
         return data
 
 
+class SingleChoiceParameter(Parameter):
+    """A parameter implemeting a single choice between multiple choices."""
+    def __init__(self, id, choices):
+        super(SingleChoiceParameter, self).__init__(id)
+        if isinstance(choices, types.StringTypes):
+            self.choices = [choices]
+        else:
+            self.choices = list(choices)
+
+    def prompt(self, prompt, old_value=None):
+        """Asks the user for their choice."""
+        # Sliglty different then the other parameter: here we first present
+        # the user with what the choices are about.
+        print >> sys.stdout, prompt
+
+        index = 1
+        for choice in self.choices:
+            print >> sys.stdout, "\t{0:d}. {1}".format(index, choice)
+            index += 1
+
+        choices_len = len(self.choices)
+        while True:
+            user_input = self.get_user_input("Choice: ")
+
+            if len(user_input) == 0 and old_value:
+                choice = old_value
+                break
+            elif user_input in [str(x) for x in range(1, choices_len + 1)]:
+                choice = self.choices[int(user_input) - 1]
+                break
+
+        return choice
+
+
+class UrlSchemeParameter(SingleChoiceParameter):
+    """A parameter to choose the URL scheme to use."""
+    # The supported URL schemes:
+    #   file: normal file URL.
+    #   data: base64 encoded string of the file pointed to and its path.
+    FILE_SCHEME = "file"
+    DATA_SCHEME = "data"
+
+    SCHEME_CHOICES = [
+        FILE_SCHEME,
+        DATA_SCHEME,
+    ]
+
+    def __init__(self, id="url_scheme"):
+        super(UrlSchemeParameter, self).__init__(id, self.SCHEME_CHOICES)
+
+    def prompt(self, prompt="", old_value=None):
+        if old_value is not None:
+            prompt = "\nURL scheme [was: {0}]:".format(old_value)
+        else:
+            prompt = "\nURL scheme:"
+        return super(UrlSchemeParameter, self).prompt(prompt=prompt,
+                                                      old_value=old_value)
+
+
 class ListParameter(Parameter):
     """A specialized Parameter to handle list values."""
 
@@ -188,21 +247,14 @@ class ListParameter(Parameter):
 class UrlParameter(ListParameter):
     """A parameter holding a list of URLs."""
 
-    FILE_SCHEME = "file"
-    DATA_SCHEME = "data"
     # This is the delimiter used when encoding the values using the
     # data scheme.
     DELIMITER = ";"
 
     def __init__(self, id, value=None, depends=None):
         super(UrlParameter, self).__init__(id, depends=depends)
-        # The supported URL schemes:
-        #   file: normal file URL.
-        #   data: base64 encoded string of the file pointed to and its path.
-        self.url_schemes = [
-            self.FILE_SCHEME,
-            self.DATA_SCHEME,
-        ]
+        # The scheme will be just one for all URLs.
+        self.scheme = UrlSchemeParameter()
         self.urls = []
 
     @classmethod
@@ -264,38 +316,12 @@ class UrlParameter(ListParameter):
         cleaned_values = []
         for value in old_value:
             # If we have a data scheme, decode the string and get the path.
-            if old_scheme == self.DATA_SCHEME:
+            if old_scheme == self.scheme.DATA_SCHEME:
                 value = self.base64decode(urlparse.urlparse(value).path)
             path = urlparse.urlparse(value).path
             cleaned_values.append(path)
 
         return (old_scheme, cleaned_values)
-
-    def _get_url_scheme(self, old_scheme=None):
-        """Asks the user the URL scheme to adopt."""
-        if old_scheme is not None:
-            prompt = "\nURL scheme [was: {0}]:".format(old_scheme)
-        else:
-            prompt = "\nURL scheme:"
-        print >> sys.stdout, prompt
-
-        index = 1
-        for url_type in self.url_schemes:
-            print >> sys.stdout, "\t{0:d}. {1}".format(index, url_type)
-            index += 1
-
-        types_len = len(self.url_schemes)
-        while True:
-            user_input = self.get_user_input("Choose URL scheme: ")
-
-            if old_scheme is not None and len(user_input) == 0:
-                url_scheme = old_scheme
-                break
-            elif user_input in [str(x) for x in range(1, types_len + 1)]:
-                url_scheme = self.url_schemes[int(user_input) - 1]
-                break
-
-        return url_scheme
 
     def prompt(self, old_value=None):
         """First asks the URL scheme, then asks the URL."""
@@ -303,13 +329,13 @@ class UrlParameter(ListParameter):
         if old_value is not None:
             old_scheme, old_value = self._calculate_old_values(old_value)
 
-        url_scheme = self._get_url_scheme(old_scheme=old_scheme)
+        url_scheme = self.scheme.prompt(old_value=old_scheme)
         if url_scheme:
             # Now really ask the list of files.
             super(UrlParameter, self).prompt(old_value=old_value)
 
         for path in self.value:
-            if url_scheme == self.DATA_SCHEME:
+            if url_scheme == self.scheme.DATA_SCHEME:
                 # We need to do it by hand, or urlparse.urlparse will remove
                 # the delimiter for econded data when we read an empty file.
                 data = self.base64encode(path)

@@ -54,8 +54,8 @@ class init(BaseCommand):
     def register_arguments(cls, parser):
         super(init, cls).register_arguments(parser)
         parser.add_argument("DIR",
-                            help=("The name of the directory to be "
-                                  "initialized."),
+                            help=("The name of the directory to initialize. "
+                                  "Defaults to current working directory"),
                             nargs="?",
                             default=os.getcwd())
 
