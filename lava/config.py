@@ -241,6 +241,6 @@ class InteractiveConfig(Config):
             if not value or self._force_interactive:
                 value = parameter.prompt(old_value=value)
 
-        if value is not None:
+        if value is not None and parameter.store:
             self.put(parameter.id, value, section)
         return value
