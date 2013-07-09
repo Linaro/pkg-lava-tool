@@ -48,6 +48,15 @@ class Parameter(object):
         self.value = value
         self.depends = depends
         self.asked = False
+        # Whether to store or not the parameter.
+        self.store = True
+
+    def set(self, value):
+        """Sets the value of the parameter.
+
+        :param value: The value to set.
+        """
+        self.value = value
 
     def prompt(self, old_value=None):
         """Gets the parameter value from the user.
@@ -181,6 +190,29 @@ class ListParameter(Parameter):
     def __init__(self, id, value=None, depends=None):
         super(ListParameter, self).__init__(id, depends=depends)
         self.value = []
+        if value:
+            self.set(value)
+
+    def set(self, value):
+        """Sets the value of the parameter.
+
+        :param value: The value to set.
+        """
+        if isinstance(value, types.StringTypes):
+            value = self.deserialize(value)
+        else:
+            value = list(value)
+
+        self.value = value
+
+    def add(self, value):
+        """Adds a new value to the list of values of this parameter.
+
+        :param value: The value to add.
+        """
+        if isinstance(value, list):
+            value = self.serialize(value)
+        self.value.append(value)
 
     @classmethod
     def deserialize(cls, value):
