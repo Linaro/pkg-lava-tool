@@ -29,6 +29,9 @@ import urlparse
 
 from lava.tool.errors import CommandError
 
+# Character used to join serialized list parameters.
+LIST_SERIALIZE_DELIMITER = ","
+
 
 class Parameter(object):
     """A parameter with an optional dependency."""
@@ -86,7 +89,8 @@ class Parameter(object):
         """
         serialized = ""
         if isinstance(value, list):
-            serialized = ",".join(str(x) for x in value if x)
+            serialized = LIST_SERIALIZE_DELIMITER.join(
+                str(x) for x in value if x)
         else:
             serialized = str(value)
         return serialized
@@ -119,7 +123,7 @@ class SingleChoiceParameter(Parameter):
 
     def prompt(self, prompt, old_value=None):
         """Asks the user for their choice."""
-        # Sliglty different then the other parameter: here we first present
+        # Sliglty different than the other parameters: here we first present
         # the user with what the choices are about.
         print >> sys.stdout, prompt
 
@@ -191,7 +195,8 @@ class ListParameter(Parameter):
         """
         deserialized = []
         if isinstance(value, types.StringTypes):
-            deserialized = filter(None, (x.strip() for x in value.split(",")))
+            deserialized = filter(None, (x.strip() for x in value.split(
+                LIST_SERIALIZE_DELIMITER)))
         else:
             deserialized = list(value)
         return deserialized

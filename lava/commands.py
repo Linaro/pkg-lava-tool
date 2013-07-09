@@ -55,7 +55,7 @@ class init(BaseCommand):
         super(init, cls).register_arguments(parser)
         parser.add_argument("DIR",
                             help=("The name of the directory to initialize. "
-                                  "Defaults to current working directory"),
+                                  "Defaults to current working directory."),
                             nargs="?",
                             default=os.getcwd())
 
@@ -135,6 +135,7 @@ class init(BaseCommand):
 class submit(BaseCommand):
     """Submits a job to LAVA."""
 
+    # The available and valid extensions for job files.
     from lava.job.commands import JOB_FILE_EXTENSIONS as JOB_FILE_EXTENSIONS
 
     @classmethod
