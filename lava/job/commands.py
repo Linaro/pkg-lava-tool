@@ -31,7 +31,10 @@ from lava.job import Job
 from lava.job.templates import (
     LAVA_TEST_SHELL,
 )
-from lava.parameter import Parameter
+from lava.parameter import (
+    ListParameter,
+    Parameter,
+)
 from lava.tool.command import CommandGroup
 from lava.tool.errors import CommandError
 from lava_tool.authtoken import AuthenticatingServerProxy, KeyringAuthBackend
@@ -41,6 +44,13 @@ from lava_tool.utils import has_command
 DEFAULT_EXTENSION = "json"
 # Possible extension for a job file.
 JOB_FILE_EXTENSIONS = [DEFAULT_EXTENSION]
+
+# Name of the config value to store the job ids.
+JOBS_ID = "jobs_id"
+# Name of the config value to store the LAVA server URL.
+SERVER = "server"
+# Name of the config value to store the LAVA rpc_endpoint.
+RPC_ENDPOINT = "rpc_endpoint"
 
 
 class job(CommandGroup):
@@ -80,6 +90,8 @@ class new(BaseCommand):
 class submit(BaseCommand):
     """Submits the specified job file."""
 
+    JOBS_ID = "jobs_id"
+
     @classmethod
     def register_arguments(cls, parser):
         super(submit, cls).register_arguments(parser)
@@ -89,16 +101,31 @@ class submit(BaseCommand):
         jobfile = self.args.FILE
         jobdata = open(jobfile, 'rb').read()
 
-        server_name = Parameter('server')
-        rpc_endpoint = Parameter('rpc_endpoint', depends=server_name)
-        self.config.get(server_name)
-        endpoint = self.config.get(rpc_endpoint)
+        server_name_parameter = Parameter(SERVER)
+        rpc_endpoint_parameter = Parameter(RPC_ENDPOINT,
+                                           depends=server_name_parameter)
+        self.config.get(server_name_parameter)
+        endpoint = self.config.get(rpc_endpoint_parameter)
 
         server = AuthenticatingServerProxy(endpoint,
                                            auth_backend=KeyringAuthBackend())
         try:
             job_id = server.scheduler.submit_job(jobdata)
             print >> sys.stdout, "Job submitted with job ID {0}".format(job_id)
+
+            # Store the job_id into the config file.
+            if job_id:
+                # We need first to take out the old values, and then store the
+                # new one.
+                job_id_parameter = ListParameter(JOBS_ID)
+                job_id_parameter.asked = True
+
+                value = self.config.get(job_id_parameter)
+                if value:
+                    job_id_parameter.set(value)
+
+                job_id_parameter.add(job_id)
+                self.config.put_parameter(job_id_parameter)
         except xmlrpclib.Fault, exc:
             raise CommandError(str(exc))
 
