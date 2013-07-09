@@ -255,6 +255,8 @@ class UrlListParameter(ListParameter):
     # This is the delimiter used when encoding the values using the
     # data scheme.
     DELIMITER = ";"
+    # Delimiter used when writing data: type URLs.
+    URL_SCHEME_DELIMITER = ":"
 
     def __init__(self, id, value=None, depends=None):
         super(UrlListParameter, self).__init__(id, depends=depends)
@@ -344,7 +346,7 @@ class UrlListParameter(ListParameter):
                 # We need to do it by hand, or urlparse.urlparse will remove
                 # the delimiter for econded data when we read an empty file.
                 data = self.base64encode(path)
-                url = ":".join([url_scheme, data])
+                url = self.URL_SCHEME_DELIMITER.join([url_scheme, data])
             else:
                 parts = list(urlparse.urlparse(os.path.abspath(path)))
                 parts[0] = url_scheme
