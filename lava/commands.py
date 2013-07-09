@@ -135,8 +135,7 @@ class init(BaseCommand):
 class submit(BaseCommand):
     """Submits a job to LAVA."""
 
-    # Possible suffixes for a job file.
-    JOB_FILE_SUFFIXES = ["json"]
+    from lava.job.commands import JOB_FILE_EXTENSIONS as JOB_FILE_EXTENSIONS
 
     @classmethod
     def register_arguments(cls, parser):
@@ -176,7 +175,7 @@ class submit(BaseCommand):
                 if full_extension:
                     # Make sure that we have an extension and remove the dot.
                     extension = full_extension[1:].strip().lower()
-                    if extension in self.JOB_FILE_SUFFIXES:
+                    if extension in self.JOB_FILE_EXTENSIONS:
                         return element_path
         else:
             raise CommandError("No job file found in: '{0}'".format(path))

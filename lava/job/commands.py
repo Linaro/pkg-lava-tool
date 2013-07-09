@@ -37,6 +37,11 @@ from lava.tool.errors import CommandError
 from lava_tool.authtoken import AuthenticatingServerProxy, KeyringAuthBackend
 from lava_tool.utils import has_command
 
+# Default job file extension.
+DEFAULT_EXTENSION = "json"
+# Possible extension for a job file.
+JOB_FILE_EXTENSIONS = [DEFAULT_EXTENSION]
+
 
 class job(CommandGroup):
     """LAVA job file handling."""
@@ -52,13 +57,24 @@ class new(BaseCommand):
         parser.add_argument("FILE", help=("Job file to be created."))
 
     def invoke(self):
-        if os.path.exists(self.args.FILE):
-            raise CommandError('{0} already exists.'.format(self.args.FILE))
+        job_file = self.args.FILE
 
-        with open(self.args.FILE, 'w') as job_file:
+        # Checks that the file we pass has an extension or a correct one.
+        full_path, file_name = os.path.split(job_file)
+        name, extension = os.path.splitext(file_name)
+        if not extension:
+            job_file = job_file + DEFAULT_EXTENSION
+        elif extension[1:] not in JOB_FILE_EXTENSIONS:
+            job_file = os.path.join(full_path,
+                                    ".".join([name, DEFAULT_EXTENSION]))
+
+        if os.path.exists(job_file):
+            raise CommandError('{0} already exists.'.format(job_file))
+
+        with open(job_file, 'w') as write_file:
             job_instance = Job(LAVA_TEST_SHELL)
             job_instance.fill_in(self.config)
-            job_instance.write(job_file)
+            job_instance.write(write_file)
 
 
 class submit(BaseCommand):
