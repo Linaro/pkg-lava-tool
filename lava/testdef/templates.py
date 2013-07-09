@@ -27,11 +27,25 @@ from lava.parameter import (
 DEFAULT_TESTDEF_VERSION = "1.0"
 DEFAULT_TESTDEF_FORMAT = "Lava-Test Test Definition 1.0"
 
+DEFAULT_TESTDEF_STEP = "./mytest.sh"
+
+# All these parameters will not be stored on the local config file.
 NAME_PARAMETER = Parameter("name")
+NAME_PARAMETER.store = False
+
 DESCRIPTION_PARAMETER = Parameter("description", depends=NAME_PARAMETER)
+DESCRIPTION_PARAMETER.store = False
+
 ENVIRONMENT_PARAMETER = ListParameter("environment",
                                       depends=NAME_PARAMETER)
+ENVIRONMENT_PARAMETER.store = False
+
+# Steps parameter. Default to a local shell script that the user defines.
+# We do not ask this parameter, and we do not store it either.
 STEPS_PARAMETER = ListParameter("steps", depends=NAME_PARAMETER)
+STEPS_PARAMETER.add(DEFAULT_TESTDEF_STEP)
+STEPS_PARAMETER.asked = True
+STEPS_PARAMETER.store = False
 
 TESTDEF_TEMPLATE = {
     "metadata": {
