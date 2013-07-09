@@ -99,7 +99,7 @@ class NewCommandTest(HelperTest):
         new_command.invoke()
         expected = {'run': {'steps': ["./mytest.sh"]},
                     'metadata': {
-                        'environment': [],
+                        'environment': ['lava_test_shell'],
                         'format': 'Lava-Test Test Definition 1.0',
                         'version': '1.0',
                         'description': '',
@@ -122,13 +122,13 @@ class NewCommandTest(HelperTest):
     def test_invoke_4(self):
         # Tests that when passing values for the "steps" ListParameter, we get
         # back the correct data structure.
-        self.mocked_raw_input.side_effect = ["foo", "lava-test-shell", "\n",
-                                             "\n", "\n", "\n", "\n"]
+        self.mocked_raw_input.side_effect = ["foo", "\n", "\n", "\n", "\n",
+                                             "\n"]
         new_command = new(self.parser, self.args)
         new_command.invoke()
         expected = {'run': {'steps': ["./mytest.sh"]},
                     'metadata': {
-                        'environment': ['lava-test-shell'],
+                        'environment': ['lava_test_shell'],
                         'format': 'Lava-Test Test Definition 1.0',
                         'version': '1.0',
                         'description': '',

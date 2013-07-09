@@ -28,6 +28,7 @@ DEFAULT_TESTDEF_VERSION = "1.0"
 DEFAULT_TESTDEF_FORMAT = "Lava-Test Test Definition 1.0"
 
 DEFAULT_TESTDEF_STEP = "./mytest.sh"
+DEFAULT_ENVIRONMET_VALUE = "lava_test_shell"
 
 # All these parameters will not be stored on the local config file.
 NAME_PARAMETER = Parameter("name")
@@ -38,6 +39,8 @@ DESCRIPTION_PARAMETER.store = False
 
 ENVIRONMENT_PARAMETER = ListParameter("environment",
                                       depends=NAME_PARAMETER)
+ENVIRONMENT_PARAMETER.add(DEFAULT_ENVIRONMET_VALUE)
+ENVIRONMENT_PARAMETER.asked = True
 ENVIRONMENT_PARAMETER.store = False
 
 # Steps parameter. Default to a local shell script that the user defines.
