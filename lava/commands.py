@@ -144,6 +144,22 @@ class init(BaseCommand):
         testdef_cmd = new(self.parser, args)
         testdef_cmd.invoke()
 
+class run(BaseCommand):
+    """Runs a job on the local dispatcher."""
+
+    def register_arguments(cls, parser):
+        super(run, cls).register_arguments(parser)
+        parser.add_argument("JOB"
+                            help=("The job file to run, or a directory "
+                                  "containing a job file. If nothing is "
+                                  "passed, it uses the current working "
+                                  "directory."),
+                            nargs="?",
+                            default=os.getcwd())
+
+    def invoke(self):
+        pass
+
 
 class submit(BaseCommand):
     """Submits a job to LAVA."""
