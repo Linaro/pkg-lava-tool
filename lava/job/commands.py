@@ -173,7 +173,9 @@ class run(BaseCommand):
                 devices = get_devices()
                 if devices:
                     if len(devices) > 1:
-                        device_param = SingleChoiceParameter("device", devices)
+                        device_names = [device.name for device in devices]
+                        device_param = SingleChoiceParameter("device",
+                                                             device_names)
                         device = device_param.prompt("Device to use: ")
                     else:
                         device = devices[0].hostname
