@@ -39,7 +39,6 @@ from lava.tool.errors import CommandError
 
 JOBFILE = "jobfile"
 TESTS_DEF = "test_definitions"
-TEST_SCRIPTS = "test_scripts"
 
 JOBFILE_PARAMETER = Parameter(JOBFILE)
 JOBFILE_PARAMETER.store = False
@@ -108,7 +107,7 @@ class init(BaseCommand):
             print >> sys.stdout, ("Update the test script '{0}' with your own "
                                   "istructions.".format(default_script))
 
-        test_files = ListParameter.deserialize(data[TESTS])
+        test_files = ListParameter.deserialize(data[TESTS_DEF])
 
         for test in test_files:
             print >> sys.stdout, ("\nCreating test definition file "
