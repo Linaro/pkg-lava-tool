@@ -23,7 +23,9 @@ from lava.parameter import (
 
 DEVICE_TYPE = Parameter("device_type")
 PREBUILT_IMAGE = Parameter("prebuilt_image", depends=DEVICE_TYPE)
+# Never store the testdef_urls parameter in the config file.
 TESTDEF_URL = UrlListParameter("testdef_urls", depends=DEVICE_TYPE)
+TESTDEF_URL.store = False
 
 BOOT_TEST = {
     "job_name": "Boot test",
