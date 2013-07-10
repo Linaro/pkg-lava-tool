@@ -29,31 +29,32 @@ from lava.helper.template import expand_template
 from lava.parameter import (
     Parameter,
     ListParameter,
+    UrlListParameter,
+)
+from lava.testdef.templates import (
+    DEFAULT_TESTDEF_SCRIPT,
+    DEFAULT_TESTDEF_SCRIPT_CONTENT,
 )
 from lava.tool.errors import CommandError
 
-DIRNAME = "dirname"
 JOBFILE = "jobfile"
-TESTS = "tests"
-
-DIRNAME_PARAMETER = Parameter(DIRNAME)
-DIRNAME_PARAMETER.store = False
+TESTS_DEF = "test_definitions"
+TEST_SCRIPTS = "test_scripts"
 
 JOBFILE_PARAMETER = Parameter(JOBFILE)
 JOBFILE_PARAMETER.store = False
 
-TESTFILE_PARAMETER = ListParameter(TESTS)
-TESTFILE_PARAMETER.store = False
+TESTFILES_PARAMETER = ListParameter(TESTS_DEF)
+TESTFILES_PARAMETER.store = False
 
 INIT_TEMPLATE = {
-    DIRNAME: DIRNAME_PARAMETER,
     JOBFILE: JOBFILE_PARAMETER,
-    TESTS: TESTFILE_PARAMETER,
+    TESTS_DEF: TESTFILES_PARAMETER,
 }
 
 
 class init(BaseCommand):
-    """Set ups the base directory structure."""
+    """Set-ups the base directory structure."""
 
     @classmethod
     def register_arguments(cls, parser):
@@ -90,15 +91,23 @@ class init(BaseCommand):
         :return A dictionary containing all the necessary file names to create.
         """
         data = copy.deepcopy(INIT_TEMPLATE)
-
-        # Do not ask again the dirname parameter.
-        data[DIRNAME].value = self.args.DIR
-        data[DIRNAME].asked = True
-
         expand_template(data, self.config)
+
         return data
 
     def _create_files(self, data, full_path):
+        # This is the default script file as defined in the testdef template.
+        default_script = os.path.join(full_path, DEFAULT_TESTDEF_SCRIPT)
+        # We do not have the default testdef script. Create it with some custom
+        # content, but remind the user to update it.
+        if not os.path.isfile(default_script):
+            print >> sys.stdout, ("\nCreating default test script "
+                                  "'{0}'.".format(DEFAULT_TESTDEF_SCRIPT))
+            with open(default_script, "w") as write_file:
+                write_file.write(DEFAULT_TESTDEF_SCRIPT_CONTENT)
+            print >> sys.stdout, ("Update the test script '{0}' with your own "
+                                  "istructions.".format(default_script))
+
         test_files = ListParameter.deserialize(data[TESTS])
 
         for test in test_files:
