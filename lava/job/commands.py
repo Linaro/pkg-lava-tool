@@ -37,6 +37,7 @@ from lava.job.templates import (
 from lava.parameter import (
     ListParameter,
     Parameter,
+    SingleChoiceParameter,
 )
 from lava.tool.command import CommandGroup
 from lava.tool.errors import CommandError
