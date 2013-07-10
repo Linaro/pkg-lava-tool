@@ -168,16 +168,20 @@ class UrlSchemeParameter(SingleChoiceParameter):
         DATA_SCHEME,
     ]
 
-    def __init__(self, id="url_scheme"):
+    def __init__(self, value=None, id="url_scheme"):
         super(UrlSchemeParameter, self).__init__(id, self.SCHEME_CHOICES)
+        self.value = value
 
     def prompt(self, prompt="", old_value=None):
-        if old_value is not None:
-            prompt = "\nURL scheme [was: {0}]:".format(old_value)
-        else:
-            prompt = "\nURL scheme:"
-        return super(UrlSchemeParameter, self).prompt(prompt=prompt,
-                                                      old_value=old_value)
+        if not self.asked:
+            if old_value is not None:
+                prompt = "\nURL scheme [was: {0}]:".format(old_value)
+            else:
+                prompt = "\nURL scheme:"
+            self.value = super(UrlSchemeParameter, self).prompt(
+                prompt=prompt, old_value=old_value)
+
+        return self.value
 
 
 class ListParameter(Parameter):
@@ -292,8 +296,11 @@ class UrlListParameter(ListParameter):
 
     def __init__(self, id, value=None, depends=None):
         super(UrlListParameter, self).__init__(id, depends=depends)
-        # The scheme will be just one for all URLs.
-        self.scheme = UrlSchemeParameter()
+        # The scheme will be just one for all URLs. Automatically default to
+        # the "data:" scheme, and do not ask it to the user.
+        self.scheme = UrlSchemeParameter(value=UrlSchemeParameter.DATA_SCHEME)
+        self.scheme.asked = True
+        # Where we store the URLs.
         self.urls = []
 
     @classmethod
@@ -363,18 +370,13 @@ class UrlListParameter(ListParameter):
         return (old_scheme, cleaned_values)
 
     def prompt(self, old_value=None):
-        """First asks the URL scheme, then asks the URL."""
-        old_scheme = None
-        if old_value is not None:
-            old_scheme, old_value = self._calculate_old_values(old_value)
-
-        url_scheme = self.scheme.prompt(old_value=old_scheme)
-        if url_scheme:
-            # Now really ask the list of files.
-            super(UrlListParameter, self).prompt(old_value=old_value)
+        """Asks for the URI to test definition files."""
+        url_scheme = self.scheme.prompt()
+        # Now really ask the list of files.
+        super(UrlListParameter, self).prompt(old_value=old_value)
 
         for path in self.value:
-            if url_scheme == self.scheme.DATA_SCHEME:
+            if url_scheme == UrlSchemeParameter.DATA_SCHEME:
                 # We need to do it by hand, or urlparse.urlparse will remove
                 # the delimiter for econded data when we read an empty file.
                 data = self.base64encode(path)

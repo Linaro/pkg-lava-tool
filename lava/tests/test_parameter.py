@@ -132,19 +132,10 @@ class UrlListParameterTests(GeneralParameterTest):
         super(UrlListParameterTests, self).setUp()
         self.url_parameter = UrlListParameter("url_par")
 
-    def test_prompt_0(self):
-        # User is asked the type of URL scheme, chooses the first one, then
-        # enters the path of a file.
-        self.mocked_raw_input.side_effect = ["1", self.temp_file.name, "\n"]
-        expected = ["file://" + self.temp_file.name]
-        obtained = self.url_parameter.prompt()
-        self.assertEqual(expected, obtained)
-
     def test_prompt_1(self):
-        # User is asked the tye of URL scheme: she types a wrong number, then
-        # chooses number 2. She then enters the path to an empty file.
-        self.mocked_raw_input.side_effect = ["100", "2", self.temp_file.name,
-                                             "\n"]
+        # Default scheme to use is "data", user passes an empty file as the
+        # test file.
+        self.mocked_raw_input.side_effect = [self.temp_file.name, "\n"]
         encoded_path = base64.encodestring(self.temp_file.name).strip()
         encoded_content = base64.encodestring("").strip()
         expected = ["data:" + encoded_path + ";" + encoded_content]
@@ -152,10 +143,9 @@ class UrlListParameterTests(GeneralParameterTest):
         self.assertEqual(expected, obtained)
 
     def test_prompt_2(self):
-        # User is asked the tye of URL scheme: she types 2.
-        # She then enters the path to a file with content.
-        self.mocked_raw_input.side_effect = ["2", self.temp_file.name,
-                                             "\n"]
+        # Default scheme to use is "data", user passes a file with some
+        # content.
+        self.mocked_raw_input.side_effect = [self.temp_file.name, "\n"]
         content_string = "some content for the file"
         with open(self.temp_file.name, "w") as write_file:
             write_file.write(content_string)
@@ -163,82 +153,6 @@ class UrlListParameterTests(GeneralParameterTest):
         encoded_content = base64.encodestring(content_string).strip()
         expected = ["data:" + encoded_path + ";" + encoded_content]
         obtained = self.url_parameter.prompt()
-        self.assertEqual(expected, obtained)
-
-    def test_prompt_3(self):
-        # We pass old values to the prompt.
-        # User chooses the same URL scheme, accepts the old file path, and adds
-        # a new one.
-        self.mocked_raw_input.side_effect = ["2", "\n", self.temp_file.name,
-                                             "\n"]
-
-        content = "some text content"
-        files = [self.tmp("a_temp_file"), self.temp_file.name]
-
-        # Write something in the files.
-        for temp_file in files:
-            with open(temp_file, "w") as write_file:
-                write_file.write(content)
-
-        encoded_path = base64.encodestring(files[0]).strip()
-        encoded_content = StringIO.StringIO()
-
-        with open(files[0]) as read_file:
-            base64.encode(read_file, encoded_content)
-
-        old_value = ["data:" + encoded_path + ";" +
-                     encoded_content.getvalue().strip()]
-
-        expected = [copy.copy(old_value[0])]
-        encoded_path = base64.encodestring(files[1]).strip()
-        encoded_content_1 = StringIO.StringIO()
-
-        with open(files[1]) as read_file:
-            base64.encode(read_file, encoded_content_1)
-        url_string = ("data:" + encoded_path + ";" +
-                      encoded_content_1.getvalue().strip())
-        expected.append(url_string)
-
-        obtained = self.url_parameter.prompt(old_value=old_value[0])
-        os.unlink(files[0])
-        self.assertEqual(expected, obtained)
-
-    def test_prompt_4(self):
-        # We pass old values to the prompt.
-        # User chooses the same URL scheme, uses the delete char "-" to delete
-        # an old path from the list, and adds a new one.
-        self.mocked_raw_input.side_effect = ["2", "-", self.temp_file.name,
-                                             "\n"]
-
-        content = "some text content"
-        files = [self.tmp("a_temp_file"), self.temp_file.name]
-
-        # Write something in the files.
-        for temp_file in files:
-            with open(temp_file, "w") as write_file:
-                write_file.write(content)
-
-        encoded_path = base64.encodestring(files[0]).strip()
-        encoded_content = StringIO.StringIO()
-
-        with open(files[0]) as read_file:
-            base64.encode(read_file, encoded_content)
-
-        old_value = ["data:" + encoded_path + ";" +
-                     encoded_content.getvalue().strip()]
-
-        expected = []
-        encoded_path = base64.encodestring(files[1]).strip()
-        encoded_content_1 = StringIO.StringIO()
-
-        with open(files[1]) as read_file:
-            base64.encode(read_file, encoded_content_1)
-        url_string = ("data:" + encoded_path + ";" +
-                      encoded_content_1.getvalue().strip())
-        expected.append(url_string)
-
-        obtained = self.url_parameter.prompt(old_value=old_value[0])
-        os.unlink(files[0])
         self.assertEqual(expected, obtained)
 
     def test_calculate_old_values_0(self):
