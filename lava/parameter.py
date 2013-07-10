@@ -304,7 +304,7 @@ class UrlListParameter(ListParameter):
         self.urls = []
 
     @classmethod
-    def base64encode(cls, path):
+    def base64encode(cls, paths):
         """Encodes in base64 the provided path.
 
         If path is a path to an existing file, the encoding will work in this
@@ -315,30 +315,28 @@ class UrlListParameter(ListParameter):
         :param path: What to encode.
         :return The encoded value.
         """
-        encoded_string = ""
-        full_path = os.path.abspath(path)
-        if os.path.isfile(full_path):
-            # The encoded string will be the file path plus its content.
-            # We use a comma as a delimiter to separate the path from the
-            # content.
-            encoded_values = []
-            encoded_values.append(base64.encodestring(full_path).strip())
+        import tempfile
+        import tarfile
 
+        temp_tar_file = tempfile.NamedTemporaryFile(suffix=".tar")
+        with tarfile.open(temp_tar_file.name) as tar_file:
+            for path in paths:
+                full_path = os.path.abspath(path)
+                tar_file.add(full_path)
+
+        encoded_content = StringIO.StringIO()
+
+        if os.path.isfile(temp_tar_file.name):
             try:
-                encoded_content = StringIO.StringIO()
-
-                with open(path) as read_file:
+                with open(temp_tar_file.name) as read_file:
                     base64.encode(read_file, encoded_content)
 
-                encoded_values.append(encoded_content.getvalue().strip())
+                return encoded_content.getvalue().strip()
             except IOError:
                 raise CommandError("Cannot read file '{0}'.".format(path))
-
-            encoded_string = cls.DELIMITER.join(encoded_values)
         else:
             raise CommandError("Provided path does not exists: "
                                "{0}.".format(path))
-        return encoded_string
 
     @classmethod
     def base64decode(cls, string):
@@ -375,17 +373,17 @@ class UrlListParameter(ListParameter):
         # Now really ask the list of files.
         super(UrlListParameter, self).prompt(old_value=old_value)
 
-        for path in self.value:
-            if url_scheme == UrlSchemeParameter.DATA_SCHEME:
-                # We need to do it by hand, or urlparse.urlparse will remove
-                # the delimiter for econded data when we read an empty file.
-                data = self.base64encode(path)
-                url = self.URL_SCHEME_DELIMITER.join([url_scheme, data])
-            else:
+        if url_scheme == UrlSchemeParameter.DATA_SCHEME:
+            # We need to do it by hand, or urlparse.urlparse will remove
+            # the delimiter for econded data when we read an empty file.
+            data = self.base64encode(self.value)
+            url = self.URL_SCHEME_DELIMITER.join([url_scheme, data])
+            self.urls.append(url)
+        else:
+            for path in self.value:
                 parts = list(urlparse.urlparse(os.path.abspath(path)))
                 parts[0] = url_scheme
                 url = urlparse.urlunparse(parts)
-
-            self.urls.append(url)
+                self.urls.append(url)
 
         return self.urls
