@@ -318,25 +318,29 @@ class UrlListParameter(ListParameter):
         import tempfile
         import tarfile
 
-        temp_tar_file = tempfile.NamedTemporaryFile(suffix=".tar")
-        with tarfile.open(temp_tar_file.name) as tar_file:
-            for path in paths:
-                full_path = os.path.abspath(path)
-                tar_file.add(full_path)
+        try:
+            temp_tar_file = tempfile.NamedTemporaryFile(suffix=".tar",
+                                                        delete=False)
+            with tarfile.open(temp_tar_file.name) as tar_file:
+                for path in paths:
+                    full_path = os.path.abspath(path)
+                    tar_file.add(full_path)
 
-        encoded_content = StringIO.StringIO()
+            encoded_content = StringIO.StringIO()
 
-        if os.path.isfile(temp_tar_file.name):
-            try:
-                with open(temp_tar_file.name) as read_file:
-                    base64.encode(read_file, encoded_content)
+            if os.path.isfile(temp_tar_file.name):
+                try:
+                    with open(temp_tar_file.name) as read_file:
+                        base64.encode(read_file, encoded_content)
 
-                return encoded_content.getvalue().strip()
-            except IOError:
-                raise CommandError("Cannot read file '{0}'.".format(path))
-        else:
-            raise CommandError("Provided path does not exists: "
-                               "{0}.".format(path))
+                    return encoded_content.getvalue().strip()
+                except IOError:
+                    raise CommandError("Cannot read file '{0}'.".format(path))
+            else:
+                raise CommandError("Provided path does not exists: "
+                                   "{0}.".format(path))
+        finally:
+            os.unlink(temp_tar_file.name)
 
     @classmethod
     def base64decode(cls, string):
