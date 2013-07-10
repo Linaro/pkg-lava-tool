@@ -149,7 +149,7 @@ class run(BaseCommand):
 
     def register_arguments(cls, parser):
         super(run, cls).register_arguments(parser)
-        parser.add_argument("JOB"
+        parser.add_argument("JOB",
                             help=("The job file to run, or a directory "
                                   "containing a job file. If nothing is "
                                   "passed, it uses the current working "
@@ -158,14 +158,28 @@ class run(BaseCommand):
                             default=os.getcwd())
 
     def invoke(self):
-        pass
+        full_path = os.path.abspath(self.args.JOB)
+
+        if os.path.isfile(full_path):
+            job_file = full_path
+        else:
+            job_file = self.retrieve_job_file(full_path)
+
+        self._run_job(full_path)
+
+    def _run_job(self, job_file):
+        """Runs a job on the dispatcher."""
+        from lava.job.commands import run
+
+        args = copy.copy(self.args)
+        args.FILE = job_file
+
+        run_cmd = run(self.parser, args)
+        run_cmd.invoke()
 
 
 class submit(BaseCommand):
     """Submits a job to LAVA."""
-
-    # The available and valid extensions for job files.
-    from lava.job.commands import JOB_FILE_EXTENSIONS as JOB_FILE_EXTENSIONS
 
     @classmethod
     def register_arguments(cls, parser):
@@ -184,31 +198,9 @@ class submit(BaseCommand):
         if os.path.isfile(full_path):
             job_file = full_path
         else:
-            job_file = self._retrieve_job_file(full_path)
+            job_file = self.retrieve_job_file(full_path)
 
         self._submit_job(job_file)
-
-    def _retrieve_job_file(self, path):
-        """Searches for a job file in the provided path.
-
-        :return The job file full path.
-        """
-        for element in os.listdir(path):
-            element_path = os.path.join(path, element)
-            if os.path.isdir(element_path):
-                continue
-            elif os.path.isfile(element_path):
-                job_file = os.path.split(element)[1]
-                # Extension here contains also the leading dot.
-                full_extension = os.path.splitext(job_file)[1]
-
-                if full_extension:
-                    # Make sure that we have an extension and remove the dot.
-                    extension = full_extension[1:].strip().lower()
-                    if extension in self.JOB_FILE_EXTENSIONS:
-                        return element_path
-        else:
-            raise CommandError("No job file found in: '{0}'".format(path))
 
     def _submit_job(self, job_file):
         """Submits a job file to LAVA."""

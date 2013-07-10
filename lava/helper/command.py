@@ -28,6 +28,11 @@ from lava.tool.command import Command
 from lava.tool.errors import CommandError
 from lava_tool.utils import has_command
 
+# Default job file extension.
+DEFAULT_EXTENSION = "json"
+# Possible extension for a job file.
+JOB_FILE_EXTENSIONS = [DEFAULT_EXTENSION]
+
 
 class BaseCommand(Command):
     """Base command class for all lava commands."""
@@ -84,6 +89,29 @@ class BaseCommand(Command):
             raise CommandError("Error opening the file '{0}' with the "
                                "following editor: {1}.".format(config_file,
                                                                editor))
+
+    @classmethod
+    def retrieve_job_file(cls, path):
+        """Searches for a job file in the provided path.
+
+        :return The job file full path.
+        """
+        for element in os.listdir(path):
+            element_path = os.path.join(path, element)
+            if os.path.isdir(element_path):
+                continue
+            elif os.path.isfile(element_path):
+                job_file = os.path.split(element)[1]
+                # Extension here contains also the leading dot.
+                full_extension = os.path.splitext(job_file)[1]
+
+                if full_extension:
+                    # Make sure that we have an extension and remove the dot.
+                    extension = full_extension[1:].strip().lower()
+                    if extension in JOB_FILE_EXTENSIONS:
+                        return element_path
+        else:
+            raise CommandError("No job file found in: '{0}'".format(path))
 
     @classmethod
     def run(cls, cmd_args):

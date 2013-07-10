@@ -24,7 +24,10 @@ import os
 import sys
 import xmlrpclib
 
-from lava.helper.command import BaseCommand
+from lava.helper.command import (
+    BaseCommand,
+    JOB_FILE_EXTENSIONS,
+)
 from lava.helper.dispatcher import get_devices
 
 from lava.job import Job
@@ -40,10 +43,6 @@ from lava.tool.errors import CommandError
 from lava_tool.authtoken import AuthenticatingServerProxy, KeyringAuthBackend
 from lava_tool.utils import has_command
 
-# Default job file extension.
-DEFAULT_EXTENSION = "json"
-# Possible extension for a job file.
-JOB_FILE_EXTENSIONS = [DEFAULT_EXTENSION]
 
 # Name of the config value to store the job ids.
 JOBS_ID = "jobs_id"
@@ -173,7 +172,8 @@ class run(BaseCommand):
                 devices = get_devices()
                 if devices:
                     if len(devices) > 1:
-                        device = self._choose_device(devices)
+                        device_param = SingleChoiceParameter("device", devices)
+                        device = device_param.prompt("Device to use: ")
                     else:
                         device = devices[0].hostname
                     self.run(["lava-dispatch", "--target", device,
