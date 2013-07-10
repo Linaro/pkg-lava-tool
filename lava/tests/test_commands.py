@@ -103,13 +103,11 @@ class InitCommandTests(HelperTest):
         init_command = init(self.parser, self.args)
         init_command.config.get = MagicMock()
         init_command.config.save = MagicMock()
-        init_command.config.get.side_effect = ["a_job.json", "a_test.yaml",
-                                               self.temp_file.name]
+        init_command.config.get.side_effect = ["a_job.json", "a_test.yaml"]
 
         expected = {
             "jobfile": "a_job.json",
-            "tests": "a_test.yaml",
-            "dirname": self.temp_file.name,
+            "test_definitions": "a_test.yaml",
         }
 
         obtained = init_command._update_data()
@@ -149,7 +147,7 @@ class SubmitCommandTests(HelperTest):
         # returned by os.listdir().
         mocked_os_listdir.return_value = ["a_file"]
         submit_command = submit(self.parser, self.args)
-        self.assertRaises(CommandError, submit_command._retrieve_job_file,
+        self.assertRaises(CommandError, submit_command.retrieve_job_file,
                           "a_path")
 
     @patch("os.listdir")
@@ -177,7 +175,7 @@ class SubmitCommandTests(HelperTest):
                 json_file_name]
 
             submit_command = submit(self.parser, self.args)
-            obtained = submit_command._retrieve_job_file(tempfile.gettempdir())
+            obtained = submit_command.retrieve_job_file(tempfile.gettempdir())
             self.assertEqual(json_file.name, obtained)
         finally:
             os.removedirs(temp_dir_path)
