@@ -27,7 +27,15 @@ from lava.parameter import (
 DEFAULT_TESTDEF_VERSION = "1.0"
 DEFAULT_TESTDEF_FORMAT = "Lava-Test Test Definition 1.0"
 
+DEFAULT_TESTDEF_SCRIPT = "mytest.sh"
+DEFAULT_TESTDEF_SCRIPT_CONTENT = """
+#!/bin/sh
+# Automatic generated content by lava-tool.
+# Please add your own instructions.
+"""
 DEFAULT_TESTDEF_STEP = "./mytest.sh"
+
+
 DEFAULT_ENVIRONMET_VALUE = "lava_test_shell"
 
 # All these parameters will not be stored on the local config file.
