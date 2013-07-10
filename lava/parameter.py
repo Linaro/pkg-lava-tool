@@ -321,7 +321,7 @@ class UrlListParameter(ListParameter):
         try:
             temp_tar_file = tempfile.NamedTemporaryFile(suffix=".tar",
                                                         delete=False)
-            with tarfile.open(temp_tar_file.name) as tar_file:
+            with tarfile.open(temp_tar_file.name, "w") as tar_file:
                 for path in paths:
                     full_path = os.path.abspath(path)
                     tar_file.add(full_path)
