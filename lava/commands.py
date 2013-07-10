@@ -147,6 +147,7 @@ class init(BaseCommand):
 class run(BaseCommand):
     """Runs a job on the local dispatcher."""
 
+    @classmethod
     def register_arguments(cls, parser):
         super(run, cls).register_arguments(parser)
         parser.add_argument("JOB",
