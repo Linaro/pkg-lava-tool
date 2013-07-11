@@ -71,22 +71,24 @@ class Parameter(object):
         :param old_value: The old parameter value.
         :return The input as typed by the user, or the old value.
         """
-        if old_value is not None:
-            prompt = "{0} [{1}]: ".format(self.id, old_value)
-        else:
-            prompt = "{0}: ".format(self.id)
-
-        user_input = self.get_user_input(prompt)
-
-        if user_input is not None:
-            if len(user_input) == 0 and old_value:
-                # Keep the old value when user press enter or another
-                # whitespace char.
-                self.value = old_value
+        if not self.asked:
+            if old_value is not None:
+                prompt = "{0} [{1}]: ".format(self.id, old_value)
             else:
-                self.value = user_input
+                prompt = "{0}: ".format(self.id)
 
-        self.asked = True
+            user_input = self.get_user_input(prompt)
+
+            if user_input is not None:
+                if len(user_input) == 0 and old_value:
+                    # Keep the old value when user press enter or another
+                    # whitespace char.
+                    self.value = old_value
+                else:
+                    self.value = user_input
+
+            self.asked = True
+
         return self.value
 
     @classmethod
@@ -217,6 +219,7 @@ class UrlSchemeParameter(SingleChoiceParameter):
                 prompt = "\nURL scheme:"
             self.value = super(UrlSchemeParameter, self).prompt(
                 prompt=prompt, old_value=old_value)
+            self.asked = True
 
         return self.value
 
@@ -263,43 +266,46 @@ class ListParameter(Parameter):
         :return The list of values.
         """
 
-        if old_value is not None:
-            # We might get the old value read from file via ConfigParser, and
-            # usually it comes in string format.
-            old_value = self.deserialize(old_value)
+        if not self.asked:
+            if old_value is not None:
+                # We might get the old value read from file via ConfigParser,
+                # and usually it comes in string format.
+                old_value = self.deserialize(old_value)
 
-        print >> sys.stdout, "Values for '{0}': ".format(self.id)
+            print >> sys.stdout, "Values for '{0}': ".format(self.id)
 
-        index = 1
-        while True:
-            user_input = None
-            if old_value is not None and (0 < len(old_value) >= index):
-                prompt = "{0:>3d}.\n\told: {1}\n\tnew: ".format(
-                    index, old_value[index-1])
-                user_input = self.get_user_input(prompt)
-            else:
-                prompt = "{0:>3d}. ".format(index)
-                user_input = self.get_user_input(prompt)
-
-            if user_input is not None:
-                # The user has pressed Enter.
-                if len(user_input) == 0:
-                    if old_value is not None and (0 < len(old_value) >= index):
-                        user_input = old_value[index-1]
-                    else:
-                        break
-
-                if len(user_input) == 1 and user_input == self.DELETE_CHAR \
-                        and (0 < len(old_value) >= index):
-                    # We have an old value, user presses the DELETE_CHAR and
-                    # we do not store anything. This is done to delete an
-                    # old entry.
-                    pass
+            index = 1
+            while True:
+                user_input = None
+                if old_value is not None and (0 < len(old_value) >= index):
+                    prompt = "{0:>3d}.\n\told: {1}\n\tnew: ".format(
+                        index, old_value[index-1])
+                    user_input = self.get_user_input(prompt)
                 else:
-                    self.value.append(user_input)
-                index += 1
+                    prompt = "{0:>3d}. ".format(index)
+                    user_input = self.get_user_input(prompt)
 
-        self.asked = True
+                if user_input is not None:
+                    # The user has pressed Enter.
+                    if len(user_input) == 0:
+                        if old_value is not None and \
+                                (0 < len(old_value) >= index):
+                            user_input = old_value[index-1]
+                        else:
+                            break
+
+                    if len(user_input) == 1 and user_input == \
+                            self.DELETE_CHAR and (0 < len(old_value) >= index):
+                        # We have an old value, user presses the DELETE_CHAR
+                        # and we do not store anything. This is done to delete
+                        # an old entry.
+                        pass
+                    else:
+                        self.value.append(user_input)
+                    index += 1
+
+            self.asked = True
+
         return self.value
 
 
@@ -332,11 +338,6 @@ class UrlListParameter(ListParameter):
         :param paths: Paths that will be added to the temporary tar file.
         :return The encoded content of the tar file.
         """
-        if isinstance(paths, types.StringTypes):
-            paths = [paths]
-        else:
-            paths = list(paths)
-
         try:
             temp_tar_file = tempfile.NamedTemporaryFile(suffix=".tar",
                                                         delete=False)
@@ -405,7 +406,8 @@ class UrlListParameter(ListParameter):
         """Asks for the URI to test definition files."""
         url_scheme = self.scheme.prompt()
         # Ask the list of files.
-        super(UrlListParameter, self).prompt(old_value=old_value)
+        if not self.asked:
+            super(UrlListParameter, self).prompt(old_value=old_value)
 
         if url_scheme == UrlSchemeParameter.DATA_SCHEME:
             # We need to do it by hand, or urlparse.urlparse will remove

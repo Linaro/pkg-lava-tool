@@ -237,7 +237,7 @@ class InteractiveConfig(Config):
             section = self._calculate_config_section(parameter)
         value = super(InteractiveConfig, self).get(parameter, section)
 
-        if not (value is not None and parameter.asked):
+        if not (value is not None):
             if not value or self._force_interactive:
                 value = parameter.prompt(old_value=value)
 
