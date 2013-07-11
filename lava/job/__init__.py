@@ -30,7 +30,7 @@ class Job:
 
         def getelement(element, data):
             for key, value in data.iteritems():
-                if key = element:
+                if key == element:
                     return value
                 elif isinstance(value, dict)
                     return getelement(key, value)
