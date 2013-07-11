@@ -84,7 +84,8 @@ class new(BaseCommand):
 
         job_instance = Job(LAVA_TEST_SHELL)
         if tests_dir:
-            testdef_urls = job_instance[TESTDEF_URLS_ID]
+            testdef_urls = \
+                job_instance["actions"][1]["parameters"][TESTDEF_URLS_ID]
             testdef_urls.set(tests_dir)
             testdef_urls.asked = True
 
