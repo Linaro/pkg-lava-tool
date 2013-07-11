@@ -21,6 +21,7 @@ Tests for lava.commands.
 """
 
 import os
+import shutil
 import tempfile
 
 from mock import (
@@ -84,7 +85,7 @@ class InitCommandTests(HelperTest):
             self.assertTrue(os.path.isdir(self.args.DIR))
         finally:
             if os.path.exists(self.args.DIR):
-                os.removedirs(self.args.DIR)
+                shutil.rmtree(self.args.DIR)
 
     def test_command_invoke_2(self):
         # Invoke the init command passing a path where the user cannot write.

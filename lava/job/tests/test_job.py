@@ -52,7 +52,7 @@ class JobTest(HelperTest):
     def test_fill_in_data(self):
         image = "/path/to/panda.img"
         param1 = Parameter("device_type")
-        param2 = Parameter("prebuilt_image", depends=param1)
+        param2 = Parameter("image", depends=param1)
         self.config.put_parameter(param1, "panda")
         self.config.put_parameter(param2, image)
 
