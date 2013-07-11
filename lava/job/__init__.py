@@ -32,7 +32,7 @@ class Job:
             for key, value in data.iteritems():
                 if key == element:
                     return value
-                elif isinstance(value, dict)
+                elif isinstance(value, dict):
                     return getelement(key, value)
 
         return getelement(key, self.data)
