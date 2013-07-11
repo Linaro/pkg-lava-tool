@@ -26,6 +26,9 @@ class Job:
     def __init__(self, template):
         self.data = deepcopy(template)
 
+    def __getitem__(self, key):
+        return self.data[key]
+
     def fill_in(self, config):
         expand_template(self.data, config)
 
