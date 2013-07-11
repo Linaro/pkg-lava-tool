@@ -33,6 +33,7 @@ from lava.helper.dispatcher import get_devices
 from lava.job import Job
 from lava.job.templates import (
     LAVA_TEST_SHELL,
+    TESTDEF_URLS_ID,
 )
 from lava.parameter import (
     ListParameter,
@@ -66,7 +67,7 @@ class new(BaseCommand):
         super(new, cls).register_arguments(parser)
         parser.add_argument("FILE", help=("Job file to be created."))
 
-    def invoke(self):
+    def invoke(self, tests_dir=None):
         job_file = self.args.FILE
 
         # Checks that the file we pass has an extension or a correct one.
@@ -81,8 +82,12 @@ class new(BaseCommand):
         if os.path.exists(job_file):
             raise CommandError('{0} already exists.'.format(job_file))
 
+        job_instance = Job(LAVA_TEST_SHELL)
+        if tests_dir:
+            job_instance[TESTDEF_URLS_ID].set(tests_dir)
+            job_instance[TESTDEF_URLS_ID].asked = True
+
         with open(job_file, 'w') as write_file:
-            job_instance = Job(LAVA_TEST_SHELL)
             job_instance.fill_in(self.config)
             job_instance.write(write_file)
 
