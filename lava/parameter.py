@@ -331,7 +331,8 @@ class UrlListParameter(ListParameter):
                         arcname = os.path.basename(full_path)
                         tar_file.add(full_path, arcname=arcname)
                     elif os.path.isdir(full_path):
-                        # Treat only first level directories.
+                        # If we pass a directory, fatten it out.
+                        # List its content, and add them as they are.
                         for element in os.listdir(full_path):
                             arcname = element
                             tar_file.add(os.path.join(full_path, element),
