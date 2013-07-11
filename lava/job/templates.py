@@ -21,20 +21,25 @@ from lava.parameter import (
     UrlListParameter,
 )
 
-DEVICE_TYPE = Parameter("device_type")
-PREBUILT_IMAGE = Parameter("prebuilt_image", depends=DEVICE_TYPE)
+DEVICE_TYPE_ID = "device_type"
+IMAGE_ID = "image"
+TESTDEF_URLS_ID = "testdef_urls"
+
+DEVICE_TYPE_PARAMETER = Parameter(DEVICE_TYPE_ID)
+PREBUILT_IMAGE_PARAMETER = Parameter(IMAGE_ID, depends=DEVICE_TYPE_PARAMETER)
 # Never store the testdef_urls parameter in the config file.
-TESTDEF_URL = UrlListParameter("testdef_urls", depends=DEVICE_TYPE)
-TESTDEF_URL.store = False
+TESTDEF_URL_PARAMETER = UrlListParameter(TESTDEF_URLS_ID,
+                                         depends=DEVICE_TYPE_PARAMETER)
+TESTDEF_URL_PARAMETER.store = False
 
 BOOT_TEST = {
     "job_name": "Boot test",
-    "device_type": DEVICE_TYPE,
+    DEVICE_TYPE_ID: DEVICE_TYPE_PARAMETER,
     "actions": [
         {
             "command": "deploy_linaro_image",
             "parameters": {
-                "image": PREBUILT_IMAGE
+                "image": PREBUILT_IMAGE_PARAMETER
             }
         },
         {
@@ -45,18 +50,18 @@ BOOT_TEST = {
 
 LAVA_TEST_SHELL = {
     "job_name": "LAVA Test Shell",
-    "device_type": DEVICE_TYPE,
+    DEVICE_TYPE_ID: DEVICE_TYPE_PARAMETER,
     "actions": [
         {
             "command": "deploy_linaro_image",
             "parameters": {
-                "image": PREBUILT_IMAGE,
+                IMAGE_ID: PREBUILT_IMAGE_PARAMETER,
             }
         },
         {
             "command": "lava_test_shell",
             "parameters": {
-                "testdef_urls": TESTDEF_URL,
+                TESTDEF_URLS_ID: TESTDEF_URL_PARAMETER,
             }
         }
     ]
