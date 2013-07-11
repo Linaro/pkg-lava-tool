@@ -406,8 +406,7 @@ class UrlListParameter(ListParameter):
         """Asks for the URI to test definition files."""
         url_scheme = self.scheme.prompt()
         # Ask the list of files.
-        if not self.asked:
-            super(UrlListParameter, self).prompt(old_value=old_value)
+        super(UrlListParameter, self).prompt(old_value=old_value)
 
         if url_scheme == UrlSchemeParameter.DATA_SCHEME:
             # We need to do it by hand, or urlparse.urlparse will remove
