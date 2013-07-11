@@ -146,7 +146,7 @@ class Parameter(object):
 class EnterParameter(Parameter):
 
     @classmethod
-    def prompt():
+    def prompt(cls):
         prompt_string = "Press Enter to continue."
         while True:
             user_input = cls.get_user_input(prompt_string)
