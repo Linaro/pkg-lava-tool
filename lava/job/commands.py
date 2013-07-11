@@ -84,8 +84,9 @@ class new(BaseCommand):
 
         job_instance = Job(LAVA_TEST_SHELL)
         if tests_dir:
-            job_instance[TESTDEF_URLS_ID].set(tests_dir)
-            job_instance[TESTDEF_URLS_ID].asked = True
+            testdef_urls = job_instance[TESTDEF_URLS_ID]
+            testdef_urls.set(tests_dir)
+            testdef_urls.asked = True
 
         with open(job_file, 'w') as write_file:
             job_instance.fill_in(self.config)
