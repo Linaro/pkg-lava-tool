@@ -96,22 +96,29 @@ class BaseCommand(Command):
 
         :return The job file full path.
         """
-        for element in os.listdir(path):
-            element_path = os.path.join(path, element)
-            if os.path.isdir(element_path):
-                continue
-            elif os.path.isfile(element_path):
-                job_file = os.path.split(element)[1]
-                # Extension here contains also the leading dot.
-                full_extension = os.path.splitext(job_file)[1]
 
-                if full_extension:
-                    # Make sure that we have an extension and remove the dot.
-                    extension = full_extension[1:].strip().lower()
-                    if extension in JOB_FILE_EXTENSIONS:
-                        return element_path
+        if os.path.isfile(path):
+            job_file = full_path
         else:
-            raise CommandError("No job file found in: '{0}'".format(path))
+            for element in os.listdir(path):
+                element_path = os.path.join(path, element)
+                if os.path.isdir(element_path):
+                    continue
+                elif os.path.isfile(element_path):
+                    job_file = os.path.split(element)[1]
+                    # Extension here contains also the leading dot.
+                    full_extension = os.path.splitext(job_file)[1]
+
+                    if full_extension:
+                        # Make sure that we have an extension and remove the dot.
+                        extension = full_extension[1:].strip().lower()
+                        if extension in JOB_FILE_EXTENSIONS:
+                            job_file = element_path
+                            break
+            else:
+                raise CommandError("No job file found in: '{0}'".format(path))
+
+        return job_file
 
     @classmethod
     def run(cls, cmd_args):
