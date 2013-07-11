@@ -89,6 +89,22 @@ class Parameter(object):
         self.asked = True
         return self.value
 
+    def get_user_input(self, prompt=""):
+        """Asks the user for input data.
+
+        :param prompt: The prompt that should be given to the user.
+        :return A string with what the user typed.
+        """
+        data = None
+        try:
+            data = raw_input(prompt).strip()
+        except EOFError:
+            # Force to return None.
+            data = None
+        except KeyboardInterrupt:
+            sys.exit(-1)
+        return data
+
     @classmethod
     def serialize(cls, value):
         """Serializes the passed value to be friendly written to file.
@@ -106,21 +122,24 @@ class Parameter(object):
             serialized = str(value)
         return serialized
 
-    def get_user_input(self, prompt=""):
-        """Asks the user for input data.
+    @classmethod
+    def deserialize(cls, value):
+        """Deserialize a value into a list.
 
-        :param prompt: The prompt that should be given to the user.
-        :return A string with what the user typed.
+        The value must have been serialized with the class instance serialize()
+        method.
+
+        :param value: The string value to be deserialized.
+        :type str
+        :return A list of values.
         """
-        data = None
-        try:
-            data = raw_input(prompt).strip()
-        except EOFError:
-            # Force to return None.
-            data = None
-        except KeyboardInterrupt:
-            sys.exit(-1)
-        return data
+        deserialized = []
+        if isinstance(value, types.StringTypes):
+            deserialized = filter(None, (x.strip() for x in value.split(
+                LIST_SERIALIZE_DELIMITER)))
+        else:
+            deserialized = list(value)
+        return deserialized
 
 
 class SingleChoiceParameter(Parameter):
@@ -220,25 +239,6 @@ class ListParameter(Parameter):
             value = self.serialize(value)
         self.value.append(value)
 
-    @classmethod
-    def deserialize(cls, value):
-        """Deserialize a value into a list.
-
-        The value must have been serialized with the class instance serialize()
-        method.
-
-        :param value: The string value to be deserialized.
-        :type str
-        :return A list of values.
-        """
-        deserialized = []
-        if isinstance(value, types.StringTypes):
-            deserialized = filter(None, (x.strip() for x in value.split(
-                LIST_SERIALIZE_DELIMITER)))
-        else:
-            deserialized = list(value)
-        return deserialized
-
     def prompt(self, old_value=None):
         """Gets the parameter in a list form.
 
@@ -327,8 +327,15 @@ class UrlListParameter(ListParameter):
             with tarfile.open(temp_tar_file.name, "w") as tar_file:
                 for path in paths:
                     full_path = os.path.abspath(path)
-                    arcname = os.path.basename(full_path)
-                    tar_file.add(full_path, arcname=arcname)
+                    if os.path.isfile(full_path):
+                        arcname = os.path.basename(full_path)
+                        tar_file.add(full_path, arcname=arcname)
+                    elif os.path.isdir(full_path):
+                        # Treat only first level directories.
+                        for element in os.listdir(full_path):
+                            arcname = element
+                            tar_file.add(os.path.join(full_path, element),
+                                         arcname=arcname)
 
             encoded_content = StringIO.StringIO()
 
