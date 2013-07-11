@@ -173,7 +173,7 @@ class run(BaseCommand):
         full_path = os.path.abspath(self.args.JOB)
         job_file = self.retrieve_job_file(full_path)
 
-        self._run_job(full_path)
+        self._run_job(job_file)
 
     def _run_job(self, job_file):
         """Runs a job on the dispatcher."""

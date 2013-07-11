@@ -162,5 +162,5 @@ class run(BaseCommand):
             else:
                 raise CommandError("Cannot find lava-dispatcher installation.")
         else:
-            raise CommandError("The file '{0}' does not exists. or is not "
+            raise CommandError("The file '{0}' does not exists, or it is not "
                                "a file.".format(self.args.FILE))
