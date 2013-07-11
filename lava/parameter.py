@@ -24,6 +24,8 @@ import StringIO
 import base64
 import os
 import sys
+import tarfile
+import tempfile
 import types
 import urlparse
 
@@ -307,16 +309,17 @@ class UrlListParameter(ListParameter):
     def base64encode(cls, paths):
         """Encodes in base64 the provided path.
 
-        If path is a path to an existing file, the encoding will work in this
-        way: it will encode the path, and the content of the file. The result
-        will be a string with the two encoded values joined by a semi-colon:
-        the first value is the path, the second the content.
+        The econding will create a temporary tar file, read the content of
+        the tarball and encode it in base64. At the end the temporary file
+        will be deleted.
 
-        :param path: What to encode.
-        :return The encoded value.
+        :param paths: Paths that will be added to the temporary tar file.
+        :return The encoded content of the tar file.
         """
-        import tempfile
-        import tarfile
+        if isinstance(paths, types.StringTypes):
+            paths = [paths]
+        else:
+            paths = list(paths)
 
         try:
             temp_tar_file = tempfile.NamedTemporaryFile(suffix=".tar",
@@ -324,7 +327,8 @@ class UrlListParameter(ListParameter):
             with tarfile.open(temp_tar_file.name, "w") as tar_file:
                 for path in paths:
                     full_path = os.path.abspath(path)
-                    tar_file.add(full_path)
+                    arcname = os.path.basename(full_path)
+                    tar_file.add(full_path, arcname=arcname)
 
             encoded_content = StringIO.StringIO()
 
@@ -335,12 +339,14 @@ class UrlListParameter(ListParameter):
 
                     return encoded_content.getvalue().strip()
                 except IOError:
-                    raise CommandError("Cannot read file '{0}'.".format(path))
+                    raise CommandError("Cannot read file "
+                                       "'{0}'.".format(temp_tar_file.name))
             else:
                 raise CommandError("Provided path does not exists: "
-                                   "{0}.".format(path))
+                                   "{0}.".format(temp_tar_file.name))
         finally:
-            os.unlink(temp_tar_file.name)
+            if os.path.isfile(temp_tar_file.name):
+                os.unlink(temp_tar_file.name)
 
     @classmethod
     def base64decode(cls, string):
@@ -374,7 +380,7 @@ class UrlListParameter(ListParameter):
     def prompt(self, old_value=None):
         """Asks for the URI to test definition files."""
         url_scheme = self.scheme.prompt()
-        # Now really ask the list of files.
+        # Ask the list of files.
         super(UrlListParameter, self).prompt(old_value=old_value)
 
         if url_scheme == UrlSchemeParameter.DATA_SCHEME:
