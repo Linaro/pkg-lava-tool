@@ -96,9 +96,8 @@ class BaseCommand(Command):
 
         :return The job file full path.
         """
-
         if os.path.isfile(path):
-            job_file = full_path
+            job_file = path
         else:
             for element in os.listdir(path):
                 element_path = os.path.join(path, element)
