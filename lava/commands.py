@@ -27,6 +27,7 @@ import sys
 from lava.helper.command import BaseCommand
 from lava.helper.template import expand_template
 from lava.parameter import (
+    EnterParameter,
     Parameter,
     ListParameter,
 )
@@ -114,6 +115,8 @@ class init(BaseCommand):
                 write_file.write(DEFAULT_TESTDEF_SCRIPT_CONTENT)
             print >> sys.stdout, ("Update the test script '{0}' with your own "
                                   "istructions.".format(default_script))
+            # Wait the user to press enter.
+            EnterParameter.prompt()
 
         test_files = Parameter.deserialize(data[TESTS_DEF])
 

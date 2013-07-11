@@ -89,7 +89,8 @@ class Parameter(object):
         self.asked = True
         return self.value
 
-    def get_user_input(self, prompt=""):
+    @classmethod
+    def get_user_input(cls, prompt=""):
         """Asks the user for input data.
 
         :param prompt: The prompt that should be given to the user.
@@ -140,6 +141,20 @@ class Parameter(object):
         else:
             deserialized = list(value)
         return deserialized
+
+
+class EnterParameter(Parameter):
+
+    @classmethod
+    def prompt():
+        prompt_string = "Press Enter to continue."
+        while True:
+            user_input = cls.get_user_input(prompt_string)
+
+            if len(user_input) != 0:
+                continue
+            else:
+                break
 
 
 class SingleChoiceParameter(Parameter):
