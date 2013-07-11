@@ -29,7 +29,6 @@ from lava.helper.template import expand_template
 from lava.parameter import (
     Parameter,
     ListParameter,
-    UrlListParameter,
 )
 from lava.testdef.templates import (
     DEFAULT_TESTDEF_SCRIPT,
@@ -37,6 +36,7 @@ from lava.testdef.templates import (
 )
 from lava.tool.errors import CommandError
 
+TEST_DIR = "tests"
 JOBFILE = "jobfile"
 TESTS_DEF = "test_definitions"
 
@@ -78,8 +78,16 @@ class init(BaseCommand):
                 raise CommandError("Cannot create directory "
                                    "'{0}'.".format(self.args.DIR))
 
+        test_path = os.path.join(full_path, TEST_DIR)
+        if not os.path.isdir(test_path):
+            try:
+                os.makedirs(test_path)
+            except OSError:
+                raise CommandError("Cannot create directory "
+                                   "'{0}'.".format(self.args.DIR))
+
         data = self._update_data()
-        self._create_files(data, full_path)
+        self._create_files(data, full_path, test_path)
 
     def _update_data(self):
         """Updates the template and ask values to the user.
@@ -94,9 +102,9 @@ class init(BaseCommand):
 
         return data
 
-    def _create_files(self, data, full_path):
+    def _create_files(self, data, full_path, test_path):
         # This is the default script file as defined in the testdef template.
-        default_script = os.path.join(full_path, DEFAULT_TESTDEF_SCRIPT)
+        default_script = os.path.join(test_path, DEFAULT_TESTDEF_SCRIPT)
         # We do not have the default testdef script. Create it with some custom
         # content, but remind the user to update it.
         if not os.path.isfile(default_script):
@@ -107,12 +115,12 @@ class init(BaseCommand):
             print >> sys.stdout, ("Update the test script '{0}' with your own "
                                   "istructions.".format(default_script))
 
-        test_files = ListParameter.deserialize(data[TESTS_DEF])
+        test_files = Parameter.deserialize(data[TESTS_DEF])
 
         for test in test_files:
-            print >> sys.stdout, ("\nCreating test definition file "
+            print >> sys.stdout, ("\nCreating test definition "
                                   "'{0}':".format(test))
-            self._create_test_file(os.path.join(full_path, test))
+            self._create_test_file(os.path.join(test_path, test))
 
         job = data[JOBFILE]
         print >> sys.stdout, "\nCreating job file '{0}':".format(job)
@@ -160,11 +168,7 @@ class run(BaseCommand):
 
     def invoke(self):
         full_path = os.path.abspath(self.args.JOB)
-
-        if os.path.isfile(full_path):
-            job_file = full_path
-        else:
-            job_file = self.retrieve_job_file(full_path)
+        job_file = self.retrieve_job_file(full_path)
 
         self._run_job(full_path)
 
@@ -195,11 +199,7 @@ class submit(BaseCommand):
 
     def invoke(self):
         full_path = os.path.abspath(self.args.JOB)
-
-        if os.path.isfile(full_path):
-            job_file = full_path
-        else:
-            job_file = self.retrieve_job_file(full_path)
+        job_file = self.retrieve_job_file(full_path)
 
         self._submit_job(job_file)
 
@@ -212,3 +212,19 @@ class submit(BaseCommand):
 
         submit_cmd = submit(self.parser, args)
         submit_cmd.invoke()
+
+
+class update(BaseCommand):
+    """Updates a job file with the correct data."""
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(update, cls).register_arguments(parser)
+        parser.add_argument("JOB",
+                            help="",
+                            nargs="?",
+                            default=os.getcwd())
+
+    def invoke(self):
+        full_path = os.path.abspath(self.args.JOB)
+        job_file = self.retrieve_job_file(full_path)
