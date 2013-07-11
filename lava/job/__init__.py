@@ -27,7 +27,15 @@ class Job:
         self.data = deepcopy(template)
 
     def __getitem__(self, key):
-        return self.data[key]
+
+        def getelement(element, data):
+            for key, value in data.iteritems():
+                if key = element:
+                    return value
+                elif isinstance(value, dict)
+                    return getelement(key, value)
+
+        return getelement(key, self.data)
 
     def fill_in(self, config):
         expand_template(self.data, config)
