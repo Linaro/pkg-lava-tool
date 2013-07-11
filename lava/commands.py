@@ -115,7 +115,7 @@ class init(BaseCommand):
                 write_file.write(DEFAULT_TESTDEF_SCRIPT_CONTENT)
             print >> sys.stdout, ("Update the test script '{0}' with your own "
                                   "istructions.".format(default_script))
-            # Wait the user to press enter.
+            # Wait the user to press enter to continue.
             EnterParameter.prompt()
 
         test_files = Parameter.deserialize(data[TESTS_DEF])
@@ -127,9 +127,9 @@ class init(BaseCommand):
 
         job = data[JOBFILE]
         print >> sys.stdout, "\nCreating job file '{0}':".format(job)
-        self._create_job_file(os.path.join(full_path, job))
+        self._create_job_file(os.path.join(full_path, job), test_path)
 
-    def _create_job_file(self, job_file):
+    def _create_job_file(self, job_file, test_path=None):
         """Creates the job file on the filesystem."""
 
         # Invoke the command to create new job files: make a copy of the local
@@ -140,7 +140,7 @@ class init(BaseCommand):
         args.FILE = job_file
 
         job_cmd = new(self.parser, args)
-        job_cmd.invoke()
+        job_cmd.invoke(tests_dir=test_path)
 
     def _create_test_file(self, test_file):
         """Creates the test definition file on the filesystem."""

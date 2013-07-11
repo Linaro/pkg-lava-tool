@@ -144,6 +144,7 @@ class Parameter(object):
 
 
 class EnterParameter(Parameter):
+    """A very simple parameter that waits user to press Enter."""
 
     @classmethod
     def prompt(cls):
