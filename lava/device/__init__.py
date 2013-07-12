@@ -67,8 +67,8 @@ class Device(object):
         # given on the command line for the config file.
         if self.hostname is not None:
             # We do not ask the user again this parameter.
+            self.data[HOSTNAME_PARAMETER.id].value = self.hostname
             self.data[HOSTNAME_PARAMETER.id].asked = True
-            config.put(HOSTNAME_PARAMETER.id, self.hostname)
 
         expand_template(self.data, config)
 
@@ -85,9 +85,9 @@ def get_known_device(name):
     :param name: The name of the device we want matched to a real device.
     :return A Device instance.
         """
-    instance = Device(DEFAULT_TEMPLATE, name)
+    instance = Device(DEFAULT_TEMPLATE, hostname=name)
     for known_dev, (matcher, dev_template) in KNOWN_DEVICES.iteritems():
         if matcher.match(name):
-            instance = Device(dev_template, name)
+            instance = Device(dev_template, hostname=name)
             break
     return instance
