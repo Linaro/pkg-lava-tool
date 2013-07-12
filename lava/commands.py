@@ -113,10 +113,13 @@ class init(BaseCommand):
         if not os.path.isfile(default_script):
             print >> sys.stdout, ("\nCreating default test script "
                                   "'{0}'.".format(DEFAULT_TESTDEF_SCRIPT))
+
             with open(default_script, "w") as write_file:
                 write_file.write(DEFAULT_TESTDEF_SCRIPT_CONTENT)
+
             print >> sys.stdout, ("Update the test script '{0}' with your own "
                                   "istructions.".format(default_script))
+            print >> sys.stdout, ("After that, run: lava update JOB")
             # Wait the user to press enter to continue.
             EnterParameter.prompt()
 
@@ -241,6 +244,7 @@ class update(BaseCommand):
         if os.path.isdir(tests_dir):
             encoded_tests = UrlListParameter.get_encoded_uri(tests_dir)
 
+            json_data = None
             with open(job_file, "r") as json_file:
                 try:
                     json_data = json.load(json_file)
@@ -256,5 +260,6 @@ class update(BaseCommand):
                 except Exception:
                     raise CommandError("Cannot update job file "
                                        "'{0}'.".format(json_file))
+            print >> sys.stdout, "Job definition updated."
         else:
             raise CommandError("Cannot find tests directory.")
