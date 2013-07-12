@@ -392,7 +392,7 @@ class UrlListParameter(ListParameter):
         return decoded_string
 
     @classmethod
-    def get_econded_uri(cls, url, url_scheme=UrlSchemeParameter.DATA_SCHEME):
+    def get_encoded_uri(cls, url, url_scheme=UrlSchemeParameter.DATA_SCHEME):
         encoded_uris = []
         if url_scheme == UrlSchemeParameter.DATA_SCHEME:
             # We need to do it by hand, or urlparse.urlparse() will remove
@@ -433,7 +433,7 @@ class UrlListParameter(ListParameter):
         # Ask the list of files.
         super(UrlListParameter, self).prompt(old_value=old_value)
 
-        encoded_url = self.get_econded_uri(self.value, url_scheme=url_scheme)
+        encoded_url = self.get_encoded_uri(self.value, url_scheme=url_scheme)
         self.urls.extend(encoded_url)
 
         return self.urls
