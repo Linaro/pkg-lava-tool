@@ -239,18 +239,22 @@ class update(BaseCommand):
         tests_dir = os.path.join(job_dir, TESTS_DIR)
 
         if os.path.isdir(tests_dir):
-            encoded_tests = UrlListParameter.base64encode(tests_dir)
+            encoded_tests = UrlListParameter.get_encoded_uri(tests_dir)
 
-            with open(job_file, "rw") as json_file:
+            with open(job_file, "r") as json_file:
                 try:
                     json_data = json.load(json_file)
                     json_data["actions"][1]["parameters"]["testdef_urls"] = \
                         encoded_tests
-                    json_file.write(json.dump(json_data, indent=4))
-                except Exception:
+                except Exception as ex:
                     raise CommandError("Cannot read job file '{0}'.".format(
                         job_file))
+
+            with open(job_file, "w") as write_file:
+                try:
+                    write_file.write(json.dump(json_data, indent=4))
+                except Exception:
+                    raise CommandError("Cannot update job file "
+                                       "'{0}'.".format(json_file))
         else:
             raise CommandError("Cannot find tests directory.")
-
-
