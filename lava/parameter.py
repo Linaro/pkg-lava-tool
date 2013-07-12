@@ -381,17 +381,6 @@ class UrlListParameter(ListParameter):
                 os.unlink(temp_tar_file.name)
 
     @classmethod
-    def base64decode(cls, string):
-        """Decodes the provided string."""
-        decoded_string = ""
-        split_string = string.split(cls.DELIMITER)
-        # It has to be exactly 2.
-        if len(split_string) == 2:
-            # We are interested only in the path, not the content.
-            decoded_string = base64.decodestring(split_string[0]).strip()
-        return decoded_string
-
-    @classmethod
     def get_encoded_uri(cls, url, url_scheme=UrlSchemeParameter.DATA_SCHEME):
         encoded_uris = []
         if url_scheme == UrlSchemeParameter.DATA_SCHEME:
@@ -407,24 +396,6 @@ class UrlListParameter(ListParameter):
                 url = urlparse.urlunparse(parts)
                 encoded_uris.append(url)
         return encoded_uris
-
-    def _calculate_old_values(self, old_value):
-        """Deserialize the old values passed, and decode them.
-
-        :return A tuple with the scheme, and the list of encoded values.
-        """
-        old_value = self.deserialize(old_value)
-        old_scheme = urlparse.urlparse(old_value[0]).scheme
-
-        cleaned_values = []
-        for value in old_value:
-            # If we have a data scheme, decode the string and get the path.
-            if old_scheme == self.scheme.DATA_SCHEME:
-                value = self.base64decode(urlparse.urlparse(value).path)
-            path = urlparse.urlparse(value).path
-            cleaned_values.append(path)
-
-        return (old_scheme, cleaned_values)
 
     def prompt(self, old_value=None):
         """Asks for the URI to test definition files."""
