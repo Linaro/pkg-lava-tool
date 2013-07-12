@@ -21,6 +21,7 @@ Lava init commands.
 """
 
 import copy
+import json
 import os
 import sys
 
@@ -30,6 +31,7 @@ from lava.parameter import (
     EnterParameter,
     Parameter,
     ListParameter,
+    UrlListParameter,
 )
 from lava.testdef.templates import (
     DEFAULT_TESTDEF_SCRIPT,
@@ -37,7 +39,7 @@ from lava.testdef.templates import (
 )
 from lava.tool.errors import CommandError
 
-TEST_DIR = "tests"
+TESTS_DIR = "tests"
 JOBFILE = "jobfile"
 TESTS_DEF = "test_definitions"
 
@@ -79,7 +81,7 @@ class init(BaseCommand):
                 raise CommandError("Cannot create directory "
                                    "'{0}'.".format(self.args.DIR))
 
-        test_path = os.path.join(full_path, TEST_DIR)
+        test_path = os.path.join(full_path, TESTS_DIR)
         if not os.path.isdir(test_path):
             try:
                 os.makedirs(test_path)
@@ -155,6 +157,7 @@ class init(BaseCommand):
         testdef_cmd = new(self.parser, args)
         testdef_cmd.invoke()
 
+
 class run(BaseCommand):
     """Runs a job on the local dispatcher."""
 
@@ -224,10 +227,30 @@ class update(BaseCommand):
     def register_arguments(cls, parser):
         super(update, cls).register_arguments(parser)
         parser.add_argument("JOB",
-                            help="",
+                            help=("Automatically updates a job file "
+                                  "definition."),
                             nargs="?",
                             default=os.getcwd())
 
     def invoke(self):
         full_path = os.path.abspath(self.args.JOB)
         job_file = self.retrieve_job_file(full_path)
+        job_dir = os.path.dirname(job_file)
+        tests_dir = os.path.join(job_dir, TESTS_DIR)
+
+        if os.path.isdir(tests_dir):
+            encoded_tests = UrlListParameter.base64encode(tests_dir)
+
+            with open(job_file, "rw") as json_file:
+                try:
+                    json_data = json.load(json_file)
+                    json_data["actions"][1]["parameters"]["testdef_urls"] = \
+                        encoded_tests
+                    json_file.write(json.dump(json_data, indent=4))
+                except Exception:
+                    raise CommandError("Cannot read job file '{0}'.".format(
+                        job_file))
+        else:
+            raise CommandError("Cannot find tests directory.")
+
+
