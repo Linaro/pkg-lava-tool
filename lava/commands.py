@@ -39,19 +39,22 @@ from lava.testdef.templates import (
 )
 from lava.tool.errors import CommandError
 
+# Default directory structure name.
 TESTS_DIR = "tests"
-JOBFILE = "jobfile"
-TESTS_DEF = "test_definitions"
 
-JOBFILE_PARAMETER = Parameter(JOBFILE)
+# Internal parameter ids.
+JOBFILE_ID = "jobfile"
+TESTS_DEF_ID = "test_definitions"
+
+JOBFILE_PARAMETER = Parameter(JOBFILE_ID)
 JOBFILE_PARAMETER.store = False
 
-TESTFILES_PARAMETER = ListParameter(TESTS_DEF)
+TESTFILES_PARAMETER = ListParameter(TESTS_DEF_ID)
 TESTFILES_PARAMETER.store = False
 
 INIT_TEMPLATE = {
-    JOBFILE: JOBFILE_PARAMETER,
-    TESTS_DEF: TESTFILES_PARAMETER,
+    JOBFILE_ID: JOBFILE_PARAMETER,
+    TESTS_DEF_ID: TESTFILES_PARAMETER,
 }
 
 
@@ -108,9 +111,10 @@ class init(BaseCommand):
     def _create_files(self, data, full_path, test_path):
         # This is the default script file as defined in the testdef template.
         default_script = os.path.join(test_path, DEFAULT_TESTDEF_SCRIPT)
-        # We do not have the default testdef script. Create it with some custom
-        # content, but remind the user to update it.
+
         if not os.path.isfile(default_script):
+            # We do not have the default testdef script. Create it, but
+            # remind the user to update it.
             print >> sys.stdout, ("\nCreating default test script "
                                   "'{0}'.".format(DEFAULT_TESTDEF_SCRIPT))
 
@@ -123,14 +127,14 @@ class init(BaseCommand):
             # Wait the user to press enter to continue.
             EnterParameter.prompt()
 
-        test_files = Parameter.deserialize(data[TESTS_DEF])
+        test_files = Parameter.deserialize(data[TESTS_DEF_ID])
 
         for test in test_files:
             print >> sys.stdout, ("\nCreating test definition "
                                   "'{0}':".format(test))
             self._create_test_file(os.path.join(test_path, test))
 
-        job = data[JOBFILE]
+        job = data[JOBFILE_ID]
         print >> sys.stdout, "\nCreating job file '{0}':".format(job)
         self._create_job_file(os.path.join(full_path, job), test_path)
 
