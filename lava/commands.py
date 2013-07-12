@@ -246,13 +246,13 @@ class update(BaseCommand):
                     json_data = json.load(json_file)
                     json_data["actions"][1]["parameters"]["testdef_urls"] = \
                         encoded_tests
-                except Exception as ex:
+                except Exception:
                     raise CommandError("Cannot read job file '{0}'.".format(
                         job_file))
 
             with open(job_file, "w") as write_file:
                 try:
-                    write_file.write(json.dump(json_data, indent=4))
+                    write_file.write(json.dumps(json_data, indent=4))
                 except Exception:
                     raise CommandError("Cannot update job file "
                                        "'{0}'.".format(json_file))
