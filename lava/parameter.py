@@ -144,6 +144,19 @@ class Parameter(object):
             deserialized = list(value)
         return deserialized
 
+    @classmethod
+    def to_list(cls, value):
+        """Return a list from the passed value.
+
+        :param value: The parameter to turn into a list.
+        """
+        return_value = []
+        if isinstance(value, types.StringType):
+            return_value = [value]
+        else:
+            return_value = list(value)
+        return return_value
+
 
 class EnterParameter(Parameter):
     """A very simple parameter that waits user to press Enter."""
@@ -164,10 +177,7 @@ class SingleChoiceParameter(Parameter):
     """A parameter implemeting a single choice between multiple choices."""
     def __init__(self, id, choices):
         super(SingleChoiceParameter, self).__init__(id)
-        if isinstance(choices, types.StringTypes):
-            self.choices = [choices]
-        else:
-            self.choices = list(choices)
+        self.choices = self.to_list(choices)
 
     def prompt(self, prompt, old_value=None):
         """Asks the user for their choice."""
@@ -242,12 +252,7 @@ class ListParameter(Parameter):
 
         :param value: The value to set.
         """
-        if isinstance(value, types.StringTypes):
-            value = self.deserialize(value)
-        else:
-            value = list(value)
-
-        self.value = value
+        self.value = self.to_list(value)
 
     def add(self, value):
         """Adds a new value to the list of values of this parameter.
@@ -255,8 +260,9 @@ class ListParameter(Parameter):
         :param value: The value to add.
         """
         if isinstance(value, list):
-            value = self.serialize(value)
-        self.value.append(value)
+            self.value.extend(value)
+        else:
+            self.value.append(value)
 
     def prompt(self, old_value=None):
         """Gets the parameter in a list form.
@@ -348,7 +354,7 @@ class UrlListParameter(ListParameter):
                         arcname = os.path.basename(full_path)
                         tar_file.add(full_path, arcname=arcname)
                     elif os.path.isdir(full_path):
-                        # If we pass a directory, fatten it out.
+                        # If we pass a directory, flatten it out.
                         # List its content, and add them as they are.
                         for element in os.listdir(full_path):
                             arcname = element
@@ -404,12 +410,13 @@ class UrlListParameter(ListParameter):
 
     def prompt(self, old_value=None):
         """Asks for the URI to test definition files."""
+        # Aske the URL scheme first.
         url_scheme = self.scheme.prompt()
         # Ask the list of files.
         super(UrlListParameter, self).prompt(old_value=old_value)
 
         if url_scheme == UrlSchemeParameter.DATA_SCHEME:
-            # We need to do it by hand, or urlparse.urlparse will remove
+            # We need to do it by hand, or urlparse.urlparse() will remove
             # the delimiter for econded data when we read an empty file.
             data = self.base64encode(self.value)
             url = self.URL_SCHEME_DELIMITER.join([url_scheme, data])
