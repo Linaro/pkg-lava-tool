@@ -433,7 +433,7 @@ class UrlListParameter(ListParameter):
         # Ask the list of files.
         super(UrlListParameter, self).prompt(old_value=old_value)
 
-        encoded_url = self.get_econded_uri(self.data, url_scheme=url_scheme)
+        encoded_url = self.get_econded_uri(self.value, url_scheme=url_scheme)
         self.urls.extend(encoded_url)
 
         return self.urls
