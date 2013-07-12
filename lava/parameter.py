@@ -344,6 +344,7 @@ class UrlListParameter(ListParameter):
         :param paths: Paths that will be added to the temporary tar file.
         :return The encoded content of the tar file.
         """
+        paths = cls.to_list(paths)
         try:
             temp_tar_file = tempfile.NamedTemporaryFile(suffix=".tar",
                                                         delete=False)
