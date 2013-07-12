@@ -391,6 +391,23 @@ class UrlListParameter(ListParameter):
             decoded_string = base64.decodestring(split_string[0]).strip()
         return decoded_string
 
+    @classmethod
+    def get_econded_uri(cls, url, url_scheme=UrlSchemeParameter.DATA_SCHEME):
+        encoded_uris = []
+        if url_scheme == UrlSchemeParameter.DATA_SCHEME:
+            # We need to do it by hand, or urlparse.urlparse() will remove
+            # the delimiter for econded data when we read an empty file.
+            data = cls.base64encode(url)
+            url = cls.URL_SCHEME_DELIMITER.join([url_scheme, data])
+            encoded_uris.append(url)
+        else:
+            for path in self.value:
+                parts = list(urlparse.urlparse(os.path.abspath(path)))
+                parts[0] = url_scheme
+                url = urlparse.urlunparse(parts)
+                encoded_uris.append(url)
+        return encoded_uris
+
     def _calculate_old_values(self, old_value):
         """Deserialize the old values passed, and decode them.
 
@@ -416,17 +433,7 @@ class UrlListParameter(ListParameter):
         # Ask the list of files.
         super(UrlListParameter, self).prompt(old_value=old_value)
 
-        if url_scheme == UrlSchemeParameter.DATA_SCHEME:
-            # We need to do it by hand, or urlparse.urlparse() will remove
-            # the delimiter for econded data when we read an empty file.
-            data = self.base64encode(self.value)
-            url = self.URL_SCHEME_DELIMITER.join([url_scheme, data])
-            self.urls.append(url)
-        else:
-            for path in self.value:
-                parts = list(urlparse.urlparse(os.path.abspath(path)))
-                parts[0] = url_scheme
-                url = urlparse.urlunparse(parts)
-                self.urls.append(url)
+        encoded_url = self.get_econded_uri(self.data, url_scheme=url_scheme)
+        self.urls.extend(encoded_url)
 
         return self.urls
