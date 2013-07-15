@@ -20,11 +20,6 @@
 lava.parameter unit tests.
 """
 
-import StringIO
-import base64
-import copy
-import os
-
 from mock import patch
 
 from lava.helper.tests.helper_test import HelperTest
@@ -34,7 +29,6 @@ from lava.parameter import (
     UrlListParameter,
     UrlSchemeParameter,
 )
-from lava.tool.errors import CommandError
 
 
 class GeneralParameterTest(HelperTest):
@@ -71,6 +65,18 @@ class ParameterTest(GeneralParameterTest):
         obtained = self.parameter1.prompt()
         self.assertEqual(self.parameter1.value, obtained)
 
+    def test_to_list_0(self):
+        value = "a_value"
+        expected = [value]
+        obtained = Parameter.to_list(value)
+        self.assertIsInstance(obtained, list)
+        self.assertEquals(expected, obtained)
+
+    def test_to_list_1(self):
+        expected = ["a_value", "b_value"]
+        obtained = Parameter.to_list(expected)
+        self.assertIsInstance(obtained, list)
+        self.assertEquals(expected, obtained)
 
 class ListParameterTest(GeneralParameterTest):
     """Tests for the specialized ListParameter class."""
