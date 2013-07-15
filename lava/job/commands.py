@@ -69,7 +69,8 @@ class new(BaseCommand):
         parser.add_argument("FILE", help=("Job file to be created."))
 
     def invoke(self, tests_dir=None):
-        job_file = self.verify_file_extension(self.args.FILE, DEFAULT_EXTENSION,
+        full_path = os.path.abspath(self.args.FILE)
+        job_file = self.verify_file_extension(full_path, DEFAULT_EXTENSION,
                                               JOB_FILE_EXTENSIONS)
 
         if os.path.exists(job_file):

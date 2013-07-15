@@ -29,7 +29,6 @@ from lava.helper.command import BaseCommand
 from lava.helper.template import expand_template
 from lava.job.commands import JOB_FILE_EXTENSIONS
 from lava.parameter import (
-    EnterParameter,
     Parameter,
     ListParameter,
     UrlListParameter,
@@ -233,7 +232,8 @@ class update(BaseCommand):
         super(update, cls).register_arguments(parser)
         parser.add_argument("JOB",
                             help=("Automatically updates a job file "
-                                  "definition."),
+                                  "definition. If nothing is passed, it uses"
+                                  "the current working directory."),
                             nargs="?",
                             default=os.getcwd())
 
