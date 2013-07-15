@@ -50,7 +50,7 @@ class Parameter(object):
         self.value = value
         self.depends = depends
         self.asked = False
-        # Whether to store or not the parameter.
+        # Whether to store or not the parameter in the user config file.
         self.store = True
 
     def set(self, value):
@@ -156,21 +156,6 @@ class Parameter(object):
         else:
             return_value = list(value)
         return return_value
-
-
-class EnterParameter(Parameter):
-    """A very simple parameter that waits user to press Enter."""
-
-    @classmethod
-    def prompt(cls):
-        prompt_string = "Press Enter to continue."
-        while True:
-            user_input = cls.get_user_input(prompt_string)
-
-            if len(user_input) != 0:
-                continue
-            else:
-                break
 
 
 class SingleChoiceParameter(Parameter):
@@ -390,7 +375,7 @@ class UrlListParameter(ListParameter):
             url = cls.URL_SCHEME_DELIMITER.join([url_scheme, data])
             encoded_uris.append(url)
         else:
-            for path in self.value:
+            for path in cls.value:
                 parts = list(urlparse.urlparse(os.path.abspath(path)))
                 parts[0] = url_scheme
                 url = urlparse.urlunparse(parts)
