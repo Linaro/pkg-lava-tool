@@ -213,9 +213,9 @@ class InteractiveConfigTest(ConfigTestCase):
         self.assertEqual(expected, obtained)
 
     def test_calculate_config_section_1(self):
+        self.param1.set("foo")
         self.param2.depends.asked = True
         self.config._force_interactive = True
-        self.config.put(self.param1.id, "foo")
         obtained = self.config._calculate_config_section(self.param2)
         expected = "foo=foo"
         self.assertEqual(expected, obtained)
@@ -231,10 +231,9 @@ class InteractiveConfigTest(ConfigTestCase):
     def test_calculate_config_section_3(self):
         # Tests that when a parameter has its value in the cache and also on
         # file, we honor the cached version.
+        self.param1.set("bar")
         self.param2.depends.asked = True
         self.config._force_interactive = True
-        self.config._get_from_cache = MagicMock(return_value="bar")
-        self.config._config_backend.get = MagicMock(return_value="baz")
         expected = "foo=bar"
         obtained = self.config._calculate_config_section(self.param2)
         self.assertEqual(expected, obtained)

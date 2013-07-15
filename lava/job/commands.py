@@ -26,6 +26,7 @@ import xmlrpclib
 
 from lava.helper.command import (
     BaseCommand,
+    DEFAULT_EXTENSION,
     JOB_FILE_EXTENSIONS,
 )
 from lava.helper.dispatcher import get_devices
