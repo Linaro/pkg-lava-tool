@@ -29,13 +29,21 @@ from lava.tool.command import CommandGroup
 from lava.tool.errors import CommandError
 
 
+# Default test def file extension.
+DEFAULT_TEST_EXTENSION = "yaml"
+# Possible extensions for a test def file.
+TEST_FILE_EXTENSIONS = [DEFAULT_TEST_EXTENSION]
+
+
 class testdef(CommandGroup):
+
     """LAVA test definitions handling."""
 
     namespace = "lava.testdef.commands"
 
 
 class new(BaseCommand):
+
     """Creates a new test definition file."""
 
     @classmethod
@@ -44,11 +52,15 @@ class new(BaseCommand):
         parser.add_argument("FILE", help="Test definition file to create.")
 
     def invoke(self):
-        if os.path.exists(self.args.FILE):
+        full_path = os.path.abspath(self.args.FILE)
+        testdef_file = self.verify_file_extension(full_path,
+                                                  DEFAULT_TEST_EXTENSION,
+                                                  TEST_FILE_EXTENSIONS)
+        if os.path.exists(testdef_file):
             raise CommandError("Test definition file '{0}' already "
                                "exists.".format(self.args.FILE))
         try:
-            testdef = TestDefinition(self.args.FILE, TESTDEF_TEMPLATE)
+            testdef = TestDefinition(testdef_file, TESTDEF_TEMPLATE)
             testdef.update(self.config)
             testdef.write()
         except IOError:
@@ -57,6 +69,7 @@ class new(BaseCommand):
 
 
 class run(BaseCommand):
+
     """Runs the specified test definition on a local device."""
 
     @classmethod

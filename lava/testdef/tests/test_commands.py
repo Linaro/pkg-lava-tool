@@ -46,6 +46,9 @@ class NewCommandTest(HelperTest):
         self.file_path = os.path.join(tempfile.gettempdir(), self.file_name)
         self.args.FILE = self.file_path
 
+        self.temp_yaml = tempfile.NamedTemporaryFile(suffix=".yaml",
+                                                    delete=False)
+
         self.config_file = tempfile.NamedTemporaryFile(delete=False)
         self.config = InteractiveConfig(config_file=self.config_file.name)
         # Patch class raw_input, start it, and stop it on tearDown.
@@ -57,6 +60,7 @@ class NewCommandTest(HelperTest):
         if os.path.isfile(self.file_path):
             os.unlink(self.file_path)
         os.unlink(self.config_file.name)
+        os.unlink(self.temp_yaml.name)
         self.patcher1.stop()
         self.config.__metaclass__._drop()
 
@@ -86,7 +90,7 @@ class NewCommandTest(HelperTest):
     def test_invoke_1(self):
         # Test that when passing an already existing file, an exception is
         # thrown.
-        self.args.FILE = self.temp_file.name
+        self.args.FILE = self.temp_yaml.name
         new_command = new(self.parser, self.args)
         self.assertRaises(CommandError, new_command.invoke)
 
