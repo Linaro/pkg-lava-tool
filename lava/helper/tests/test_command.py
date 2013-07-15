@@ -18,16 +18,19 @@
 
 """lava.herlp.command module tests."""
 
+import os
 import subprocess
+import tempfile
+
 from mock import (
     MagicMock,
     call,
     patch,
 )
 
-from lava.tool.errors import CommandError
 from lava.helper.command import BaseCommand
 from lava.helper.tests.helper_test import HelperTest
+from lava.tool.errors import CommandError
 
 
 class BaseCommandTests(HelperTest):
@@ -121,3 +124,30 @@ class BaseCommandTests(HelperTest):
         mocked_subprocess.Popen.side_effect = Exception()
         self.assertRaises(CommandError, BaseCommand.edit_file,
                           self.temp_file.name)
+
+    def test_verify_file_extension_with_extension(self):
+        extension = ".test"
+        supported = [extension[1:]]
+        try:
+            temp_file = tempfile.NamedTemporaryFile(suffix=extension)
+            obtained = BaseCommand.verify_file_extension(
+                temp_file.name, extension[1:], supported)
+            self.assertEquals(temp_file.name, obtained)
+        finally:
+            os.unlink(temp_file.name)
+
+    def test_verify_file_extension_without_extension(self):
+        extension = "json"
+        supported = [extension]
+        expected = "/tmp/a_fake.json"
+        obtained = BaseCommand.verify_file_extension(
+            "/tmp/a_fake", extension, supported)
+        self.assertEquals(expected, obtained)
+
+    def test_verify_file_extension_with_unsupported_extension(self):
+        extension = "json"
+        supported = [extension]
+        expected = "/tmp/a_fake.json"
+        obtained = BaseCommand.verify_file_extension(
+            "/tmp/a_fake.extension", extension, supported)
+        self.assertEquals(expected, obtained)
