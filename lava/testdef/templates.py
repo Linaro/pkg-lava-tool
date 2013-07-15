@@ -29,8 +29,7 @@ DEFAULT_TESTDEF_FORMAT = "Lava-Test Test Definition 1.0"
 
 # This is what will be called by default by the test definition yaml file.
 DEFAULT_TESTDEF_SCRIPT = "mytest.sh"
-DEFAULT_TESTDEF_SCRIPT_CONTENT = """
-#!/bin/sh
+DEFAULT_TESTDEF_SCRIPT_CONTENT = """#!/bin/sh
 # Automatic generated content by lava-tool.
 # Please add your own instructions.
 """
