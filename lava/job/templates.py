@@ -33,6 +33,7 @@ TESTDEF_URL_PARAMETER = UrlListParameter(TESTDEF_URLS_ID,
 TESTDEF_URL_PARAMETER.store = False
 
 BOOT_TEST = {
+    "timeout": 18000,
     "job_name": "Boot test",
     DEVICE_TYPE_ID: DEVICE_TYPE_PARAMETER,
     "actions": [
@@ -50,6 +51,7 @@ BOOT_TEST = {
 
 LAVA_TEST_SHELL = {
     "job_name": "LAVA Test Shell",
+    "timeout": 18000,
     DEVICE_TYPE_ID: DEVICE_TYPE_PARAMETER,
     "actions": [
         {
@@ -61,6 +63,7 @@ LAVA_TEST_SHELL = {
         {
             "command": "lava_test_shell",
             "parameters": {
+                "timeout": 18000,
                 TESTDEF_URLS_ID: TESTDEF_URL_PARAMETER,
             }
         }
