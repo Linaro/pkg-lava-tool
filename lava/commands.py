@@ -27,6 +27,7 @@ import sys
 
 from lava.helper.command import BaseCommand
 from lava.helper.template import expand_template
+from lava.job.commands import JOB_FILE_EXTENSIONS
 from lava.parameter import (
     EnterParameter,
     Parameter,
@@ -121,11 +122,8 @@ class init(BaseCommand):
             with open(default_script, "w") as write_file:
                 write_file.write(DEFAULT_TESTDEF_SCRIPT_CONTENT)
 
-            print >> sys.stdout, ("Update the test script '{0}' with your own "
-                                  "istructions.".format(default_script))
-            print >> sys.stdout, ("After that, run: lava update JOB")
-            # Wait the user to press enter to continue.
-            EnterParameter.prompt()
+            # Prompt the user to write the script file.
+            self.edit_file(default_script)
 
         test_files = Parameter.deserialize(data[TESTS_DEF_ID])
 
@@ -181,7 +179,7 @@ class run(BaseCommand):
 
     def invoke(self):
         full_path = os.path.abspath(self.args.JOB)
-        job_file = self.retrieve_job_file(full_path)
+        job_file = self.retrieve_file(full_path, JOB_FILE_EXTENSIONS)
 
         self._run_job(job_file)
 
@@ -212,7 +210,7 @@ class submit(BaseCommand):
 
     def invoke(self):
         full_path = os.path.abspath(self.args.JOB)
-        job_file = self.retrieve_job_file(full_path)
+        job_file = self.retrieve_file(full_path, JOB_FILE_EXTENSIONS)
 
         self._submit_job(job_file)
 
@@ -241,7 +239,7 @@ class update(BaseCommand):
 
     def invoke(self):
         full_path = os.path.abspath(self.args.JOB)
-        job_file = self.retrieve_job_file(full_path)
+        job_file = self.retrieve_file(full_path, JOB_FILE_EXTENSIONS)
         job_dir = os.path.dirname(job_file)
         tests_dir = os.path.join(job_dir, TESTS_DIR)
 

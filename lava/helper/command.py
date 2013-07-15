@@ -28,14 +28,11 @@ from lava.tool.command import Command
 from lava.tool.errors import CommandError
 from lava_tool.utils import has_command
 
-# Default job file extension.
-DEFAULT_EXTENSION = "json"
-# Possible extension for a job file.
-JOB_FILE_EXTENSIONS = [DEFAULT_EXTENSION]
-
 
 class BaseCommand(Command):
+
     """Base command class for all lava commands."""
+
     def __init__(self, parser, args):
         super(BaseCommand, self).__init__(parser, args)
         self.config = InteractiveConfig(
@@ -64,10 +61,10 @@ class BaseCommand(Command):
         return can_edit
 
     @classmethod
-    def edit_file(cls, config_file):
+    def edit_file(cls, file_to_edit):
         """Opens the specified file with the default file editor.
 
-        :param config_file: The file to edit.
+        :param file_to_edit: The file to edit.
         """
         editor = os.environ.get("EDITOR", None)
         if editor is None:
@@ -78,20 +75,20 @@ class BaseCommand(Command):
             else:
                 # We really do not know how to open a file.
                 print >> sys.stdout, ("Cannot find an editor to open the "
-                                      "file '{0}'.".format(config_file))
+                                      "file '{0}'.".format(file_to_edit))
                 print >> sys.stdout, ("Either set the 'EDITOR' environment "
                                       "variable, or install 'sensible-editor' "
                                       "or 'xdg-open'.")
                 sys.exit(-1)
         try:
-            subprocess.Popen([editor, config_file]).wait()
+            subprocess.Popen([editor, file_to_edit]).wait()
         except Exception:
             raise CommandError("Error opening the file '{0}' with the "
-                               "following editor: {1}.".format(config_file,
+                               "following editor: {1}.".format(file_to_edit,
                                                                editor))
 
     @classmethod
-    def retrieve_job_file(cls, path):
+    def retrieve_file(cls, path, extensions):
         """Searches for a job file in the provided path.
 
         :return The job file full path.
@@ -109,15 +106,28 @@ class BaseCommand(Command):
                     full_extension = os.path.splitext(job_file)[1]
 
                     if full_extension:
-                        # Make sure that we have an extension and remove the dot.
+                        # Make sure that we have an extension and remove the
+                        # dot.
                         extension = full_extension[1:].strip().lower()
-                        if extension in JOB_FILE_EXTENSIONS:
+                        if extension in extensions:
                             job_file = element_path
                             break
             else:
                 raise CommandError("No job file found in: '{0}'".format(path))
 
         return job_file
+
+    @classmethod
+    def verify_file_extension(cls, path, default, supported):
+        # Checks that the file we pass has an extension or a correct one.
+        # If not, it adds the provided one.
+        full_path, file_name = os.path.split(path)
+        name, extension = os.path.splitext(file_name)
+        if not extension:
+            path = ".".join([path, default])
+        elif extension[1:] not in supported:
+            path = os.path.join(full_path, ".".join([name, default]))
+        return path
 
     @classmethod
     def run(cls, cmd_args):

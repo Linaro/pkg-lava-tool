@@ -24,13 +24,8 @@ import os
 import sys
 import xmlrpclib
 
-from lava.helper.command import (
-    BaseCommand,
-    DEFAULT_EXTENSION,
-    JOB_FILE_EXTENSIONS,
-)
+from lava.helper.command import BaseCommand
 from lava.helper.dispatcher import get_devices
-
 from lava.job import Job
 from lava.job.templates import (
     LAVA_TEST_SHELL,
@@ -54,6 +49,11 @@ SERVER = "server"
 # Name of the config value to store the LAVA rpc_endpoint.
 RPC_ENDPOINT = "rpc_endpoint"
 
+# Default job file extension.
+DEFAULT_EXTENSION = "json"
+# Possible extension for a job file.
+JOB_FILE_EXTENSIONS = [DEFAULT_EXTENSION]
+
 
 class job(CommandGroup):
     """LAVA job file handling."""
@@ -69,16 +69,8 @@ class new(BaseCommand):
         parser.add_argument("FILE", help=("Job file to be created."))
 
     def invoke(self, tests_dir=None):
-        job_file = self.args.FILE
-
-        # Checks that the file we pass has an extension or a correct one.
-        full_path, file_name = os.path.split(job_file)
-        name, extension = os.path.splitext(file_name)
-        if not extension:
-            job_file = job_file + DEFAULT_EXTENSION
-        elif extension[1:] not in JOB_FILE_EXTENSIONS:
-            job_file = os.path.join(full_path,
-                                    ".".join([name, DEFAULT_EXTENSION]))
+        job_file = self.verify_file_extension(self.args.FILE, DEFAULT_EXTENSION,
+                                              JOB_FILE_EXTENSIONS)
 
         if os.path.exists(job_file):
             raise CommandError('{0} already exists.'.format(job_file))

@@ -148,12 +148,12 @@ class SubmitCommandTests(HelperTest):
         # returned by os.listdir().
         mocked_os_listdir.return_value = ["a_file"]
         submit_command = submit(self.parser, self.args)
-        self.assertRaises(CommandError, submit_command.retrieve_job_file,
-                          "a_path")
+        self.assertRaises(CommandError, submit_command.retrieve_file,
+                          "a_path", ["ext"])
 
     @patch("os.listdir")
     def test_retrieve_job_file_1(self, mocked_os_listdir):
-        # Pass some files and directories to _retrieve_job_file(), and make
+        # Pass some files and directories to retrieve_file(), and make
         # sure a file with .json suffix is returned.
         try:
             json_file = tempfile.NamedTemporaryFile(suffix=".json")
@@ -176,7 +176,8 @@ class SubmitCommandTests(HelperTest):
                 json_file_name]
 
             submit_command = submit(self.parser, self.args)
-            obtained = submit_command.retrieve_job_file(tempfile.gettempdir())
+            obtained = submit_command.retrieve_file(tempfile.gettempdir(),
+                ["json"])
             self.assertEqual(json_file.name, obtained)
         finally:
             os.removedirs(temp_dir_path)
