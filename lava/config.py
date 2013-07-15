@@ -123,7 +123,7 @@ class Config(object):
         if not section:
             section = self._calculate_config_section(parameter)
         # Try to get the parameter value first if it has one.
-        if parameter.value:
+        if parameter.value is not None:
             value = parameter.value
         else:
             value = self._get_from_cache(parameter, section)
