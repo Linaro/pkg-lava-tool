@@ -384,7 +384,7 @@ class UrlListParameter(ListParameter):
 
     def prompt(self, old_value=None):
         """Asks for the URI to test definition files."""
-        # Aske the URL scheme first.
+        # Ask the URL scheme first.
         url_scheme = self.scheme.prompt()
         # Ask the list of files.
         super(UrlListParameter, self).prompt(old_value=old_value)

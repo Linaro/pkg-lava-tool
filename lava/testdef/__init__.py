@@ -1,6 +1,6 @@
-# Copyright (C) 2010 Linaro Limited
+# Copyright (C) 2013 Linaro Limited
 #
-# Author: Zygmunt Krynicki <zygmunt.krynicki@linaro.org>
+# Author: Milo Casagrande <milo.casagrande@linaro.org>
 #
 # This file is part of lava-tool.
 #
