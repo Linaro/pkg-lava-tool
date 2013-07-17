@@ -68,10 +68,12 @@ LAVA_TEST_SHELL = {
             COMMAND_ID: "lava_test_shell",
             PARAMETERS_ID: {
                 "timeout": 18000,
-                TESTDEF_REPOS_ID: {
-                    "testdef": "lavatest.yaml",
-                    TESTDEF_REPOS_TAR_REPO: TESTDEF_URL_PARAMETER
-                }
+                TESTDEF_REPOS_ID: [
+                        {
+                            "testdef": "lavatest.yaml",
+                            TESTDEF_REPOS_TAR_REPO: TESTDEF_URL_PARAMETER
+                        }
+                ]
             }
         }
     ]
