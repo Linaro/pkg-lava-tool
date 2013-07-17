@@ -26,7 +26,6 @@ from lava.helper.tests.helper_test import HelperTest
 from lava.parameter import (
     ListParameter,
     Parameter,
-    UrlListParameter,
     UrlSchemeParameter,
 )
 
@@ -130,13 +129,6 @@ class ListParameterTest(GeneralParameterTest):
         expected = ["foo", 1, "", "bar"]
         obtained = self.list_parameter.deserialize(expected)
         self.assertEqual(expected, obtained)
-
-
-class UrlListParameterTests(GeneralParameterTest):
-
-    def setUp(self):
-        super(UrlListParameterTests, self).setUp()
-        self.url_parameter = UrlListParameter("url_par")
 
 
 class UrlSchemeParameterTests(GeneralParameterTest):

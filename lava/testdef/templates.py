@@ -23,6 +23,7 @@ from lava.parameter import (
     Parameter,
 )
 
+DEFAULT_TESTDEF_FILE = "lavatest.yaml"
 
 DEFAULT_TESTDEF_VERSION = "1.0"
 DEFAULT_TESTDEF_FORMAT = "Lava-Test Test Definition 1.0"
@@ -34,7 +35,6 @@ DEFAULT_TESTDEF_SCRIPT_CONTENT = """#!/bin/sh
 # Please add your own instructions.
 """
 DEFAULT_TESTDEF_STEP = "./mytest.sh"
-
 
 DEFAULT_ENVIRONMET_VALUE = "lava_test_shell"
 

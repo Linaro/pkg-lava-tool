@@ -46,6 +46,7 @@ setup(
         "Topic :: Software Development :: Testing",
     ],
     install_requires=[
+        'PyYAML >= 3.10',
         'argparse >= 1.1',
         'argcomplete >= 0.3',
         'keyring',

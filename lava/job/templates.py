@@ -18,33 +18,37 @@
 
 from lava.parameter import (
     Parameter,
-    UrlListParameter,
+    TarRepoParameter,
 )
 
-DEVICE_TYPE_ID = "device_type"
+ACTIONS_ID = "actions"
+COMMAND_ID = "command"
 IMAGE_ID = "image"
-TESTDEF_URLS_ID = "testdef_urls"
+PARAMETERS_ID = "parameters"
+TARGET_ID = "target"
+TESTDEF_REPOS_ID = "testdef_repos"
+TESTDEF_REPOS_TAR_REPO = "tar-repo"
 
-DEVICE_TYPE_PARAMETER = Parameter(DEVICE_TYPE_ID)
+DEVICE_TYPE_PARAMETER = Parameter(TARGET_ID)
 PREBUILT_IMAGE_PARAMETER = Parameter(IMAGE_ID, depends=DEVICE_TYPE_PARAMETER)
+
 # Never store the testdef_urls parameter in the config file.
-TESTDEF_URL_PARAMETER = UrlListParameter(TESTDEF_URLS_ID,
-                                         depends=DEVICE_TYPE_PARAMETER)
+TESTDEF_URL_PARAMETER = TarRepoParameter(TESTDEF_REPOS_TAR_REPO)
 TESTDEF_URL_PARAMETER.store = False
 
 BOOT_TEST = {
     "timeout": 18000,
     "job_name": "Boot test",
-    DEVICE_TYPE_ID: DEVICE_TYPE_PARAMETER,
-    "actions": [
+    TARGET_ID: DEVICE_TYPE_PARAMETER,
+    ACTIONS_ID: [
         {
-            "command": "deploy_linaro_image",
-            "parameters": {
+            COMMAND_ID: "deploy_linaro_image",
+            PARAMETERS_ID: {
                 "image": PREBUILT_IMAGE_PARAMETER
             }
         },
         {
-            "command": "boot_linaro_image"
+            COMMAND_ID: "boot_linaro_image"
         }
     ]
 }
@@ -52,19 +56,22 @@ BOOT_TEST = {
 LAVA_TEST_SHELL = {
     "job_name": "LAVA Test Shell",
     "timeout": 18000,
-    DEVICE_TYPE_ID: DEVICE_TYPE_PARAMETER,
-    "actions": [
+    TARGET_ID: DEVICE_TYPE_PARAMETER,
+    ACTIONS_ID: [
         {
-            "command": "deploy_linaro_image",
-            "parameters": {
+            COMMAND_ID: "deploy_linaro_image",
+            PARAMETERS_ID: {
                 IMAGE_ID: PREBUILT_IMAGE_PARAMETER,
             }
         },
         {
-            "command": "lava_test_shell",
-            "parameters": {
+            COMMAND_ID: "lava_test_shell",
+            PARAMETERS_ID: {
                 "timeout": 18000,
-                TESTDEF_URLS_ID: TESTDEF_URL_PARAMETER,
+                TESTDEF_REPOS_ID: {
+                    "testdef": "lavatest.yaml",
+                    TESTDEF_REPOS_TAR_REPO: TESTDEF_URL_PARAMETER
+                }
             }
         }
     ]

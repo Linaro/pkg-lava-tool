@@ -51,7 +51,7 @@ class JobTest(HelperTest):
 
     def test_fill_in_data(self):
         image = "/path/to/panda.img"
-        param1 = Parameter("device_type")
+        param1 = Parameter("target")
         param2 = Parameter("image", depends=param1)
         self.config.put_parameter(param1, "panda")
         self.config.put_parameter(param2, image)
@@ -59,7 +59,7 @@ class JobTest(HelperTest):
         job = Job(BOOT_TEST)
         job.fill_in(self.config)
 
-        self.assertEqual(job.data['device_type'], "panda")
+        self.assertEqual(job.data['target'], "panda")
         self.assertEqual(job.data['actions'][0]["parameters"]["image"], image)
 
     def test_write(self):

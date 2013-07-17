@@ -53,10 +53,16 @@ from lava.helper.template import expand_template
 from lava.job.commands import JOB_FILE_EXTENSIONS
 from lava.parameter import (
     Parameter,
-    ListParameter,
-    UrlListParameter,
+    TarRepoParameter,
+)
+from lava.job.templates import (
+    ACTIONS_ID,
+    PARAMETERS_ID,
+    TESTDEF_REPOS_ID,
+    TESTDEF_REPOS_TAR_REPO,
 )
 from lava.testdef.templates import (
+    DEFAULT_TESTDEF_FILE,
     DEFAULT_TESTDEF_SCRIPT,
     DEFAULT_TESTDEF_SCRIPT_CONTENT,
 )
@@ -67,17 +73,12 @@ TESTS_DIR = "tests"
 
 # Internal parameter ids.
 JOBFILE_ID = "jobfile"
-TESTS_DEF_ID = "test_definitions"
 
 JOBFILE_PARAMETER = Parameter(JOBFILE_ID)
 JOBFILE_PARAMETER.store = False
 
-TESTFILES_PARAMETER = ListParameter(TESTS_DEF_ID)
-TESTFILES_PARAMETER.store = False
-
 INIT_TEMPLATE = {
     JOBFILE_ID: JOBFILE_PARAMETER,
-    TESTS_DEF_ID: TESTFILES_PARAMETER,
 }
 
 
@@ -147,12 +148,10 @@ class init(BaseCommand):
             # Prompt the user to write the script file.
             self.edit_file(default_script)
 
-        test_files = Parameter.deserialize(data[TESTS_DEF_ID])
-
-        for test in test_files:
-            print >> sys.stdout, ("\nCreating test definition "
-                                  "'{0}':".format(test))
-            self._create_test_file(os.path.join(test_path, test))
+        print >> sys.stdout, ("\nCreating test definition "
+                              "'{0}':".format(DEFAULT_TESTDEF_FILE))
+        self._create_test_file(os.path.join(test_path,
+                                            DEFAULT_TESTDEF_FILE))
 
         job = data[JOBFILE_ID]
         print >> sys.stdout, "\nCreating job file '{0}':".format(job)
@@ -267,13 +266,14 @@ class update(BaseCommand):
         tests_dir = os.path.join(job_dir, TESTS_DIR)
 
         if os.path.isdir(tests_dir):
-            encoded_tests = UrlListParameter.get_encoded_uri(tests_dir)
+            encoded_tests = TarRepoParameter.get_encoded_tar(tests_dir)
 
             json_data = None
             with open(job_file, "r") as json_file:
                 try:
                     json_data = json.load(json_file)
-                    json_data["actions"][1]["parameters"]["testdef_urls"] = \
+                    # TODO: find a better way to retrieve a key.
+                    json_data[ACTIONS_ID][1][PARAMETERS_ID][TESTDEF_REPOS_ID][TESTDEF_REPOS_TAR_REPO] = \
                         encoded_tests
                 except Exception:
                     raise CommandError("Cannot read job file '{0}'.".format(

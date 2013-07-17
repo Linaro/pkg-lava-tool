@@ -28,8 +28,11 @@ from lava.helper.command import BaseCommand
 from lava.helper.dispatcher import get_devices
 from lava.job import Job
 from lava.job.templates import (
+    ACTIONS_ID,
     LAVA_TEST_SHELL,
-    TESTDEF_URLS_ID,
+    PARAMETERS_ID,
+    TESTDEF_REPOS_ID,
+    TESTDEF_REPOS_TAR_REPO,
 )
 from lava.parameter import (
     ListParameter,
@@ -78,10 +81,11 @@ class new(BaseCommand):
 
         job_instance = Job(LAVA_TEST_SHELL)
         if tests_dir:
-            testdef_urls = \
-                job_instance.data["actions"][1]["parameters"][TESTDEF_URLS_ID]
-            testdef_urls.set(tests_dir)
-            testdef_urls.asked = True
+            # TODO: find a better way to retrieve a key.
+            testdef_tar_repo = \
+                job_instance.data[ACTIONS_ID][1][PARAMETERS_ID][TESTDEF_REPOS_ID][TESTDEF_REPOS_TAR_REPO]
+            testdef_tar_repo.set(tests_dir)
+            testdef_tar_repo.asked = True
 
         with open(job_file, 'w') as write_file:
             job_instance.fill_in(self.config)

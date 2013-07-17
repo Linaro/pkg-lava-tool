@@ -104,11 +104,10 @@ class InitCommandTests(HelperTest):
         init_command = init(self.parser, self.args)
         init_command.config.get = MagicMock()
         init_command.config.save = MagicMock()
-        init_command.config.get.side_effect = ["a_job.json", "a_test.yaml"]
+        init_command.config.get.side_effect = ["a_job.json"]
 
         expected = {
             "jobfile": "a_job.json",
-            "test_definitions": "a_test.yaml",
         }
 
         obtained = init_command._update_data()

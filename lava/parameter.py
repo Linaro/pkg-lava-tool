@@ -300,26 +300,13 @@ class ListParameter(Parameter):
         return self.value
 
 
-class UrlListParameter(ListParameter):
-    """A parameter holding a list of URLs."""
-
-    # This is the delimiter used when encoding the values using the
-    # data scheme.
-    DELIMITER = ";"
-    # Delimiter used when writing data: type URLs.
-    URL_SCHEME_DELIMITER = ":"
-
-    def __init__(self, id, value=None, depends=None):
-        super(UrlListParameter, self).__init__(id, depends=depends)
-        # The scheme will be just one for all URLs. Automatically default to
-        # the "data:" scheme, and do not ask it to the user.
-        self.scheme = UrlSchemeParameter(value=UrlSchemeParameter.DATA_SCHEME)
-        self.scheme.asked = True
-        # Where we store the URLs.
-        self.urls = []
+class TarRepoParameter(Parameter):
+    def __init__(self, id="tar_repo_dir", value=None, depends=None):
+        super(TarRepoParameter, self).__init__(id, value=value,
+                                               depends=depends)
 
     @classmethod
-    def base64encode(cls, paths):
+    def get_encoded_tar(cls, paths):
         """Encodes in base64 the provided path.
 
         The econding will create a temporary tar file, read the content of
@@ -365,31 +352,6 @@ class UrlListParameter(ListParameter):
             if os.path.isfile(temp_tar_file.name):
                 os.unlink(temp_tar_file.name)
 
-    @classmethod
-    def get_encoded_uri(cls, url, url_scheme=UrlSchemeParameter.DATA_SCHEME):
-        encoded_uris = []
-        if url_scheme == UrlSchemeParameter.DATA_SCHEME:
-            # We need to do it by hand, or urlparse.urlparse() will remove
-            # the delimiter for econded data when we read an empty file.
-            data = cls.base64encode(url)
-            url = cls.URL_SCHEME_DELIMITER.join([url_scheme, data])
-            encoded_uris.append(url)
-        else:
-            for path in cls.value:
-                parts = list(urlparse.urlparse(os.path.abspath(path)))
-                parts[0] = url_scheme
-                url = urlparse.urlunparse(parts)
-                encoded_uris.append(url)
-        return encoded_uris
-
     def prompt(self, old_value=None):
-        """Asks for the URI to test definition files."""
-        # Ask the URL scheme first.
-        url_scheme = self.scheme.prompt()
-        # Ask the list of files.
-        super(UrlListParameter, self).prompt(old_value=old_value)
-
-        encoded_url = self.get_encoded_uri(self.value, url_scheme=url_scheme)
-        self.urls.extend(encoded_url)
-
-        return self.urls
+        super(TarRepoParameter, self).prompt(old_value=old_value)
+        return self.get_encoded_tar(self.value)
