@@ -83,7 +83,7 @@ class new(BaseCommand):
         if tests_dir:
             # TODO: find a better way to retrieve a key.
             testdef_tar_repo = \
-                job_instance.data[ACTIONS_ID][1][PARAMETERS_ID][TESTDEF_REPOS_ID][TESTDEF_REPOS_TAR_REPO]
+                job_instance.data[ACTIONS_ID][1][PARAMETERS_ID][TESTDEF_REPOS_ID][0][TESTDEF_REPOS_TAR_REPO]
             testdef_tar_repo.set(tests_dir)
             testdef_tar_repo.asked = True
 

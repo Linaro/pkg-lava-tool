@@ -273,7 +273,7 @@ class update(BaseCommand):
                 try:
                     json_data = json.load(json_file)
                     # TODO: find a better way to retrieve a key.
-                    json_data[ACTIONS_ID][1][PARAMETERS_ID][TESTDEF_REPOS_ID][TESTDEF_REPOS_TAR_REPO] = \
+                    json_data[ACTIONS_ID][1][PARAMETERS_ID][TESTDEF_REPOS_ID][0][TESTDEF_REPOS_TAR_REPO] = \
                         encoded_tests
                 except Exception:
                     raise CommandError("Cannot read job file '{0}'.".format(
