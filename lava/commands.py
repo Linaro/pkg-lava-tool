@@ -49,7 +49,10 @@ import os
 import sys
 
 from lava.helper.command import BaseCommand
-from lava.helper.template import expand_template
+from lava.helper.template import (
+    expand_template,
+    set_value
+)
 from lava.job.commands import JOB_FILE_EXTENSIONS
 from lava.parameter import (
     Parameter,
@@ -272,9 +275,7 @@ class update(BaseCommand):
             with open(job_file, "r") as json_file:
                 try:
                     json_data = json.load(json_file)
-                    # TODO: find a better way to retrieve a key.
-                    json_data[ACTIONS_ID][1][PARAMETERS_ID][TESTDEF_REPOS_ID][0][TESTDEF_REPOS_TAR_REPO] = \
-                        encoded_tests
+                    set_value(json_data, TESTDEF_REPOS_TAR_REPO, encoded_tests)
                 except Exception:
                     raise CommandError("Cannot read job file '{0}'.".format(
                         job_file))

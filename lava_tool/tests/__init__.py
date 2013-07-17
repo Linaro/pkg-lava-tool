@@ -39,6 +39,7 @@ def test_modules():
         'lava.device.tests.test_device',
         'lava.helper.tests.test_command',
         'lava.helper.tests.test_dispatcher',
+        'lava.helper.tests.test_template',
         'lava.job.tests.test_commands',
         'lava.job.tests.test_job',
         'lava.testdef.tests.test_commands',

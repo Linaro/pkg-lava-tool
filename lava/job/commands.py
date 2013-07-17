@@ -26,6 +26,7 @@ import xmlrpclib
 
 from lava.helper.command import BaseCommand
 from lava.helper.dispatcher import get_devices
+from lava.helper.template import get_key
 from lava.job import Job
 from lava.job.templates import (
     ACTIONS_ID,
@@ -82,8 +83,7 @@ class new(BaseCommand):
         job_instance = Job(LAVA_TEST_SHELL)
         if tests_dir:
             # TODO: find a better way to retrieve a key.
-            testdef_tar_repo = \
-                job_instance.data[ACTIONS_ID][1][PARAMETERS_ID][TESTDEF_REPOS_ID][0][TESTDEF_REPOS_TAR_REPO]
+            testdef_tar_repo = get_key(TESTDEF_REPOS_TAR_REPO)
             testdef_tar_repo.set(tests_dir)
             testdef_tar_repo.asked = True
 

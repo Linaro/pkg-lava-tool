@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Helper functions for a template."""
+
 from lava.parameter import Parameter
 
 
@@ -42,3 +44,76 @@ def expand_template(template, config):
                 update(entry)
 
     update(template)
+
+
+def get_key(data, search_key):
+    """Goes through a template looking for a key.
+
+    :param data: The template to traverse.
+    :param search_key: The key to look for.
+    :return The key value.
+    """
+    return_value = None
+
+    if isinstance(data, dict):
+        bucket = []
+
+        for key, value in data.iteritems():
+            if key == search_key:
+                return_value = value
+                break
+            else:
+                bucket.append(value)
+
+        if bucket and return_value is None:
+            for element in bucket:
+                if isinstance(element, list):
+                    for element in element:
+                        bucket.append(element)
+                elif isinstance(element, dict):
+                    for key, value in element.iteritems():
+                        if key == search_key:
+                            return_value = value
+                            break
+                        else:
+                            bucket.append(value)
+
+    return return_value
+
+
+def set_value(data, search_key, new_value):
+    """Sets a new value for a template key.
+
+    :param data: The data structure to update.
+    :type dict
+    :param search_key: The key to search and update.
+    :param new_value: The new value to set.
+    """
+    is_set = False
+
+    if isinstance(data, dict):
+        bucket = []
+
+        for key, value in data.iteritems():
+            if key == search_key:
+                data[key] = new_value
+                is_set = True
+                break
+            else:
+                bucket.append(value)
+
+        if bucket and not is_set:
+            for element in bucket:
+                if isinstance(element, list):
+                    for element in element:
+                        bucket.append(element)
+                elif isinstance(element, dict):
+                    for key, value in element.iteritems():
+                        if key == search_key:
+                            element[key] = new_value
+                            is_set = True
+                            break
+                        else:
+                            bucket.append(value)
+                if is_set:
+                    break
