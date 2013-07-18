@@ -251,6 +251,29 @@ class submit(BaseCommand):
         submit_cmd.invoke()
 
 
+class status(BaseCommand):
+
+    """Checks the status of a job."""
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(status, cls).register_arguments(parser)
+        parser.add_argument("JOB_ID",
+                            help=("Prints a job status information."),
+                            nargs="?",
+                            default="-1")
+
+    def invoke(self):
+        """Runs the job.status command."""
+        from lava.job.commands import status as job_status
+
+        args = copy.copy(self.args)
+        args.JOB_ID = self.args.JOB_ID
+
+        status_cmd = job_status(self.parser, args)
+        status_cmd.invoke()
+
+
 class update(BaseCommand):
     """Updates a job file with the correct data."""
 
