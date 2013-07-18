@@ -29,10 +29,7 @@ from lava.helper.dispatcher import get_devices
 from lava.helper.template import get_key
 from lava.job import Job
 from lava.job.templates import (
-    ACTIONS_ID,
     LAVA_TEST_SHELL,
-    PARAMETERS_ID,
-    TESTDEF_REPOS_ID,
     TESTDEF_REPOS_TAR_REPO,
 )
 from lava.parameter import (
