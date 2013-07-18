@@ -47,6 +47,7 @@ import copy
 import json
 import os
 import sys
+import stat
 
 from lava.helper.command import BaseCommand
 from lava.helper.template import (
@@ -59,9 +60,6 @@ from lava.parameter import (
     TarRepoParameter,
 )
 from lava.job.templates import (
-    ACTIONS_ID,
-    PARAMETERS_ID,
-    TESTDEF_REPOS_ID,
     TESTDEF_REPOS_TAR_REPO,
 )
 from lava.testdef.templates import (
@@ -150,6 +148,10 @@ class init(BaseCommand):
 
             # Prompt the user to write the script file.
             self.edit_file(default_script)
+
+        # Make sure the script is executable.
+        os.chmod(default_script,
+                 stat.S_IRWXU | stat.S_IRWXG | stat.S_IROTH | stat.S_IXOTH)
 
         print >> sys.stdout, ("\nCreating test definition "
                               "'{0}':".format(DEFAULT_TESTDEF_FILE))
