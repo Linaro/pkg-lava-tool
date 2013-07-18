@@ -42,7 +42,7 @@ class CommandTest(HelperTest):
         super(CommandTest, self).setUp()
         self.args.FILE = self.temp_file.name
 
-        self.device_type = Parameter('target')
+        self.device_type = Parameter('device_type')
         self.prebuilt_image = Parameter('prebuilt_image',
                                         depends=self.device_type)
         self.config = Config()
@@ -71,7 +71,7 @@ class JobNewTest(CommandTest):
         self.new_command.invoke()
 
         data = json.loads(open(self.args.FILE).read())
-        self.assertEqual(data['target'], 'foo')
+        self.assertEqual(data['device_type'], 'foo')
 
     def test_wont_overwrite_existing_file(self):
         with open(self.args.FILE, 'w') as f:

@@ -25,11 +25,11 @@ ACTIONS_ID = "actions"
 COMMAND_ID = "command"
 IMAGE_ID = "image"
 PARAMETERS_ID = "parameters"
-TARGET_ID = "target"
+DEVICE_TYPE_ID = "device_type"
 TESTDEF_REPOS_ID = "testdef_repos"
 TESTDEF_REPOS_TAR_REPO = "tar-repo"
 
-DEVICE_TYPE_PARAMETER = Parameter(TARGET_ID)
+DEVICE_TYPE_PARAMETER = Parameter(DEVICE_TYPE_ID)
 PREBUILT_IMAGE_PARAMETER = Parameter(IMAGE_ID, depends=DEVICE_TYPE_PARAMETER)
 
 # Never store the testdef_urls parameter in the config file.
@@ -39,7 +39,7 @@ TESTDEF_URL_PARAMETER.store = False
 BOOT_TEST = {
     "timeout": 18000,
     "job_name": "Boot test",
-    TARGET_ID: DEVICE_TYPE_PARAMETER,
+    DEVICE_TYPE_ID: DEVICE_TYPE_PARAMETER,
     ACTIONS_ID: [
         {
             COMMAND_ID: "deploy_linaro_image",
@@ -56,7 +56,7 @@ BOOT_TEST = {
 LAVA_TEST_SHELL = {
     "job_name": "LAVA Test Shell",
     "timeout": 18000,
-    TARGET_ID: DEVICE_TYPE_PARAMETER,
+    DEVICE_TYPE_ID: DEVICE_TYPE_PARAMETER,
     ACTIONS_ID: [
         {
             COMMAND_ID: "deploy_linaro_image",
