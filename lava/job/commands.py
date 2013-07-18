@@ -184,6 +184,11 @@ class status(BaseCommand):
 
         try:
             job_status = server.scheduler.job_status(job_id)
-            print >> sys.stdout, job_status
+
+            print >> sys.stdout, "\nJob id: {0}".format(job_id)
+            print >> sys.stdout, ("\tStatus: {0}".format(
+                job_status["job_status"].lower()))
+            print >> sys.stdout, ("\tBundle: {0}".format(
+                job_status["bundle_sha1"]))
         except xmlrpclib.Fault, exc:
             raise CommandError(str(exc))
