@@ -112,15 +112,15 @@ class submit(BaseCommand):
             if job_id:
                 # We need first to take out the old values, and then store the
                 # new one.
-                job_id_parameter = ListParameter(JOBS_ID)
-                job_id_parameter.asked = True
+                job_ids_parameter = ListParameter(JOBS_ID)
+                job_ids_parameter.asked = True
 
-                value = self.config.get(job_id_parameter)
+                value = self.config.get(job_ids_parameter)
                 if value:
-                    job_id_parameter.set(value)
+                    job_ids_parameter.set(value)
 
-                job_id_parameter.add(job_id)
-                self.config.put_parameter(job_id_parameter)
+                job_ids_parameter.add(job_id)
+                self.config.put_parameter(job_ids_parameter)
         except xmlrpclib.Fault, exc:
             raise CommandError(str(exc))
 
@@ -171,11 +171,14 @@ class status(BaseCommand):
         job_id = str(self.args.JOB_ID)
         if job_id == "-1":
             # Get the value from the config and ask the user which one to look.
-            jobs_id = self.config.get(ListParameter(JOBS_ID))
-            if jobs_id is not None:
-                jobs_id = Parameter.deserialize(jobs_id)
+            job_ids_parameter = ListParameter(JOBS_ID)
+            job_ids_parameter.asked = True
+
+            job_ids = self.config.get(job_ids_parameter)
+            if job_ids is not None:
+                job_ids = Parameter.deserialize(job_ids)
                 job_id = SingleChoiceParameter("job_id",
-                                               jobs_id).prompt("Jobs id: ")
+                                               job_ids).prompt("Job ids: ")
             else:
                 raise CommandError("No job ids stored. Please provide one "
                                    "on the command line.")
