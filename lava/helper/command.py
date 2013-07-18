@@ -24,9 +24,21 @@ import sys
 import types
 
 from lava.config import InteractiveConfig
+from lava.parameter import Parameter
 from lava.tool.command import Command
 from lava.tool.errors import CommandError
+from lava_tool.authtoken import (
+    AuthenticatingServerProxy,
+    KeyringAuthBackend
+)
 from lava_tool.utils import has_command
+
+# Name of the config value to store the job ids.
+JOBS_ID = "jobs_id"
+# Name of the config value to store the LAVA server URL.
+SERVER = "server"
+# Name of the config value to store the LAVA rpc_endpoint.
+RPC_ENDPOINT = "rpc_endpoint"
 
 
 class BaseCommand(Command):
@@ -44,6 +56,23 @@ class BaseCommand(Command):
         parser.add_argument("--non-interactive",
                             action='store_false',
                             help=("Do not ask for input parameters."))
+
+    @classmethod
+    def authenticated_server(cls):
+        """Returns a connection to a LAVA server.
+
+        It will ask the user the necessary parameters to establish the
+        connection.
+        """
+        server_name_parameter = Parameter(SERVER)
+        rpc_endpoint_parameter = Parameter(RPC_ENDPOINT,
+                                           depends=server_name_parameter)
+        cls.config.get(server_name_parameter)
+        endpoint = cls.config.get(rpc_endpoint_parameter)
+
+        server = AuthenticatingServerProxy(endpoint,
+                                           auth_backend=KeyringAuthBackend())
+        return server
 
     @classmethod
     def can_edit_file(cls, conf_file):

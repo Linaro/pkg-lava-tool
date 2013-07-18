@@ -103,14 +103,8 @@ class submit(BaseCommand):
         jobfile = self.args.FILE
         jobdata = open(jobfile, 'rb').read()
 
-        server_name_parameter = Parameter(SERVER)
-        rpc_endpoint_parameter = Parameter(RPC_ENDPOINT,
-                                           depends=server_name_parameter)
-        self.config.get(server_name_parameter)
-        endpoint = self.config.get(rpc_endpoint_parameter)
+        server = self.authenticated_server()
 
-        server = AuthenticatingServerProxy(endpoint,
-                                           auth_backend=KeyringAuthBackend())
         try:
             job_id = server.scheduler.submit_job(jobdata)
             print >> sys.stdout, "Job submitted with job ID {0}".format(job_id)
