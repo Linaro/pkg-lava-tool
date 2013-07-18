@@ -115,7 +115,7 @@ class submit(BaseCommand):
                 job_ids_parameter = ListParameter(JOBS_ID)
                 job_ids_parameter.asked = True
 
-                value = self.config.get(job_ids_parameter)
+                value = self.config.get_from_backend(job_ids_parameter)
                 if value:
                     job_ids_parameter.set(value)
 
@@ -174,7 +174,7 @@ class status(BaseCommand):
             job_ids_parameter = ListParameter(JOBS_ID)
             job_ids_parameter.asked = True
 
-            job_ids = self.config.get(job_ids_parameter)
+            job_ids = self.config.get_from_backend(job_ids_parameter)
             if job_ids is not None:
                 job_ids = Parameter.deserialize(job_ids)
                 job_id = SingleChoiceParameter("job_id",
