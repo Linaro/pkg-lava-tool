@@ -39,7 +39,6 @@ from lava.parameter import (
 )
 from lava.tool.command import CommandGroup
 from lava.tool.errors import CommandError
-from lava_tool.authtoken import AuthenticatingServerProxy, KeyringAuthBackend
 from lava_tool.utils import has_command
 
 
@@ -153,3 +152,38 @@ class run(BaseCommand):
         else:
             raise CommandError("The file '{0}' does not exists, or it is not "
                                "a file.".format(self.args.FILE))
+
+
+class status(BaseCommand):
+
+    """Retrieves the status of a job."""
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(run, cls).register_arguments(parser)
+        parser.add_argument("JOB_ID",
+                            help=("Prints status information about the "
+                                  "provided job id."),
+                            nargs="?",
+                            default="-1")
+
+    def invoke(self):
+        job_id = str(self.args.JOB_ID)
+        if job_id == "-1":
+            # Get the value from the config and ask the user which one to look.
+            jobs_id = self.config.get(ListParameter(JOBS_ID))
+            if jobs_id is not None:
+                jobs_id = Parameter.deserialize(jobs_id)
+                job_id = SingleChoiceParameter("job_id",
+                                               jobs_id).prompt("Jobs id: ")
+            else:
+                raise CommandError("No job ids stored. Please provide one "
+                                   "on the command line.")
+
+        server = self.authenticated_server()
+
+        try:
+            job_status = server.scheduler.job_status(job_id)
+            print >> sys.stdout, job_status
+        except xmlrpclib.Fault, exc:
+            raise CommandError(str(exc))
