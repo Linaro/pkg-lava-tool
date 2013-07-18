@@ -133,6 +133,12 @@ class Config(object):
             value = self._get_from_backend(parameter, section)
         return value
 
+    def get_from_backend(self, parameter, section=None):
+        """Gets a configuration parameter directly from the config file."""
+        if not section:
+            section = self._calculate_config_section(parameter)
+        return self._get_from_backend(parameter, section)
+
     def _get_from_backend(self, parameter, section):
         """Gets the parameter value from the config backend.
 
