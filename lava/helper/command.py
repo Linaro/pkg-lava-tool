@@ -57,8 +57,7 @@ class BaseCommand(Command):
                             action='store_false',
                             help=("Do not ask for input parameters."))
 
-    @classmethod
-    def authenticated_server(cls):
+    def authenticated_server(self):
         """Returns a connection to a LAVA server.
 
         It will ask the user the necessary parameters to establish the
@@ -67,8 +66,8 @@ class BaseCommand(Command):
         server_name_parameter = Parameter(SERVER)
         rpc_endpoint_parameter = Parameter(RPC_ENDPOINT,
                                            depends=server_name_parameter)
-        cls.config.get(server_name_parameter)
-        endpoint = cls.config.get(rpc_endpoint_parameter)
+        self.config.get(server_name_parameter)
+        endpoint = self.config.get(rpc_endpoint_parameter)
 
         server = AuthenticatingServerProxy(endpoint,
                                            auth_backend=KeyringAuthBackend())
