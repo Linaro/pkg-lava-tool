@@ -160,7 +160,7 @@ class status(BaseCommand):
 
     @classmethod
     def register_arguments(cls, parser):
-        super(run, cls).register_arguments(parser)
+        super(status, cls).register_arguments(parser)
         parser.add_argument("JOB_ID",
                             help=("Prints status information about the "
                                   "provided job id."),
