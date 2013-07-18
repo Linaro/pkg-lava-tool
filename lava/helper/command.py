@@ -22,6 +22,7 @@ import os
 import subprocess
 import sys
 import types
+import urlparse
 
 from lava.config import InteractiveConfig
 from lava.parameter import Parameter
@@ -66,12 +67,36 @@ class BaseCommand(Command):
         server_name_parameter = Parameter(SERVER)
         rpc_endpoint_parameter = Parameter(RPC_ENDPOINT,
                                            depends=server_name_parameter)
-        self.config.get(server_name_parameter)
+
+        server_url = self.config.get(server_name_parameter)
         endpoint = self.config.get(rpc_endpoint_parameter)
 
-        server = AuthenticatingServerProxy(endpoint,
+        rpc_url = self.verify_and_create_url(server_url, endpoint)
+        server = AuthenticatingServerProxy(rpc_url,
                                            auth_backend=KeyringAuthBackend())
         return server
+
+    @classmethod
+    def verify_and_create_url(cls, server, endpoint=""):
+        """Checks that the provided values make a correct URL.
+
+        If the server address does not contain a scheme, by default it will use
+        HTTPS.
+        The endpoint is then added at the URL.
+        """
+        scheme, netloc, path, params, query, fragment = \
+            urlparse.urlparse(server)
+        if not scheme:
+            scheme = "https"
+        if not netloc:
+            netloc, path = path, ""
+
+        if not netloc[-1:] == "/" and endpoint:
+            netloc += "/"
+        netloc += endpoint
+
+        return urlparse.urlunparse(
+            (scheme, netloc, path, params, query, fragment))
 
     @classmethod
     def can_edit_file(cls, conf_file):
