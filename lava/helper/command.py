@@ -91,6 +91,10 @@ class BaseCommand(Command):
         if not netloc:
             netloc, path = path, ""
 
+        if endpoint:
+            if not endpoint[-1:] == "/":
+                endpoint += "/"
+
         if not netloc[-1:] == "/" and endpoint:
             netloc += "/"
         netloc += endpoint
