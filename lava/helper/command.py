@@ -54,7 +54,7 @@ class BaseCommand(Command):
     @classmethod
     def register_arguments(cls, parser):
         super(BaseCommand, cls).register_arguments(parser)
-        parser.add_argument("--non-interactive",
+        parser.add_argument("--non-interactive", "-n",
                             action='store_false',
                             help=("Do not ask for input parameters."))
 
