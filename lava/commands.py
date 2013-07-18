@@ -31,13 +31,13 @@ DIR/
    +- tests/
            |
            + mytest.sh
-           + TEST_DEF.yaml
+           + lavatest.yaml
 
 If DIR is not passed, it will use the current working directory.
-JOB_FILE and TEST_DEF are file names that will be asked to the user, along with
+JOB_FILE is a file name that will be asked to the user, along with
 other necessary information to define the tests.
 
-If the user manually updates either the TEST_DEF.yaml or mytest.sh file, it is
+If the user manually updates either the lavatest.yaml or mytest.sh file, it is
 necessary to run the following command in order to update the job definition:
 
  `lava update [JOB|DIR]`
