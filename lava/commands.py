@@ -102,23 +102,30 @@ class init(BaseCommand):
             raise CommandError("'{0}' already exists, and is a "
                                "file.".format(self.args.DIR))
 
-        if not os.path.isdir(full_path):
-            try:
-                os.makedirs(full_path)
-            except OSError:
-                raise CommandError("Cannot create directory "
-                                   "'{0}'.".format(self.args.DIR))
-
-        test_path = os.path.join(full_path, TESTS_DIR)
-        if not os.path.isdir(test_path):
-            try:
-                os.makedirs(test_path)
-            except OSError:
-                raise CommandError("Cannot create directory "
-                                   "'{0}'.".format(self.args.DIR))
+        self._create_dir(full_path)
+        test_path = self._create_dir(full_path, TESTS_DIR)
 
         data = self._update_data()
         self._create_files(data, full_path, test_path)
+
+    def _create_dir(self, full_path, dir_name=None):
+        """Checks if a directory does not exists, and creates it.
+
+        :param full_path: The path where the directory should be created.
+        :param dir_name: An optional name for a directory to be created at
+                         full_path (dir_name will be joined with full_path).
+        :return The path of the created directory."""
+        created_dir = full_path
+        if dir_name:
+            created_dir = os.path.join(full_path, dir_name)
+
+        if not os.path.isdir(created_dir):
+            try:
+                os.makedirs(created_dir)
+            except OSError:
+                raise CommandError("Cannot create directory "
+                                   "'{0}'.".format(created_dir))
+        return created_dir
 
     def _update_data(self):
         """Updates the template and ask values to the user.
