@@ -32,7 +32,9 @@ from mock import (
 from lava.commands import (
     init,
     run,
+    status,
     submit,
+    update,
 )
 from lava.config import Config
 from lava.helper.tests.helper_test import HelperTest
@@ -200,3 +202,39 @@ class TestsRunCommand(HelperTest):
 
         _, args, _ = self.parser.method_calls[1]
         self.assertIn("JOB", args)
+
+
+class TestsStatusCommand(HelperTest):
+
+    def test_register_arguments(self):
+        self.args.JOB_ID = "1"
+        status_cmd = status(self.parser, self.args)
+        status_cmd.register_arguments(self.parser)
+
+        # Make sure we do not forget about this test.
+        self.assertEqual(2, len(self.parser.method_calls))
+
+        _, args, _ = self.parser.method_calls[0]
+        self.assertIn("--non-interactive", args)
+
+        _, args, _ = self.parser.method_calls[1]
+        self.assertIn("JOB_ID", args)
+
+
+class TestsUpdateCommand(HelperTest):
+
+    def test_register_arguments(self):
+        self.args.JOB = os.path.join(tempfile.gettempdir(), "a_fake_file")
+        update_cmd = update(self.parser, self.args)
+        update_cmd.register_arguments(self.parser)
+
+        # Make sure we do not forget about this test.
+        self.assertEqual(2, len(self.parser.method_calls))
+
+        _, args, _ = self.parser.method_calls[0]
+        self.assertIn("--non-interactive", args)
+
+        _, args, _ = self.parser.method_calls[1]
+        self.assertIn("JOB", args)
+
+
