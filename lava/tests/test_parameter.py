@@ -131,6 +131,46 @@ class ListParameterTest(GeneralParameterTest):
         obtained = self.list_parameter.deserialize(expected)
         self.assertEqual(expected, obtained)
 
+    def test_set_value_0(self):
+        # Pass a string to a ListParameter, expect a list.
+        set_value = "foo"
+        expected = [set_value]
+        self.list_parameter.set(set_value)
+        self.assertEquals(expected, self.list_parameter.value)
+
+    def test_set_value_1(self):
+        # Pass a list to a ListParameter, expect the same list.
+        expected = ["foo", "bar"]
+        self.list_parameter.set(expected)
+        self.assertEquals(expected, self.list_parameter.value)
+
+    def test_add_value_0(self):
+        # Add a value to a ListParameter, expect a list back.
+        add_value = "foo"
+        expected = [add_value]
+        self.list_parameter.add(add_value)
+        self.assertEquals(expected, self.list_parameter.value)
+
+    def test_add_value_1(self):
+        # Add a list value to a ListParameter with already a value set, expect
+        # a list with both values.
+        # The ListParameter is initialized with a string.
+        add_value = ["foo"]
+        list_param = ListParameter("list", value="bar")
+        expected = ["bar", "foo"]
+        list_param.add(add_value)
+        self.assertEquals(expected, list_param.value)
+
+    def test_add_value_2(self):
+        # Add a list value to a ListParameter with already a value set, expect
+        # a list with both values.
+        # The ListParameter is initialized with a list.
+        add_value = ["foo"]
+        list_param = ListParameter("list", value=["bar", "baz"])
+        expected = ["bar", "baz", "foo"]
+        list_param.add(add_value)
+        self.assertEquals(expected, list_param.value)
+
 
 class UrlSchemeParameterTests(GeneralParameterTest):
 
