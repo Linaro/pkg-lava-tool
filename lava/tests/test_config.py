@@ -21,9 +21,14 @@ lava.config unit tests.
 """
 
 import sys
+import tempfile
 
 from StringIO import StringIO
-from mock import MagicMock, patch, call
+from mock import (
+    MagicMock,
+    patch,
+    call
+)
 
 from lava.config import (
     Config,
@@ -148,6 +153,21 @@ class ConfigTest(ConfigTestCase):
         with open(self.temp_file.name) as tmp_file:
             obtained = tmp_file.read()
         self.assertEqual(expected, obtained)
+
+    def test_config_get_from_backend_public(self):
+        # Need to to this, since we want a clean Config instance, with
+        # a config_file with some content.
+        self.config.__metaclass__._drop()
+        try:
+            temp_config = tempfile.NamedTemporaryFile()
+            with open(temp_config.name, "w") as write_config:
+                write_config.write("[DEFAULT]\nfoo=bar\n")
+            config = Config(config_file=temp_config.name)
+            param = Parameter("foo")
+            obtained = config.get_from_backend(param)
+            self.assertEquals("bar", obtained)
+        finally:
+            config.__metaclass__._drop()
 
 
 class InteractiveConfigTest(ConfigTestCase):
