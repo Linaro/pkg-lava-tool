@@ -175,7 +175,7 @@ class status(BaseCommand):
             job_ids_parameter.asked = True
 
             job_ids = self.config.get_from_backend(job_ids_parameter)
-            if job_ids is not None:
+            if job_ids:
                 job_ids = Parameter.deserialize(job_ids)
                 job_id = SingleChoiceParameter("job_id",
                                                job_ids).prompt("Job ids: ")
@@ -188,10 +188,19 @@ class status(BaseCommand):
         try:
             job_status = server.scheduler.job_status(job_id)
 
+            status = job_status["job_status"].lower()
+            bundle = job_status["bundle_sha1"]
+
             print >> sys.stdout, "\nJob id: {0}".format(job_id)
-            print >> sys.stdout, ("Status: {0}".format(
-                job_status["job_status"].lower()))
-            print >> sys.stdout, ("Bundle: {0}".format(
-                job_status["bundle_sha1"]))
+            print >> sys.stdout, ("Status: {0}".format(status))
+            print >> sys.stdout, ("Bundle: {0}".format(bundle))
+
+            # If a job has finished running, remove it from the list of
+            # job ids.
+            if job_ids and status != "running":
+                job_ids.remove(job_id)
+                job_ids_parameter.set(job_ids)
+                self.config.put_parameter(job_ids_parameter)
+
         except xmlrpclib.Fault, exc:
             raise CommandError(str(exc))
