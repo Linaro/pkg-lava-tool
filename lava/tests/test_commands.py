@@ -31,6 +31,7 @@ from mock import (
 
 from lava.commands import (
     init,
+    run,
     submit,
 )
 from lava.config import Config
@@ -182,3 +183,20 @@ class SubmitCommandTests(HelperTest):
             os.removedirs(temp_dir_path)
             os.unlink(file_path_no_suffix)
             os.unlink(file_path_with_suffix)
+
+
+class TestsRunCommand(HelperTest):
+
+    def test_register_arguments(self):
+        self.args.JOB = os.path.join(tempfile.gettempdir(), "a_fake_file")
+        run_cmd = run(self.parser, self.args)
+        run_cmd.register_arguments(self.parser)
+
+        # Make sure we do not forget about this test.
+        self.assertEqual(2, len(self.parser.method_calls))
+
+        _, args, _ = self.parser.method_calls[0]
+        self.assertIn("--non-interactive", args)
+
+        _, args, _ = self.parser.method_calls[1]
+        self.assertIn("JOB", args)
