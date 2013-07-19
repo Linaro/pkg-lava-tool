@@ -31,6 +31,7 @@ from lava.job.commands import (
     new,
     run,
     submit,
+    status,
 )
 from lava.parameter import Parameter
 from lava.tool.errors import CommandError
@@ -63,6 +64,19 @@ class JobNewTest(CommandTest):
         if os.path.exists(self.args.FILE):
             os.unlink(self.args.FILE)
 
+    def test_register_arguments(self):
+        new_cmd = new(self.parser, self.args)
+        new_cmd.register_arguments(self.parser)
+
+        # Make sure we do not forget about this test.
+        self.assertEqual(2, len(self.parser.method_calls))
+
+        _, args, _ = self.parser.method_calls[0]
+        self.assertIn("--non-interactive", args)
+
+        _, args, _ = self.parser.method_calls[1]
+        self.assertIn("FILE", args)
+
     def test_create_new_file(self):
         self.new_command.invoke()
         self.assertTrue(os.path.exists(self.args.FILE))
@@ -92,6 +106,19 @@ class JobSubmitTest(CommandTest):
 
 class JobRunTest(CommandTest):
 
+    def test_register_arguments(self):
+        run_cmd = run(self.parser, self.args)
+        run_cmd.register_arguments(self.parser)
+
+        # Make sure we do not forget about this test.
+        self.assertEqual(2, len(self.parser.method_calls))
+
+        _, args, _ = self.parser.method_calls[0]
+        self.assertIn("--non-interactive", args)
+
+        _, args, _ = self.parser.method_calls[1]
+        self.assertIn("FILE", args)
+
     def test_invoke_raises_0(self):
         # Users passes a non existing job file to the run command.
         self.args.FILE = self.tmp("test_invoke_raises_0.json")
@@ -104,3 +131,20 @@ class JobRunTest(CommandTest):
         # the dispatcher installed.
         command = run(self.parser, self.args)
         self.assertRaises(CommandError, command.invoke)
+
+
+class TestsStatusCommand(CommandTest):
+
+    def test_register_arguments(self):
+        self.args.JOB_ID = "1"
+        status_cmd = status(self.parser, self.args)
+        status_cmd.register_arguments(self.parser)
+
+        # Make sure we do not forget about this test.
+        self.assertEqual(2, len(self.parser.method_calls))
+
+        _, args, _ = self.parser.method_calls[0]
+        self.assertIn("--non-interactive", args)
+
+        _, args, _ = self.parser.method_calls[1]
+        self.assertIn("JOB_ID", args)
