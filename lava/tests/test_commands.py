@@ -116,6 +116,25 @@ class InitCommandTests(HelperTest):
         obtained = init_command._update_data()
         self.assertEqual(expected, obtained)
 
+    @patch("lava.helper.command.BaseCommand.edit_file")
+    def test_create_files_and_dirs(self, mocked_edit_file):
+        # Test that the correct directory structure is created and that it
+        # contains the correct test shell script. Make sure also that the
+        # shell script is executable.
+        init_cmd = init(self.parser, self.args)
+        init_cmd._create_job_file = MagicMock()
+        init_cmd._create_test_file = MagicMock()
+
+        data = {"jobfile": "a_job"}
+        full_path = self.temp_dir
+        test_dir = "test_path"
+
+        test_path = init_cmd._create_dir(full_path, test_dir)
+        init_cmd._create_files(data, full_path, test_path)
+
+        self.assertTrue(os.path.isfile(os.path.join(test_path, "mytest.sh")))
+        self.assertTrue(os.path.isdir(test_path))
+
 
 class SubmitCommandTests(HelperTest):
     def setUp(self):
