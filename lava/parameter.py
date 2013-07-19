@@ -27,7 +27,6 @@ import sys
 import tarfile
 import tempfile
 import types
-import urlparse
 
 from lava.tool.errors import CommandError
 

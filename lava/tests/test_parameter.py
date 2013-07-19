@@ -26,6 +26,7 @@ from lava.helper.tests.helper_test import HelperTest
 from lava.parameter import (
     ListParameter,
     Parameter,
+    SingleChoiceParameter,
     UrlSchemeParameter,
 )
 
@@ -144,3 +145,36 @@ class UrlSchemeParameterTests(GeneralParameterTest):
         self.mocked_raw_input.side_effect = ["\n"]
         obtained = self.url_scheme_parameter.prompt(old_value=old_scheme)
         self.assertEqual("file", obtained)
+
+
+class TestsSingleChoiceParameter(GeneralParameterTest):
+
+    def setUp(self):
+        super(TestsSingleChoiceParameter, self).setUp()
+        self.choices = ["foo", "bar", "baz", "bam"]
+        self.param_id = "single_choice"
+        self.single_choice_param = SingleChoiceParameter(self.param_id,
+                                                         self.choices)
+
+    def test_with_old_value(self):
+        # There is an old value for a single choice parameter, the user
+        # is prompted to select from the list of values, but she presses
+        # enter. The old value is returned.
+        old_value = "bat"
+        self.mocked_raw_input.side_effect = ["\n"]
+        obtained = self.single_choice_param.prompt("", old_value=old_value)
+        self.assertEquals(old_value, obtained)
+
+    def test_without_old_value(self):
+        # There is no old value, user just select the first choice.
+        self.mocked_raw_input.side_effect = ["1"]
+        obtained = self.single_choice_param.prompt("")
+        self.assertEquals("foo", obtained)
+
+    def test_with_wrong_user_input(self):
+        # No old value, user inserts at least two wrong choices, and the select
+        # the third one.
+        self.mocked_raw_input.side_effect = ["1000", "0", "3"]
+        obtained = self.single_choice_param.prompt("")
+        self.assertEquals("baz", obtained)
+
