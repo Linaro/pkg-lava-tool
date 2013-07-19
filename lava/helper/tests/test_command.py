@@ -151,3 +151,23 @@ class BaseCommandTests(HelperTest):
         obtained = BaseCommand.verify_file_extension(
             "/tmp/a_fake.extension", extension, supported)
         self.assertEquals(expected, obtained)
+
+    def test_verify_and_create_url(self):
+        server = "www.example.org"
+        endpoint = "RPC"
+        expected = "https://www.example.org/RPC/"
+        obtained = BaseCommand.verify_and_create_url(server, endpoint)
+        self.assertEquals(expected, obtained)
+
+    def test_verify_and_create_url_with_scheme(self):
+        server = "http://www.example.org"
+        endpoint = "RPC/"
+        expected = "http://www.example.org/RPC/"
+        obtained = BaseCommand.verify_and_create_url(server, endpoint)
+        self.assertEquals(expected, obtained)
+
+    def test_verify_and_create_url_with_no_endpoint(self):
+        server = "http://www.example.org"
+        expected = "http://www.example.org"
+        obtained = BaseCommand.verify_and_create_url(server)
+        self.assertEquals(expected, obtained)
