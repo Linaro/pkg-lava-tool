@@ -169,12 +169,14 @@ class status(BaseCommand):
 
     def invoke(self):
         job_id = str(self.args.JOB_ID)
-        if job_id == "-1":
-            # Get the value from the config and ask the user which one to look.
-            job_ids_parameter = ListParameter(JOBS_ID)
-            job_ids_parameter.asked = True
+        # Get also the value from the config.
+        job_ids_parameter = ListParameter(JOBS_ID)
+        job_ids_parameter.asked = True
 
-            job_ids = self.config.get_from_backend(job_ids_parameter)
+        job_ids = self.config.get_from_backend(job_ids_parameter)
+
+        if job_id == "-1":
+            # In this case we ask the user which ID to look up.
             if job_ids:
                 job_ids = Parameter.deserialize(job_ids)
                 job_id = SingleChoiceParameter("job_id",
