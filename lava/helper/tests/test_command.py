@@ -171,3 +171,20 @@ class BaseCommandTests(HelperTest):
         expected = "http://www.example.org"
         obtained = BaseCommand.verify_and_create_url(server)
         self.assertEquals(expected, obtained)
+
+    @patch("lava.helper.command.KeyringAuthBackend")
+    @patch("lava.helper.command.AuthenticatingServerProxy")
+    def test_authenticated_server(self, mocked_auth_proxy,
+                                  mocked_auth_keyring):
+        command = BaseCommand(self.parser, self.args)
+
+        command.config.__metaclass__._drop()
+        command.config = MagicMock()
+        command.config.get = MagicMock(side_effect=["www.example.org", "RPC"])
+
+        command.authenticated_server()
+
+        expected = "https://www.example.org/RPC/"
+
+        arg, _ = mocked_auth_proxy.call_args
+        self.assertEqual(arg[0], expected)
