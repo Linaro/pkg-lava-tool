@@ -69,4 +69,7 @@ TESTDEF_TEMPLATE = {
     "run": {
         "steps": STEPS_PARAMETER,
     },
+    "parse": {
+        "pattern": "^\\s*(?P<test_case_id>\\w+)=(?P<result>\\w+)\\s*$"
+    }
 }
