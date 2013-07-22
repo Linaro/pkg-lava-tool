@@ -166,6 +166,13 @@ class BaseCommandTests(HelperTest):
         obtained = BaseCommand.verify_and_create_url(server, endpoint)
         self.assertEquals(expected, obtained)
 
+    def test_verify_and_create_url_without_scheme_and_slashes(self):
+        server = "www.example.org"
+        endpoint = "/RPC/"
+        expected = "https://www.example.org/RPC/"
+        obtained = BaseCommand.verify_and_create_url(server, endpoint)
+        self.assertEquals(expected, obtained)
+
     def test_verify_and_create_url_with_no_endpoint(self):
         server = "http://www.example.org"
         expected = "http://www.example.org"
