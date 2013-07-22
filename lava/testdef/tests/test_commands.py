@@ -107,7 +107,11 @@ class NewCommandTest(HelperTest):
                         'format': 'Lava-Test Test Definition 1.0',
                         'version': '1.0',
                         'description': '',
-                        'name': ''}
+                        'name': ''},
+                    'parse': {
+                        'pattern':
+                            '^\\s*(?P<test_case_id>\\w+)=(?P<result>\\w+)\\s*$'
+                        },
                     }
         obtained = None
         with open(self.file_path, 'r') as read_file:
@@ -136,7 +140,12 @@ class NewCommandTest(HelperTest):
                         'format': 'Lava-Test Test Definition 1.0',
                         'version': '1.0',
                         'description': '',
-                        'name': 'foo'}
+                        'name': 'foo'
+                        },
+                    'parse': {
+                        'pattern':
+                            '^\\s*(?P<test_case_id>\\w+)=(?P<result>\\w+)\\s*$'
+                        },
                     }
         obtained = None
         with open(self.file_path, 'r') as read_file:
