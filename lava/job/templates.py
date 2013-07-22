@@ -28,6 +28,8 @@ PARAMETERS_ID = "parameters"
 DEVICE_TYPE_ID = "device_type"
 TESTDEF_REPOS_ID = "testdef_repos"
 TESTDEF_REPOS_TAR_REPO = "tar-repo"
+STREAM_ID = "stream"
+SERVER_ID = "server"
 
 DEVICE_TYPE_PARAMETER = Parameter(DEVICE_TYPE_ID)
 PREBUILT_IMAGE_PARAMETER = Parameter(IMAGE_ID, depends=DEVICE_TYPE_PARAMETER)
@@ -35,6 +37,10 @@ PREBUILT_IMAGE_PARAMETER = Parameter(IMAGE_ID, depends=DEVICE_TYPE_PARAMETER)
 # Never store the testdef_urls parameter in the config file.
 TESTDEF_URL_PARAMETER = TarRepoParameter(TESTDEF_REPOS_TAR_REPO)
 TESTDEF_URL_PARAMETER.store = False
+
+# Use another ID for the server parameter, might be different.
+SERVER_PARAMETER = Parameter("stream_server")
+STREAM_PARAMETER = Parameter(STREAM_ID)
 
 BOOT_TEST = {
     "timeout": 18000,
@@ -67,13 +73,20 @@ LAVA_TEST_SHELL = {
         {
             COMMAND_ID: "lava_test_shell",
             PARAMETERS_ID: {
-                "timeout": 18000,
+                "timeout": 1800,
                 TESTDEF_REPOS_ID: [
                         {
                             "testdef": "lavatest.yaml",
                             TESTDEF_REPOS_TAR_REPO: TESTDEF_URL_PARAMETER
                         }
                 ]
+            }
+        },
+        {
+            COMMAND_ID: "submit_results",
+            PARAMETERS_ID : {
+                STREAM_ID: STREAM_PARAMETER,
+                SERVER_ID: SERVER_PARAMETER
             }
         }
     ]
