@@ -92,12 +92,11 @@ class BaseCommand(Command):
             netloc, path = path, ""
 
         if endpoint:
+            if not netloc[-1:] == "/" and not endpoint[0] == "/":
+                netloc += "/"
             if not endpoint[-1:] == "/":
                 endpoint += "/"
-
-        if not netloc[-1:] == "/" and endpoint:
-            netloc += "/"
-        netloc += endpoint
+            netloc += endpoint
 
         return urlparse.urlunparse(
             (scheme, netloc, path, params, query, fragment))
