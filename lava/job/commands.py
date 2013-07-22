@@ -174,11 +174,12 @@ class status(BaseCommand):
         job_ids_parameter.asked = True
 
         job_ids = self.config.get_from_backend(job_ids_parameter)
+        if job_ids:
+            job_ids = Parameter.deserialize(job_ids)
 
         if job_id == "-1":
             # In this case we ask the user which ID to look up.
             if job_ids:
-                job_ids = Parameter.deserialize(job_ids)
                 job_id = SingleChoiceParameter("job_id",
                                                job_ids).prompt("Job ids: ")
             else:
@@ -199,7 +200,7 @@ class status(BaseCommand):
 
             # If a job has finished running, remove it from the list of
             # job ids.
-            if job_ids and status != "running":
+            if job_ids and status != "running" and job_id in job_ids:
                 job_ids.remove(job_id)
                 job_ids_parameter.set(job_ids)
                 self.config.put_parameter(job_ids_parameter)
