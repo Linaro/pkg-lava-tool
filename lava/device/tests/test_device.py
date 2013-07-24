@@ -71,7 +71,8 @@ class DeviceTest(HelperTest):
         # updated with the correct values from a Config instance.
         hostname = "panda_device"
 
-        config = Config(config_file=self.temp_file.name)
+        config = Config()
+        config._config_file = self.temp_file.name
         config.put_parameter(HOSTNAME_PARAMETER, hostname)
         config.put_parameter(PANDA_DEVICE_TYPE, "panda")
         config.put_parameter(PANDA_CONNECTION_COMMAND, "test")
@@ -97,7 +98,8 @@ class DeviceTest(HelperTest):
         # and contains the expected results.
         hostname = "panda_device"
 
-        config = Config(config_file=self.temp_file.name)
+        config = Config()
+        config._config_file = self.temp_file.name
         config.put_parameter(HOSTNAME_PARAMETER, hostname)
         config.put_parameter(PANDA_DEVICE_TYPE, "panda")
         config.put_parameter(PANDA_CONNECTION_COMMAND, "test")

@@ -43,7 +43,8 @@ class InitCommandTests(HelperTest):
     def setUp(self):
         super(InitCommandTests, self).setUp()
         self.config_file = self.tmp("init_command_tests")
-        self.config = Config(config_file=self.config_file)
+        self.config = Config()
+        self.config._config_file = self.config_file
 
     def tearDown(self):
         super(InitCommandTests, self).tearDown()
@@ -118,7 +119,8 @@ class SubmitCommandTests(HelperTest):
     def setUp(self):
         super(SubmitCommandTests, self).setUp()
         self.config_file = self.tmp("submit_command_tests")
-        self.config = Config(config_file=self.config_file)
+        self.config = Config()
+        self.config._config_file = self.config_file
         self.config.save = MagicMock()
 
     def tearDown(self):
