@@ -141,7 +141,7 @@ class NewCommandTest(HelperTest):
                         'version': '1.0',
                         'description': '',
                         'name': 'foo'
-                        },
+                    },
                     'parse': {
                         'pattern':
                             '^\\s*(?P<test_case_id>\\w+)=(?P<result>\\w+)\\s*$'
