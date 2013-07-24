@@ -26,7 +26,6 @@ from lava.helper.tests.helper_test import HelperTest
 from lava.parameter import (
     ListParameter,
     Parameter,
-    UrlSchemeParameter,
 )
 
 
@@ -129,18 +128,3 @@ class ListParameterTest(GeneralParameterTest):
         expected = ["foo", 1, "", "bar"]
         obtained = self.list_parameter.deserialize(expected)
         self.assertEqual(expected, obtained)
-
-
-class UrlSchemeParameterTests(GeneralParameterTest):
-
-    def setUp(self):
-        super(UrlSchemeParameterTests, self).setUp()
-        self.url_scheme_parameter = UrlSchemeParameter()
-
-    def test_get_url_scheme_with_old_scheme(self):
-        # Tests the _get_url_scheme method with an old value.
-        # User presses Enter and the old scheme is returned.
-        old_scheme = "file"
-        self.mocked_raw_input.side_effect = ["\n"]
-        obtained = self.url_scheme_parameter.prompt(old_value=old_scheme)
-        self.assertEqual("file", obtained)

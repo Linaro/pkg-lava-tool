@@ -37,7 +37,8 @@ class JobTest(HelperTest):
     @patch("lava.config.Config.save")
     def setUp(self, mocked_config):
         super(JobTest, self).setUp()
-        self.config = Config(config_file=self.temp_file.name)
+        self.config = Config()
+        self.config._config_file = self.temp_file.name
 
     def tearDown(self):
         super(JobTest, self).tearDown()
