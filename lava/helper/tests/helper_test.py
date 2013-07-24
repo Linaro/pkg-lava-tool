@@ -67,7 +67,13 @@ class HelperTest(TestCase):
         os.unlink(self.temp_file.name)
 
     def tmp(self, name):
-        """Returns a path to a non existent file/directory.
+        """
+        Returns the full path to a file, or directory, called `name` in a
+        temporary directory.
+
+        This method does not create the file, it only gives a full filename
+        where you can actually write some data. The file will not be removed
+        by this method.
 
         :param name: The name the file/directory should have.
         :return A path.
