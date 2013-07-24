@@ -63,6 +63,31 @@ class new(BaseCommand):
             testdef = TestDefinition(testdef_file, TESTDEF_TEMPLATE)
             testdef.update(self.config)
             testdef.write()
-        except IOError:
-            raise CommandError("Cannot write file '{0}': permission "
-                               "denied".format(self.args.FILE))
+        except (OSError, IOError):
+            raise CommandError("Cannot write file "
+                               "'{0}'.".format(self.args.FILE))
+
+
+class run(BaseCommand):
+
+    """Runs the specified test definition on a local device."""
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(run, cls).register_arguments(parser)
+        parser.add_argument("FILE", help="Test definition file to run.")
+
+    def invoke(self):
+        pass
+
+
+def submit(BaseCommand):
+    """Submits the specified test definition to a remove LAVA server."""
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(submit, cls).register_arguments(parser)
+        parser.add_argument("FILE", help="Test definition file to send.")
+
+    def invoke(self):
+        pass

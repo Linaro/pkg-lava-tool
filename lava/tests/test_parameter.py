@@ -27,7 +27,6 @@ from lava.parameter import (
     ListParameter,
     Parameter,
     SingleChoiceParameter,
-    UrlSchemeParameter,
 )
 
 
@@ -172,21 +171,6 @@ class ListParameterTest(GeneralParameterTest):
         self.assertEquals(expected, list_param.value)
 
 
-class UrlSchemeParameterTests(GeneralParameterTest):
-
-    def setUp(self):
-        super(UrlSchemeParameterTests, self).setUp()
-        self.url_scheme_parameter = UrlSchemeParameter()
-
-    def test_get_url_scheme_with_old_scheme(self):
-        # Tests the _get_url_scheme method with an old value.
-        # User presses Enter and the old scheme is returned.
-        old_scheme = "file"
-        self.mocked_raw_input.side_effect = ["\n"]
-        obtained = self.url_scheme_parameter.prompt(old_value=old_scheme)
-        self.assertEqual("file", obtained)
-
-
 class TestsSingleChoiceParameter(GeneralParameterTest):
 
     def setUp(self):
@@ -217,4 +201,3 @@ class TestsSingleChoiceParameter(GeneralParameterTest):
         self.mocked_raw_input.side_effect = ["1000", "0", "3"]
         obtained = self.single_choice_param.prompt("")
         self.assertEquals("baz", obtained)
-

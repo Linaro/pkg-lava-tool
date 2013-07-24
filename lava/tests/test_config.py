@@ -26,8 +26,8 @@ import tempfile
 from StringIO import StringIO
 from mock import (
     MagicMock,
+    call,
     patch,
-    call
 )
 
 from lava.config import (
@@ -55,7 +55,8 @@ class ConfigTest(ConfigTestCase):
     @patch("lava.config.Config.save")
     def setUp(self, mocked_save):
         super(ConfigTest, self).setUp()
-        self.config = Config(config_file=self.temp_file.name)
+        self.config = Config()
+        self.config._config_file = self.temp_file.name
 
     def tearDown(self):
         super(ConfigTest, self).tearDown()
@@ -65,7 +66,7 @@ class ConfigTest(ConfigTestCase):
 
     def test_assert_temp_config_file(self):
         # Dummy test to make sure we are overriding correctly the Config class.
-        self.assertEqual(self.config._config_file, self.temp_file.name)
+        self.assertEqual(self.config.config_file, self.temp_file.name)
 
     def test_config_put_in_cache_0(self):
         self.config._put_in_cache("key", "value", "section")
@@ -157,25 +158,19 @@ class ConfigTest(ConfigTestCase):
     def test_config_get_from_backend_public(self):
         # Need to to this, since we want a clean Config instance, with
         # a config_file with some content.
-        self.config.__metaclass__._drop()
-        try:
-            temp_config = tempfile.NamedTemporaryFile()
-            with open(temp_config.name, "w") as write_config:
-                write_config.write("[DEFAULT]\nfoo=bar\n")
-            config = Config(config_file=temp_config.name)
-            param = Parameter("foo")
-            obtained = config.get_from_backend(param)
-            self.assertEquals("bar", obtained)
-        finally:
-            config.__metaclass__._drop()
-
+        with open(self.config.config_file, "w") as write_config:
+            write_config.write("[DEFAULT]\nfoo=bar\n")
+        param = Parameter("foo")
+        obtained = self.config.get_from_backend(param)
+        self.assertEquals("bar", obtained)
 
 class InteractiveConfigTest(ConfigTestCase):
 
     @patch("lava.config.Config.save")
     def setUp(self, mocked_save):
         super(InteractiveConfigTest, self).setUp()
-        self.config = InteractiveConfig(config_file=self.temp_file.name)
+        self.config = InteractiveConfig()
+        self.config._config_file = self.temp_file.name
 
     def tearDown(self):
         super(InteractiveConfigTest, self).tearDown()
@@ -242,7 +237,7 @@ class InteractiveConfigTest(ConfigTestCase):
 
     def test_calculate_config_section_2(self):
         self.config._force_interactive = True
-        self.config._config_backend.get = MagicMock(return_value=None)
+        self.config.config_backend.get = MagicMock(return_value=None)
         sys.stdin = StringIO("baz")
         expected = "foo=baz"
         obtained = self.config._calculate_config_section(self.param2)
@@ -286,7 +281,7 @@ class InteractiveConfigTest(ConfigTestCase):
         # correctly.
         param_values = ["foo", "more than one words", "bar"]
         list_param = ListParameter("list")
-        list_param.value = param_values
+        list_param.set(param_values)
 
         self.config.put_parameter(list_param, param_values)
         self.config.save()

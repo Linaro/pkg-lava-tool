@@ -84,19 +84,27 @@ class Config(object):
     # class Config(object, metaclass=Singleton)
     __metaclass__ = Singleton
 
-    def __init__(self, config_file=None):
+    def __init__(self):
         # The cache where to store parameters.
         self._cache = {}
-        # Mostly needed for testing purposes.
-        if config_file is not None:
-            self._config_file = config_file
-        else:
+        self._config_file = None
+        self._config_backend = None
+        AT_EXIT_CALLS.add(self.save)
+
+    @property
+    def config_file(self):
+        if self._config_file is None:
             self._config_file = (os.environ.get('LAVACONFIG') or
                                  os.path.join(os.path.expanduser('~'),
                                               '.lavaconfig'))
-        self._config_backend = ConfigParser()
-        self._config_backend.read([self._config_file])
-        AT_EXIT_CALLS.add(self.save)
+        return self._config_file
+
+    @property
+    def config_backend(self):
+        if self._config_backend is None:
+            self._config_backend = ConfigParser()
+            self._config_backend.read([self.config_file])
+        return self._config_backend
 
     def _calculate_config_section(self, parameter):
         """Calculates the config section of the specified parameter.
@@ -147,7 +155,7 @@ class Config(object):
         """
         value = None
         try:
-            value = self._config_backend.get(section, parameter.id)
+            value = self.config_backend.get(section, parameter.id)
         except (NoOptionError, NoSectionError):
             # Ignore, we return None.
             pass
@@ -185,9 +193,9 @@ class Config(object):
         :param value: The value to add.
         :param section: The name of the section as in the config file.
         """
-        if (not self._config_backend.has_section(section) and
+        if (not self.config_backend.has_section(section) and
                 section != DEFAULT_SECTION):
-            self._config_backend.add_section(section)
+            self.config_backend.add_section(section)
 
         # This is done to serialize a list when ConfigParser is written to
         # file. Since there is no real support for list in ConfigParser, we
@@ -195,7 +203,7 @@ class Config(object):
         if isinstance(value, list):
             value = Parameter.serialize(value)
 
-        self._config_backend.set(section, key, value)
+        self.config_backend.set(section, key, value)
         # Store in the cache too.
         self._put_in_cache(key, value, section)
 
@@ -220,8 +228,8 @@ class Config(object):
 
     def save(self):
         """Saves the config to file."""
-        with open(self._config_file, "w") as write_file:
-            self._config_backend.write(write_file)
+        with open(self.config_file, "w") as write_file:
+            self.config_backend.write(write_file)
 
 
 class InteractiveConfig(Config):
@@ -230,8 +238,8 @@ class InteractiveConfig(Config):
     If a value is not found in the config file, it will ask it and then stores
     it.
     """
-    def __init__(self, config_file=None, force_interactive=True):
-        super(InteractiveConfig, self).__init__(config_file=config_file)
+    def __init__(self, force_interactive=True):
+        super(InteractiveConfig, self).__init__()
         self._force_interactive = force_interactive
 
     def get(self, parameter, section=None):

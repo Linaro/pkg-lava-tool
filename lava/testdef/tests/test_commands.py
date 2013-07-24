@@ -50,7 +50,8 @@ class NewCommandTest(HelperTest):
                                                     delete=False)
 
         self.config_file = tempfile.NamedTemporaryFile(delete=False)
-        self.config = InteractiveConfig(config_file=self.config_file.name)
+        self.config = InteractiveConfig()
+        self.config._config_file = self.config_file.name
         # Patch class raw_input, start it, and stop it on tearDown.
         self.patcher1 = patch("lava.parameter.raw_input", create=True)
         self.mocked_raw_input = self.patcher1.start()
@@ -141,7 +142,7 @@ class NewCommandTest(HelperTest):
                         'version': '1.0',
                         'description': '',
                         'name': 'foo'
-                        },
+                    },
                     'parse': {
                         'pattern':
                             '^\\s*(?P<test_case_id>\\w+)=(?P<result>\\w+)\\s*$'

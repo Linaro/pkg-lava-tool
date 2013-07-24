@@ -21,18 +21,10 @@ from lava.parameter import (
     TarRepoParameter,
 )
 
-ACTIONS_ID = "actions"
-COMMAND_ID = "command"
-IMAGE_ID = "image"
-PARAMETERS_ID = "parameters"
-DEVICE_TYPE_ID = "device_type"
-TESTDEF_REPOS_ID = "testdef_repos"
 TESTDEF_REPOS_TAR_REPO = "tar-repo"
-STREAM_ID = "stream"
-SERVER_ID = "server"
 
-DEVICE_TYPE_PARAMETER = Parameter(DEVICE_TYPE_ID)
-PREBUILT_IMAGE_PARAMETER = Parameter(IMAGE_ID, depends=DEVICE_TYPE_PARAMETER)
+DEVICE_TYPE_PARAMETER = Parameter("device_type")
+PREBUILT_IMAGE_PARAMETER = Parameter("image", depends=DEVICE_TYPE_PARAMETER)
 
 # Never store the testdef_urls parameter in the config file.
 TESTDEF_URL_PARAMETER = TarRepoParameter(TESTDEF_REPOS_TAR_REPO)
@@ -40,21 +32,21 @@ TESTDEF_URL_PARAMETER.store = False
 
 # Use another ID for the server parameter, might be different.
 SERVER_PARAMETER = Parameter("stream_server")
-STREAM_PARAMETER = Parameter(STREAM_ID)
+STREAM_PARAMETER = Parameter("stream")
 
 BOOT_TEST = {
     "timeout": 18000,
     "job_name": "Boot test",
-    DEVICE_TYPE_ID: DEVICE_TYPE_PARAMETER,
-    ACTIONS_ID: [
+    "device_type": DEVICE_TYPE_PARAMETER,
+    "actions": [
         {
-            COMMAND_ID: "deploy_linaro_image",
-            PARAMETERS_ID: {
+            "command": "deploy_linaro_image",
+            "parameters": {
                 "image": PREBUILT_IMAGE_PARAMETER
             }
         },
         {
-            COMMAND_ID: "boot_linaro_image"
+            "command": "boot_linaro_image"
         }
     ]
 }
@@ -62,31 +54,31 @@ BOOT_TEST = {
 LAVA_TEST_SHELL = {
     "job_name": "LAVA Test Shell",
     "timeout": 18000,
-    DEVICE_TYPE_ID: DEVICE_TYPE_PARAMETER,
-    ACTIONS_ID: [
+    "device_type": DEVICE_TYPE_PARAMETER,
+    "actions": [
         {
-            COMMAND_ID: "deploy_linaro_image",
-            PARAMETERS_ID: {
-                IMAGE_ID: PREBUILT_IMAGE_PARAMETER,
+            "command": "deploy_linaro_image",
+            "parameters": {
+                "image": PREBUILT_IMAGE_PARAMETER,
             }
         },
         {
-            COMMAND_ID: "lava_test_shell",
-            PARAMETERS_ID: {
+            "command": "lava_test_shell",
+            "parameters": {
                 "timeout": 1800,
-                TESTDEF_REPOS_ID: [
+                "testdef_repos": [
                         {
                             "testdef": "lavatest.yaml",
-                            TESTDEF_REPOS_TAR_REPO: TESTDEF_URL_PARAMETER
+                            "tar-repo": TESTDEF_URL_PARAMETER
                         }
                 ]
             }
         },
         {
-            COMMAND_ID: "submit_results",
-            PARAMETERS_ID : {
-                STREAM_ID: STREAM_PARAMETER,
-                SERVER_ID: SERVER_PARAMETER
+            "command": "submit_results",
+            "parameters" : {
+                "stream": STREAM_PARAMETER,
+                "server": SERVER_PARAMETER
             }
         }
     ]

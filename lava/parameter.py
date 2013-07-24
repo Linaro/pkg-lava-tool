@@ -188,36 +188,6 @@ class SingleChoiceParameter(Parameter):
         return choice
 
 
-class UrlSchemeParameter(SingleChoiceParameter):
-    """A parameter to choose the URL scheme to use."""
-    # The supported URL schemes:
-    #   file: normal file URL.
-    #   data: base64 encoded string of the file pointed to and its path.
-    FILE_SCHEME = "file"
-    DATA_SCHEME = "data"
-
-    SCHEME_CHOICES = [
-        FILE_SCHEME,
-        DATA_SCHEME,
-    ]
-
-    def __init__(self, value=None, id="url_scheme"):
-        super(UrlSchemeParameter, self).__init__(id, self.SCHEME_CHOICES)
-        self.value = value
-
-    def prompt(self, prompt="", old_value=None):
-        if not self.asked:
-            if old_value is not None:
-                prompt = "\nURL scheme [was: {0}]:".format(old_value)
-            else:
-                prompt = "\nURL scheme:"
-            self.value = super(UrlSchemeParameter, self).prompt(
-                prompt=prompt, old_value=old_value)
-            self.asked = True
-
-        return self.value
-
-
 class ListParameter(Parameter):
     """A specialized Parameter to handle list values."""
 

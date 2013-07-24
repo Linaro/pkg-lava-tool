@@ -145,14 +145,24 @@ class BaseCommand(Command):
 
     @classmethod
     def retrieve_file(cls, path, extensions):
-        """Searches for a job file in the provided path.
+        """Searches for a file that has one of the supported extensions.
 
-        :return The job file full path.
+        The path of the first file that matches one of the supported provided
+        extensions will be returned. The files are examined in alphabetical
+        order.
+
+        :param path: Where to look for the file.
+        :param extensions: A list of extensions the file to look for should
+                           have.
+        :return The full path of the file.
         """
         if os.path.isfile(path):
             job_file = path
         else:
-            for element in os.listdir(path):
+            dir_listing = os.listdir(path)
+            dir_listing.sort()
+
+            for element in dir_listing:
                 element_path = os.path.join(path, element)
                 if os.path.isdir(element_path):
                     continue
@@ -162,8 +172,7 @@ class BaseCommand(Command):
                     full_extension = os.path.splitext(job_file)[1]
 
                     if full_extension:
-                        # Make sure that we have an extension and remove the
-                        # dot.
+                        # Make sure that we have a supported extension.
                         extension = full_extension[1:].strip().lower()
                         if extension in extensions:
                             job_file = element_path
@@ -175,13 +184,22 @@ class BaseCommand(Command):
 
     @classmethod
     def verify_file_extension(cls, path, default, supported):
-        # Checks that the file we pass has an extension or a correct one.
-        # If not, it adds the provided one.
+        """Verifies if a file has a supported extensions.
+
+        If the file does not have one, it will add the default extension
+        provided.
+
+        :param path: The path of a file to verify.
+        :param default: The default extension to use.
+        :param supported: A list of supported extension to check the file one
+                          against.
+        :return The path of the file.
+        """
         full_path, file_name = os.path.split(path)
         name, extension = os.path.splitext(file_name)
         if not extension:
             path = ".".join([path, default])
-        elif extension[1:] not in supported:
+        elif extension[1:].lower() not in supported:
             path = os.path.join(full_path, ".".join([name, default]))
         return path
 
