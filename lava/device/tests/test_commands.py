@@ -50,35 +50,39 @@ class AddCommandTest(HelperTest):
         name, args, kwargs = self.parser.method_calls[1]
         self.assertIn("DEVICE", args)
 
-    @patch("lava.device.Device.__str__", new=MagicMock(return_value=""))
-    @patch("lava.device.Device.update", new=MagicMock())
-    @patch("lava.device.commands.get_device_file",
-           new=MagicMock(return_value=None))
+    @patch("lava.device.commands.edit_file", create=True)
+    @patch("lava.device.Device.__str__")
+    @patch("lava.device.Device.update")
+    @patch("lava.device.commands.get_device_file")
     @patch("lava.device.commands.get_devices_path")
-    def test_add_invoke_0(self, get_devices_path_mock):
+    def test_add_invoke_0(self, mocked_get_devices_path,
+                          mocked_get_device_file, mocked_update, mocked_str,
+                          mocked_edit_file):
         # Tests invocation of the add command. Verifies that the conf file is
         # written to disk.
-        get_devices_path_mock.return_value = self.temp_dir
+        mocked_get_devices_path.return_value = self.temp_dir
+        mocked_get_device_file.return_value = None
+        mocked_str.return_value = ""
 
         add_command = add(self.parser, self.args)
-        add_command.edit_file = MagicMock()
         add_command.invoke()
 
         expected_path = os.path.join(self.temp_dir,
                                      ".".join([self.device, "conf"]))
         self.assertTrue(os.path.isfile(expected_path))
 
+    @patch("lava.device.commands.edit_file", create=True)
     @patch("lava.device.commands.get_known_device")
     @patch("lava.device.commands.get_devices_path")
     @patch("lava.device.commands.sys.exit")
     @patch("lava.device.commands.get_device_file")
     def test_add_invoke_1(self, mocked_get_device_file, mocked_sys_exit,
-                          mocked_get_devices_path, mocked_get_known_device):
+                          mocked_get_devices_path, mocked_get_known_device,
+                          mocked_edit_file):
         mocked_get_devices_path.return_value = self.temp_dir
         mocked_get_device_file.return_value = self.temp_file.name
 
         add_command = add(self.parser, self.args)
-        add_command.edit_file = MagicMock()
         add_command.invoke()
 
         self.assertTrue(mocked_sys_exit.called)
@@ -97,11 +101,13 @@ class RemoveCommandTests(HelperTest):
         name, args, kwargs = self.parser.method_calls[1]
         self.assertIn("DEVICE", args)
 
-    @patch("lava.device.Device.__str__", new=MagicMock(return_value=""))
-    @patch("lava.device.Device.update", new=MagicMock())
+    @patch("lava.device.commands.edit_file", create=True)
+    @patch("lava.device.Device.__str__", return_value="")
+    @patch("lava.device.Device.update")
     @patch("lava.device.commands.get_device_file")
     @patch("lava.device.commands.get_devices_path")
-    def test_remove_invoke(self, get_devices_path_mock, get_device_file_mock):
+    def test_remove_invoke(self, get_devices_path_mock, get_device_file_mock,
+                           mocked_update, mocked_str, mocked_edit_file):
         # Tests invocation of the remove command. Verifies that the conf file
         # has been correctly removed.
         # First we add a new conf file, then we remove it.
@@ -109,7 +115,6 @@ class RemoveCommandTests(HelperTest):
         get_devices_path_mock.return_value = self.temp_dir
 
         add_command = add(self.parser, self.args)
-        add_command.edit_file = MagicMock()
         add_command.invoke()
 
         expected_path = os.path.join(self.temp_dir,
@@ -145,18 +150,20 @@ class ConfigCommanTests(HelperTest):
         name, args, kwargs = self.parser.method_calls[1]
         self.assertIn("DEVICE", args)
 
+    @patch("lava.device.commands.can_edit_file", create=True)
+    @patch("lava.device.commands.edit_file", create=True)
     @patch("lava.device.commands.get_device_file")
-    def test_config_invoke_0(self, mocked_get_device_file):
+    def test_config_invoke_0(self, mocked_get_device_file, mocked_edit_file,
+                             mocked_can_edit_file):
         command = config(self.parser, self.args)
 
+        mocked_can_edit_file.return_value = True
         mocked_get_device_file.return_value = self.temp_file.name
-        command.can_edit_file = MagicMock(return_value=True)
-        command.edit_file = MagicMock()
         command.invoke()
 
-        self.assertTrue(command.edit_file.called)
+        self.assertTrue(mocked_edit_file.called)
         self.assertEqual([call(self.temp_file.name)],
-                         command.edit_file.call_args_list)
+                         mocked_edit_file.call_args_list)
 
     @patch("lava.device.commands.get_device_file",
            new=MagicMock(return_value=None))

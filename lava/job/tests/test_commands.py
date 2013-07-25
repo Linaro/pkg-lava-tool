@@ -99,7 +99,7 @@ class JobRunTest(CommandTest):
         command = run(self.parser, self.args)
         self.assertRaises(CommandError, command.invoke)
 
-    @patch("lava.job.commands.has_command", new=MagicMock(return_value=False))
+    @patch("lava_tool.utils.has_command", new=MagicMock(return_value=False))
     def test_invoke_raises_1(self):
         # Users passes a valid file to the run command, but she does not have
         # the dispatcher installed.
