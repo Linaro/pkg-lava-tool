@@ -46,21 +46,20 @@ necessary to run the following command in order to update the job definition:
 import copy
 import json
 import os
-import sys
 import stat
+import sys
 
 from lava.helper.command import BaseCommand
 from lava.helper.template import (
     expand_template,
     set_value
 )
-
 from lava.job import JOB_FILE_EXTENSIONS
-from lava.parameter import (
-    Parameter,
-)
 from lava.job.templates import (
     LAVA_TEST_SHELL_TAR_REPO_KEY,
+)
+from lava.parameter import (
+    Parameter,
 )
 from lava.testdef.templates import (
     DEFAULT_TESTDEF_FILE,
@@ -68,7 +67,6 @@ from lava.testdef.templates import (
     DEFAULT_TESTDEF_SCRIPT_CONTENT,
 )
 from lava.tool.errors import CommandError
-
 from lava_tool.utils import (
     retrieve_file,
 )

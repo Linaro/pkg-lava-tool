@@ -18,23 +18,44 @@
 
 """lava_tool.utils tests."""
 
+import sys
 import os
 import subprocess
 import tempfile
 
 from unittest import TestCase
-from mock import patch
-
-from lava_tool.utils import (
-    has_command,
-    verify_file_extension,
-    retrieve_file,
+from mock import (
+    MagicMock,
+    call,
+    patch,
 )
 
 from lava.tool.errors import CommandError
+from lava_tool.utils import (
+    can_edit_file,
+    edit_file,
+    execute,
+    has_command,
+    retrieve_file,
+    verify_file_extension,
+)
 
 
 class UtilTests(TestCase):
+
+    def setUp(self):
+        self.original_stdout = sys.stdout
+        sys.stdout = open("/dev/null", "w")
+        self.original_stderr = sys.stderr
+        sys.stderr = open("/dev/null", "w")
+        self.original_stdin = sys.stdin
+        self.temp_file = tempfile.NamedTemporaryFile(delete=False)
+
+    def tearDown(self):
+        sys.stdin = self.original_stdin
+        sys.stdout = self.original_stdout
+        sys.stderr = self.original_stderr
+        os.unlink(self.temp_file.name)
 
     @patch("lava_tool.utils.subprocess.check_call")
     def test_has_command_0(self, mocked_check_call):
@@ -115,3 +136,81 @@ class UtilTests(TestCase):
             os.unlink(file_name_no_suffix.name)
             os.unlink(file_name_with_suffix.name)
             os.unlink(hidden_file.name)
+
+    @patch("lava_tool.utils.subprocess")
+    def test_execute_0(self, mocked_subprocess):
+        mocked_subprocess.check_call = MagicMock()
+        execute("foo")
+        self.assertEqual(mocked_subprocess.check_call.call_args_list,
+                         [call(["foo"])])
+        self.assertTrue(mocked_subprocess.check_call.called)
+
+    @patch("lava_tool.utils.subprocess.check_call")
+    def test_execute_1(self, mocked_check_call):
+        mocked_check_call.side_effect = subprocess.CalledProcessError(1, "foo")
+        self.assertRaises(CommandError, execute, ["foo"])
+
+    @patch("lava_tool.utils.subprocess")
+    @patch("lava_tool.utils.has_command", return_value=False)
+    @patch("lava_tool.utils.os.environ.get", return_value=None)
+    @patch("lava_tool.utils.sys.exit")
+    def test_edit_file_0(self, mocked_sys_exit, mocked_env_get,
+                         mocked_has_command, mocked_subprocess):
+        edit_file(self.temp_file.name)
+        self.assertTrue(mocked_sys_exit.called)
+
+    @patch("lava_tool.utils.subprocess")
+    @patch("lava_tool.utils.has_command", side_effect=[True, False])
+    @patch("lava_tool.utils.os.environ.get", return_value=None)
+    def test_edit_file_1(self, mocked_env_get, mocked_has_command,
+                         mocked_subprocess):
+        mocked_subprocess.Popen = MagicMock()
+        edit_file(self.temp_file.name)
+        expected = [call(["sensible-editor", self.temp_file.name])]
+        self.assertEqual(expected, mocked_subprocess.Popen.call_args_list)
+
+    @patch("lava_tool.utils.subprocess")
+    @patch("lava_tool.utils.has_command", side_effect=[False, True])
+    @patch("lava_tool.utils.os.environ.get", return_value=None)
+    def test_edit_file_2(self, mocked_env_get, mocked_has_command,
+                         mocked_subprocess):
+        mocked_subprocess.Popen = MagicMock()
+        edit_file(self.temp_file.name)
+        expected = [call(["xdg-open", self.temp_file.name])]
+        self.assertEqual(expected, mocked_subprocess.Popen.call_args_list)
+
+    @patch("lava_tool.utils.subprocess")
+    @patch("lava_tool.utils.has_command", return_value=False)
+    @patch("lava_tool.utils.os.environ.get", return_value="vim")
+    def test_edit_file_3(self, mocked_env_get, mocked_has_command,
+                         mocked_subprocess):
+        mocked_subprocess.Popen = MagicMock()
+        edit_file(self.temp_file.name)
+        expected = [call(["vim", self.temp_file.name])]
+        self.assertEqual(expected, mocked_subprocess.Popen.call_args_list)
+
+    @patch("lava_tool.utils.subprocess")
+    @patch("lava_tool.utils.has_command", return_value=False)
+    @patch("lava_tool.utils.os.environ.get", return_value="vim")
+    def test_edit_file_4(self, mocked_env_get, mocked_has_command,
+                         mocked_subprocess):
+        mocked_subprocess.Popen = MagicMock()
+        mocked_subprocess.Popen.side_effect = Exception()
+        self.assertRaises(CommandError, edit_file, self.temp_file.name)
+
+    def test_can_edit_file(self):
+        # Tests the can_edit_file method of the config command.
+        # This is to make sure the device config file is not erased when
+        # checking if it is possible to open it.
+        expected = ("hostname = a_fake_panda02\nconnection_command = \n"
+                    "device_type = panda\n")
+
+        with open(self.temp_file.name, "w") as f:
+            f.write(expected)
+
+        self.assertTrue(can_edit_file(self.temp_file.name))
+        obtained = ""
+        with open(self.temp_file.name) as f:
+            obtained = f.read()
+
+        self.assertEqual(expected, obtained)

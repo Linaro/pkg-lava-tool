@@ -19,10 +19,12 @@
 import StringIO
 import base64
 import os
-import subprocess
 import tarfile
 import tempfile
 import types
+import subprocess
+import sys
+import urlparse
 
 from lava.tool.errors import CommandError
 
@@ -111,49 +113,6 @@ def base64_encode(path):
                            "{0}.".format(path))
 
 
-def write_file(path, content):
-    """Creates a file with the specified content.
-
-    :param path: The path of the file to write.
-    :param content: What to write in the file.
-    """
-    try:
-        with open(path, "w") as to_write:
-            to_write.write(content)
-    except (OSError, IOError):
-        raise CommandError("Error writing file '{0}'".format(path))
-
-
-def verify_file_extension(path, default, supported):
-    """Verifies if a file has a supported extensions.
-
-    If the file does not have one, it will add the default extension
-    provided.
-
-    :param path: The path of a file to verify.
-    :param default: The default extension to use.
-    :param supported: A list of supported extensions to check against.
-    :return The path of the file.
-    """
-    full_path, file_name = os.path.split(path)
-    name, extension = os.path.splitext(file_name)
-    if not extension:
-        path = ".".join([path, default])
-    elif extension[1:].lower() not in supported:
-        path = os.path.join(full_path, ".".join([name, default]))
-    return path
-
-
-def verify_path_existance(path):
-    """Verifies if a given path exists or not on the file system.
-
-    Raises a CommandError in case it exists.
-
-    :param path: The path to verify."""
-    if os.path.exists(path):
-        raise CommandError("{0} already exists.".format(path))
-
-
 def retrieve_file(path, extensions):
     """Searches for a file that has one of the supported extensions.
 
@@ -209,3 +168,133 @@ def check_valid_extension(path, extensions):
         if extension in extensions:
             is_valid = True
     return is_valid
+
+
+def verify_file_extension(path, default, supported):
+    """Verifies if a file has a supported extensions.
+
+    If the file does not have one, it will add the default extension
+    provided.
+
+    :param path: The path of a file to verify.
+    :param default: The default extension to use.
+    :param supported: A list of supported extensions to check against.
+    :return The path of the file.
+    """
+    full_path, file_name = os.path.split(path)
+    name, extension = os.path.splitext(file_name)
+    if not extension:
+        path = ".".join([path, default])
+    elif extension[1:].lower() not in supported:
+        path = os.path.join(full_path, ".".join([name, default]))
+    return path
+
+
+def verify_path_existance(path):
+    """Verifies if a given path exists or not on the file system.
+
+    Raises a CommandError in case it exists.
+
+    :param path: The path to verify."""
+    if os.path.exists(path):
+        raise CommandError("{0} already exists.".format(path))
+
+
+def write_file(path, content):
+    """Creates a file with the specified content.
+
+    :param path: The path of the file to write.
+    :param content: What to write in the file.
+    """
+    try:
+        with open(path, "w") as to_write:
+            to_write.write(content)
+    except (OSError, IOError):
+        raise CommandError("Error writing file '{0}'".format(path))
+
+
+def execute(cmd_args):
+    """Executes the supplied command args.
+
+    :param cmd_args: The command, and its optional arguments, to run.
+    :return The command execution return code.
+    """
+    cmd_args = to_list(cmd_args)
+    try:
+        return subprocess.check_call(cmd_args)
+    except subprocess.CalledProcessError:
+        raise CommandError("Error running the following command: "
+                           "{0}".format(" ".join(cmd_args)))
+
+
+def can_edit_file(path):
+    """Checks if a file can be opend in write mode.
+
+    :param path: The path to the file.
+    :return True if it is possible to write on the file, False otherwise.
+    """
+    can_edit = True
+    try:
+        fp = open(path, "a")
+        fp.close()
+    except IOError:
+        can_edit = False
+    return can_edit
+
+
+def edit_file(file_to_edit):
+    """Opens the specified file with the default file editor.
+
+    :param file_to_edit: The file to edit.
+    """
+    editor = os.environ.get("EDITOR", None)
+    if editor is None:
+        if has_command("sensible-editor"):
+            editor = "sensible-editor"
+        elif has_command("xdg-open"):
+            editor = "xdg-open"
+        else:
+            # We really do not know how to open a file.
+            print >> sys.stdout, ("Cannot find an editor to open the "
+                                  "file '{0}'.".format(file_to_edit))
+            print >> sys.stdout, ("Either set the 'EDITOR' environment "
+                                  "variable, or install 'sensible-editor' "
+                                  "or 'xdg-open'.")
+            sys.exit(-1)
+    try:
+        subprocess.Popen([editor, file_to_edit]).wait()
+    except Exception:
+        raise CommandError("Error opening the file '{0}' with the "
+                           "following editor: {1}.".format(file_to_edit,
+                                                           editor))
+
+
+def verify_and_create_url(server, endpoint=""):
+    """Checks that the provided values make a correct URL.
+
+    If the server address does not contain a scheme, by default it will use
+    HTTPS.
+    The endpoint is then added at the URL.
+
+    :param server: A server URL to verify.
+    :return A URL.
+    """
+    scheme, netloc, path, params, query, fragment = \
+        urlparse.urlparse(server)
+    if not scheme:
+        scheme = "https"
+    if not netloc:
+        netloc, path = path, ""
+
+    if not netloc[-1:] == "/":
+        netloc += "/"
+
+    if endpoint:
+        if endpoint[0] == "/":
+            endpoint = endpoint[1:]
+        if not endpoint[-1:] == "/":
+            endpoint += "/"
+        netloc += endpoint
+
+    return urlparse.urlunparse(
+        (scheme, netloc, path, params, query, fragment))
