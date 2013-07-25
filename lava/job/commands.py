@@ -44,7 +44,8 @@ class new(BaseCommand):
         super(new, cls).register_arguments(parser)
         parser.add_argument("FILE", help=("Job file to be created."))
         parser.add_argument("--type",
-                            help="The type of job to create.",
+                            help=("The type of job to create. Defaults to "
+                                  "'{0}'.".format(BOOT_TEST_KEY)),
                             choices=JOB_TYPES.keys(),
                             default=BOOT_TEST_KEY)
 
