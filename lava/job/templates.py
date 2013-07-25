@@ -17,18 +17,18 @@
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
 from lava.parameter import (
+    ListParameter,
     Parameter,
-    TarRepoParameter,
 )
 
-TESTDEF_REPOS_TAR_REPO = "tar-repo"
+LAVA_TEST_SHELL_TAR_REPO_KEY = "tar-repo"
+LAVA_TEST_SHELL_TESDEF_KEY = "testdef"
 
 DEVICE_TYPE_PARAMETER = Parameter("device_type")
 PREBUILT_IMAGE_PARAMETER = Parameter("image", depends=DEVICE_TYPE_PARAMETER)
 
-# Never store the testdef_urls parameter in the config file.
-TESTDEF_URL_PARAMETER = TarRepoParameter(TESTDEF_REPOS_TAR_REPO)
-TESTDEF_URL_PARAMETER.store = False
+TESTDEF_URLS_PARAMETER = ListParameter("testdef_urls")
+TESTDEF_URLS_PARAMETER.store = False
 
 # Use another ID for the server parameter, might be different.
 SERVER_PARAMETER = Parameter("stream_server")
@@ -66,10 +66,38 @@ LAVA_TEST_SHELL = {
             "command": "lava_test_shell",
             "parameters": {
                 "timeout": 1800,
+                "testdef_urls": TESTDEF_URLS_PARAMETER,
+            }
+        },
+        {
+            "command": "submit_results",
+            "parameters" : {
+                "stream": STREAM_PARAMETER,
+                "server": SERVER_PARAMETER
+            }
+        }
+    ]
+}
+
+LAVA_TEST_SHELL_TAR_REPO = {
+    "job_name": "LAVA Test Shell",
+    "timeout": 18000,
+    "device_type": DEVICE_TYPE_PARAMETER,
+    "actions": [
+        {
+            "command": "deploy_linaro_image",
+            "parameters": {
+                "image": PREBUILT_IMAGE_PARAMETER,
+            }
+        },
+        {
+            "command": "lava_test_shell",
+            "parameters": {
+                "timeout": 1800,
                 "testdef_repos": [
                         {
-                            "testdef": "lavatest.yaml",
-                            "tar-repo": TESTDEF_URL_PARAMETER
+                            LAVA_TEST_SHELL_TESDEF_KEY: None,
+                            LAVA_TEST_SHELL_TAR_REPO_KEY: None,
                         }
                 ]
             }
@@ -82,4 +110,13 @@ LAVA_TEST_SHELL = {
             }
         }
     ]
+}
+
+
+BOOT_TEST_KEY = "boot-test"
+LAVA_TEST_SHELL_KEY = "lava-test-shell"
+
+JOB_TYPES = {
+    BOOT_TEST_KEY: BOOT_TEST,
+    LAVA_TEST_SHELL_KEY: LAVA_TEST_SHELL,
 }

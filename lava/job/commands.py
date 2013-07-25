@@ -30,7 +30,7 @@ from lava.helper.template import get_key
 from lava.job import Job
 from lava.job.templates import (
     LAVA_TEST_SHELL,
-    TESTDEF_REPOS_TAR_REPO,
+    LAVA_TEST_SHELL_TAR_REPO_KEY,
 )
 from lava.parameter import (
     ListParameter,
@@ -39,8 +39,11 @@ from lava.parameter import (
 )
 from lava.tool.command import CommandGroup
 from lava.tool.errors import CommandError
-from lava_tool.utils import has_command
-
+from lava_tool.authtoken import AuthenticatingServerProxy, KeyringAuthBackend
+from lava_tool.utils import (
+    has_command,
+    verify_file_extension,
+)
 
 # Name of the config value to store the job ids.
 JOBS_ID = "jobs_id"
@@ -70,8 +73,8 @@ class new(BaseCommand):
 
     def invoke(self, tests_dir=None):
         full_path = os.path.abspath(self.args.FILE)
-        job_file = self.verify_file_extension(full_path, DEFAULT_EXTENSION,
-                                              JOB_FILE_EXTENSIONS)
+        job_file = verify_file_extension(full_path, DEFAULT_EXTENSION,
+                                         JOB_FILE_EXTENSIONS)
 
         if os.path.exists(job_file):
             raise CommandError('{0} already exists.'.format(job_file))
@@ -79,7 +82,7 @@ class new(BaseCommand):
         job_instance = Job(LAVA_TEST_SHELL)
         if tests_dir:
             testdef_tar_repo = get_key(job_instance.data,
-                                      TESTDEF_REPOS_TAR_REPO)
+                                       LAVA_TEST_SHELL_TAR_REPO_KEY)
             testdef_tar_repo.set(tests_dir)
             testdef_tar_repo.asked = True
 

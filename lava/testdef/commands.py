@@ -26,7 +26,6 @@ from lava.helper.command import BaseCommand
 from lava.testdef import TestDefinition
 from lava.testdef.templates import TESTDEF_TEMPLATE
 from lava.tool.command import CommandGroup
-from lava.tool.errors import CommandError
 
 
 # Default test def file extension.
@@ -51,21 +50,12 @@ class new(BaseCommand):
         super(new, cls).register_arguments(parser)
         parser.add_argument("FILE", help="Test definition file to create.")
 
-    def invoke(self):
+    def invoke(self, testdef_template=TESTDEF_TEMPLATE):
         full_path = os.path.abspath(self.args.FILE)
-        testdef_file = self.verify_file_extension(full_path,
-                                                  DEFAULT_TEST_EXTENSION,
-                                                  TEST_FILE_EXTENSIONS)
-        if os.path.exists(testdef_file):
-            raise CommandError("Test definition file '{0}' already "
-                               "exists.".format(self.args.FILE))
-        try:
-            testdef = TestDefinition(testdef_file, TESTDEF_TEMPLATE)
-            testdef.update(self.config)
-            testdef.write()
-        except (OSError, IOError):
-            raise CommandError("Cannot write file "
-                               "'{0}'.".format(self.args.FILE))
+
+        testdef = TestDefinition(testdef_template, full_path)
+        testdef.update(self.config)
+        testdef.write()
 
 
 class run(BaseCommand):
