@@ -79,6 +79,8 @@ LAVA_TEST_SHELL = {
     ]
 }
 
+# This is a special case template, only use when automatically create job files
+# starting from a testdef or a script. Never to be used directly by the user.
 LAVA_TEST_SHELL_TAR_REPO = {
     "job_name": "LAVA Test Shell",
     "timeout": 18000,
@@ -112,10 +114,10 @@ LAVA_TEST_SHELL_TAR_REPO = {
     ]
 }
 
-
 BOOT_TEST_KEY = "boot-test"
 LAVA_TEST_SHELL_KEY = "lava-test-shell"
 
+# Dict with all the user available job templates.
 JOB_TYPES = {
     BOOT_TEST_KEY: BOOT_TEST,
     LAVA_TEST_SHELL_KEY: LAVA_TEST_SHELL,

@@ -41,6 +41,7 @@ class CommandTest(HelperTest):
     def setUp(self):
         super(CommandTest, self).setUp()
         self.args.FILE = self.temp_file.name
+        self.args.type = "boot-test"
 
         self.device_type = Parameter('device_type')
         self.prebuilt_image = Parameter('prebuilt_image',

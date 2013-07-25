@@ -26,36 +26,19 @@ import xmlrpclib
 
 from lava.helper.command import BaseCommand
 from lava.helper.dispatcher import get_devices
-from lava.helper.template import get_key
 from lava.job import Job
 from lava.job.templates import (
-    LAVA_TEST_SHELL,
-    LAVA_TEST_SHELL_TAR_REPO_KEY,
+    BOOT_TEST_KEY,
+    JOB_TYPES,
 )
 from lava.parameter import (
-    ListParameter,
-    Parameter,
     SingleChoiceParameter,
 )
 from lava.tool.command import CommandGroup
 from lava.tool.errors import CommandError
-from lava_tool.authtoken import AuthenticatingServerProxy, KeyringAuthBackend
 from lava_tool.utils import (
     has_command,
-    verify_file_extension,
 )
-
-# Name of the config value to store the job ids.
-JOBS_ID = "jobs_id"
-# Name of the config value to store the LAVA server URL.
-SERVER = "server"
-# Name of the config value to store the LAVA rpc_endpoint.
-RPC_ENDPOINT = "rpc_endpoint"
-
-# Default job file extension.
-DEFAULT_EXTENSION = "json"
-# Possible extension for a job file.
-JOB_FILE_EXTENSIONS = [DEFAULT_EXTENSION]
 
 
 class job(CommandGroup):
@@ -70,31 +53,24 @@ class new(BaseCommand):
     def register_arguments(cls, parser):
         super(new, cls).register_arguments(parser)
         parser.add_argument("FILE", help=("Job file to be created."))
+        parser.add_argument("--type",
+                            help="The type of job to create.",
+                            choices=JOB_TYPES.keys(),
+                            default=BOOT_TEST_KEY)
 
-    def invoke(self, tests_dir=None):
+    def invoke(self, job_template=None):
+        if not job_template:
+            job_template = JOB_TYPES.get(self.args.type)
+
         full_path = os.path.abspath(self.args.FILE)
-        job_file = verify_file_extension(full_path, DEFAULT_EXTENSION,
-                                         JOB_FILE_EXTENSIONS)
 
-        if os.path.exists(job_file):
-            raise CommandError('{0} already exists.'.format(job_file))
-
-        job_instance = Job(LAVA_TEST_SHELL)
-        if tests_dir:
-            testdef_tar_repo = get_key(job_instance.data,
-                                       LAVA_TEST_SHELL_TAR_REPO_KEY)
-            testdef_tar_repo.set(tests_dir)
-            testdef_tar_repo.asked = True
-
-        with open(job_file, 'w') as write_file:
-            job_instance.fill_in(self.config)
-            job_instance.write(write_file)
+        job_instance = Job(job_template, full_path)
+        job_instance.update(self.config)
+        job_instance.write()
 
 
 class submit(BaseCommand):
     """Submits the specified job file."""
-
-    JOBS_ID = "jobs_id"
 
     @classmethod
     def register_arguments(cls, parser):
@@ -102,28 +78,14 @@ class submit(BaseCommand):
         parser.add_argument("FILE", help=("The job file to submit."))
 
     def invoke(self):
-        jobfile = self.args.FILE
-        jobdata = open(jobfile, 'rb').read()
-
-        server = self.authenticated_server()
-
         try:
+            jobfile = self.args.FILE
+            jobdata = open(jobfile, 'rb').read()
+
+            server = self.authenticated_server()
+
             job_id = server.scheduler.submit_job(jobdata)
             print >> sys.stdout, "Job submitted with job ID {0}".format(job_id)
-
-            # Store the job_id into the config file.
-            if job_id:
-                # We need first to take out the old values, and then store the
-                # new one.
-                job_ids_parameter = ListParameter(JOBS_ID)
-                job_ids_parameter.asked = True
-
-                value = self.config.get_from_backend(job_ids_parameter)
-                if value:
-                    job_ids_parameter.set(value)
-
-                job_ids_parameter.add(job_id)
-                self.config.put_parameter(job_ids_parameter)
         except xmlrpclib.Fault, exc:
             raise CommandError(str(exc))
 
@@ -172,41 +134,16 @@ class status(BaseCommand):
 
     def invoke(self):
         job_id = str(self.args.JOB_ID)
-        # Get also the value from the config.
-        job_ids_parameter = ListParameter(JOBS_ID)
-        job_ids_parameter.asked = True
-
-        job_ids = self.config.get_from_backend(job_ids_parameter)
-        if job_ids:
-            job_ids = Parameter.deserialize(job_ids)
-
-        if job_id == "-1":
-            # In this case we ask the user which ID to look up.
-            if job_ids:
-                job_id = SingleChoiceParameter("job_id",
-                                               job_ids).prompt("Job ids: ")
-            else:
-                raise CommandError("No job ids stored. Please provide one "
-                                   "on the command line.")
-
-        server = self.authenticated_server()
 
         try:
+            server = self.authenticated_server()
             job_status = server.scheduler.job_status(job_id)
 
             status = job_status["job_status"].lower()
             bundle = job_status["bundle_sha1"]
 
             print >> sys.stdout, "\nJob id: {0}".format(job_id)
-            print >> sys.stdout, ("Status: {0}".format(status))
-            print >> sys.stdout, ("Bundle: {0}".format(bundle))
-
-            # If a job has finished running, remove it from the list of
-            # job ids.
-            if job_ids and status != "running" and job_id in job_ids:
-                job_ids.remove(job_id)
-                job_ids_parameter.set(job_ids)
-                self.config.put_parameter(job_ids_parameter)
-
+            print >> sys.stdout, "Status: {0}".format(status)
+            print >> sys.stdout, "Bundle: {0}".format(bundle)
         except xmlrpclib.Fault, exc:
             raise CommandError(str(exc))
