@@ -83,7 +83,8 @@ class new(BaseCommand):
         job_instance = Job(LAVA_TEST_SHELL)
         if tests_dir:
             # TODO: find a better way to retrieve a key.
-            testdef_tar_repo = get_key(LAVA_TEST_SHELL_TAR_REPO_KEY)
+            testdef_tar_repo = get_key(job_instance.data,
+                                       LAVA_TEST_SHELL_TAR_REPO_KEY)
             testdef_tar_repo.set(tests_dir)
             testdef_tar_repo.asked = True
 
