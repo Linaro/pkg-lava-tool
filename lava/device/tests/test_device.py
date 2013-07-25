@@ -23,17 +23,17 @@ Device class unit tests.
 from mock import patch
 
 from lava.config import Config
-from lava.parameter import Parameter
+from lava.device import (
+    Device,
+    get_known_device,
+)
 from lava.device.templates import (
     HOSTNAME_PARAMETER,
     PANDA_DEVICE_TYPE,
     PANDA_CONNECTION_COMMAND,
 )
-from lava.device import (
-    Device,
-    get_known_device,
-)
 from lava.helper.tests.helper_test import HelperTest
+from lava.parameter import Parameter
 
 
 class DeviceTest(HelperTest):
@@ -86,10 +86,6 @@ class DeviceTest(HelperTest):
         instance = get_known_device(hostname)
         instance.update(config)
 
-        # This is necessary to clean up the state of the "singleton", and
-        # always get back a fresh object.
-        config.__metaclass__._drop()
-
         self.assertEqual(expected, instance.data)
 
     @patch("lava.config.Config.save")
@@ -116,10 +112,6 @@ class DeviceTest(HelperTest):
 
         expected = ("hostname = panda_device\nconnection_command = test\n"
                     "device_type = panda\n")
-
-        # This is necessary to clean up the state of the "singleton", and
-        # always get back a fresh object.
-        config.__metaclass__._drop()
 
         obtained = ""
         with open(self.temp_file.name) as f:

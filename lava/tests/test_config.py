@@ -56,13 +56,7 @@ class ConfigTest(ConfigTestCase):
     def setUp(self, mocked_save):
         super(ConfigTest, self).setUp()
         self.config = Config()
-        self.config._config_file = self.temp_file.name
-
-    def tearDown(self):
-        super(ConfigTest, self).tearDown()
-        # This is necessary to clean up the state of the "singleton", and
-        # always get back a fresh object.
-        self.config.__metaclass__._drop()
+        self.config.config_file = self.temp_file.name
 
     def test_assert_temp_config_file(self):
         # Dummy test to make sure we are overriding correctly the Config class.
@@ -170,19 +164,13 @@ class InteractiveConfigTest(ConfigTestCase):
     def setUp(self, mocked_save):
         super(InteractiveConfigTest, self).setUp()
         self.config = InteractiveConfig()
-        self.config._config_file = self.temp_file.name
-
-    def tearDown(self):
-        super(InteractiveConfigTest, self).tearDown()
-        # This is necessary to clean up the state of the "singleton", and
-        # always get back a fresh object.
-        self.config.__metaclass__._drop()
+        self.config.config_file = self.temp_file.name
 
     @patch("lava.config.Config.get", new=MagicMock(return_value=None))
     def test_non_interactive_config_0(self):
         # Try to get a value that does not exists, users just press enter when
         # asked for a value. Value will be empty.
-        self.config._force_interactive = False
+        self.config.force_interactive = False
         sys.stdin = StringIO("\n")
         value = self.config.get(Parameter("foo"))
         self.assertEqual("", value)
@@ -190,13 +178,13 @@ class InteractiveConfigTest(ConfigTestCase):
     @patch("lava.config.Config.get", new=MagicMock(return_value="value"))
     def test_non_interactive_config_1(self):
         # Parent class config returns value, but we are not interactive.
-        self.config._force_interactive = False
+        self.config.force_interactive = False
         value = self.config.get(Parameter("foo"))
         self.assertEqual("value", value)
 
     @patch("lava.config.Config.get", new=MagicMock(return_value=None))
     def test_non_interactive_config_2(self):
-        self.config._force_interactive = False
+        self.config.force_interactive = False
         expected = "bar"
         sys.stdin = StringIO(expected)
         value = self.config.get(Parameter("foo"))
@@ -206,7 +194,7 @@ class InteractiveConfigTest(ConfigTestCase):
     def test_interactive_config_0(self):
         # We force to be interactive, meaning that even if a value is found,
         # it will be asked anyway.
-        self.config._force_interactive = True
+        self.config.force_interactive = True
         expected = "a_new_value"
         sys.stdin = StringIO(expected)
         value = self.config.get(Parameter("foo"))
@@ -216,13 +204,13 @@ class InteractiveConfigTest(ConfigTestCase):
     def test_interactive_config_1(self):
         # Force to be interactive, but when asked for the new value press
         # Enter. The old value should be returned.
-        self.config._force_interactive = True
+        self.config.force_interactive = True
         sys.stdin = StringIO("\n")
         value = self.config.get(Parameter("foo"))
         self.assertEqual("value", value)
 
     def test_calculate_config_section_0(self):
-        self.config._force_interactive = True
+        self.config.force_interactive = True
         obtained = self.config._calculate_config_section(self.param1)
         expected = "DEFAULT"
         self.assertEqual(expected, obtained)
@@ -230,13 +218,13 @@ class InteractiveConfigTest(ConfigTestCase):
     def test_calculate_config_section_1(self):
         self.param1.set("foo")
         self.param2.depends.asked = True
-        self.config._force_interactive = True
+        self.config.force_interactive = True
         obtained = self.config._calculate_config_section(self.param2)
         expected = "foo=foo"
         self.assertEqual(expected, obtained)
 
     def test_calculate_config_section_2(self):
-        self.config._force_interactive = True
+        self.config.force_interactive = True
         self.config.config_backend.get = MagicMock(return_value=None)
         sys.stdin = StringIO("baz")
         expected = "foo=baz"
@@ -248,7 +236,7 @@ class InteractiveConfigTest(ConfigTestCase):
         # file, we honor the cached version.
         self.param1.set("bar")
         self.param2.depends.asked = True
-        self.config._force_interactive = True
+        self.config.force_interactive = True
         expected = "foo=bar"
         obtained = self.config._calculate_config_section(self.param2)
         self.assertEqual(expected, obtained)
@@ -262,7 +250,7 @@ class InteractiveConfigTest(ConfigTestCase):
 
         mocked_raw.side_effect = KeyboardInterrupt()
 
-        self.config._force_interactive = True
+        self.config.force_interactive = True
         self.config.get(self.param1)
         self.assertTrue(mocked_sys_exit.called)
 

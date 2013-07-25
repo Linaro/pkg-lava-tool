@@ -41,6 +41,8 @@ SERVER = "server"
 # Name of the config value to store the LAVA rpc_endpoint.
 RPC_ENDPOINT = "rpc_endpoint"
 
+CONFIG = InteractiveConfig()
+
 
 class BaseCommand(Command):
 
@@ -48,8 +50,8 @@ class BaseCommand(Command):
 
     def __init__(self, parser, args):
         super(BaseCommand, self).__init__(parser, args)
-        self.config = InteractiveConfig(
-            force_interactive=self.args.non_interactive)
+        self.config = CONFIG
+        self.config.force_interactive = self.args.non_interactive
 
     @classmethod
     def register_arguments(cls, parser):

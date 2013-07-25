@@ -55,34 +55,8 @@ def _run_at_exit():
 atexit.register(_run_at_exit)
 
 
-class Singleton(type):
-    """A singleton implementation.
-
-    Configuration should be shared among the various call. The other approach
-    would be to turn this into a module or a class with only static/class
-    methods.
-    """
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args,
-                                                                 **kwargs)
-        return cls._instances[cls]
-
-    @classmethod
-    def _drop(cls):
-        "Drop the instance (for testing purposes)."
-        Singleton._instances = {}
-
-
 class Config(object):
     """A generic config object."""
-    # Between all the various singleton Python patterns, the metaclass one
-    # looks like is the one that works better with inheritance.
-    # In Python3 this would go into the class declaration as follows:
-    # class Config(object, metaclass=Singleton)
-    __metaclass__ = Singleton
 
     def __init__(self):
         # The cache where to store parameters.
@@ -91,6 +65,7 @@ class Config(object):
         self._config_backend = None
         AT_EXIT_CALLS.add(self.save)
 
+
     @property
     def config_file(self):
         if self._config_file is None:
@@ -98,6 +73,10 @@ class Config(object):
                                  os.path.join(os.path.expanduser('~'),
                                               '.lavaconfig'))
         return self._config_file
+
+    @config_file.setter
+    def config_file(self, value):
+        self._config_file = value
 
     @property
     def config_backend(self):
@@ -242,6 +221,14 @@ class InteractiveConfig(Config):
         super(InteractiveConfig, self).__init__()
         self._force_interactive = force_interactive
 
+    @property
+    def force_interactive(self):
+        return self._force_interactive
+
+    @force_interactive.setter
+    def force_interactive(self, value):
+        self._force_interactive = value
+
     def get(self, parameter, section=None):
         """Overrides the parent one.
 
@@ -252,7 +239,7 @@ class InteractiveConfig(Config):
             section = self._calculate_config_section(parameter)
         value = super(InteractiveConfig, self).get(parameter, section)
 
-        if value is None or self._force_interactive:
+        if value is None or self.force_interactive:
             value = parameter.prompt(old_value=value)
 
         if value is not None and parameter.store:

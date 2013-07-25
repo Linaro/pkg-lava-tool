@@ -51,7 +51,7 @@ class NewCommandTest(HelperTest):
 
         self.config_file = tempfile.NamedTemporaryFile(delete=False)
         self.config = InteractiveConfig()
-        self.config._config_file = self.config_file.name
+        self.config.config_file = self.config_file.name
         # Patch class raw_input, start it, and stop it on tearDown.
         self.patcher1 = patch("lava.parameter.raw_input", create=True)
         self.mocked_raw_input = self.patcher1.start()
@@ -63,7 +63,6 @@ class NewCommandTest(HelperTest):
         os.unlink(self.config_file.name)
         os.unlink(self.temp_yaml.name)
         self.patcher1.stop()
-        self.config.__metaclass__._drop()
 
     def test_register_arguments(self):
         # Make sure that the parser add_argument is called and we have the

@@ -25,8 +25,8 @@ import json
 from mock import patch
 from StringIO import StringIO
 
-from lava.helper.tests.helper_test import HelperTest
 from lava.config import Config
+from lava.helper.tests.helper_test import HelperTest
 from lava.job import Job
 from lava.job.templates import BOOT_TEST
 from lava.parameter import Parameter
@@ -38,11 +38,7 @@ class JobTest(HelperTest):
     def setUp(self, mocked_config):
         super(JobTest, self).setUp()
         self.config = Config()
-        self.config._config_file = self.temp_file.name
-
-    def tearDown(self):
-        super(JobTest, self).tearDown()
-        self.config.__metaclass__._drop()
+        self.config.config_file = self.temp_file.name
 
     def test_from_template(self):
         template = {}
