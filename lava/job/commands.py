@@ -29,6 +29,7 @@ from lava.job.templates import (
     JOB_TYPES,
 )
 from lava.tool.command import CommandGroup
+from lava.tool.errors import CommandError
 
 
 class job(CommandGroup):
@@ -97,7 +98,10 @@ class status(BaseCommand):
                             help=("Prints status information about the "
                                   "provided job id."),
                             nargs="?",
-                            default="-1")
+                            default=None)
 
     def invoke(self):
-        super(status, self).status(self.args.JOB_ID)
+        if self.args.JOB_ID:
+            super(status, self).status(self.args.JOB_ID)
+        else:
+            raise CommandError("It is necessary to specify a job id.")
