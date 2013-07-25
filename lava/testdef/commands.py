@@ -23,8 +23,6 @@ Test definition commands class.
 import os
 
 from lava.helper.command import BaseCommand
-from lava.testdef import TestDefinition
-from lava.testdef.templates import TESTDEF_TEMPLATE
 from lava.tool.command import CommandGroup
 
 
@@ -44,12 +42,9 @@ class new(BaseCommand):
         super(new, cls).register_arguments(parser)
         parser.add_argument("FILE", help="Test definition file to create.")
 
-    def invoke(self, testdef_template=TESTDEF_TEMPLATE):
+    def invoke(self):
         full_path = os.path.abspath(self.args.FILE)
-
-        testdef = TestDefinition(testdef_template, full_path)
-        testdef.update(self.config)
-        testdef.write()
+        self.create_test_definition(full_path)
 
 
 class run(BaseCommand):

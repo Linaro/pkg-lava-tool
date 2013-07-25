@@ -37,8 +37,20 @@ from lava_tool.authtoken import (
 from lava_tool.utils import (
     has_command,
     verify_and_create_url,
+    create_tar,
+    base64_encode,
+)
+from lava.job import Job
+from lava.job.templates import (
+    LAVA_TEST_SHELL_TAR_REPO,
+    LAVA_TEST_SHELL_TAR_REPO_KEY,
+    LAVA_TEST_SHELL_TESDEF_KEY,
 )
 
+from lava.testdef import TestDefinition
+from lava.testdef.templates import (
+    TESTDEF_TEMPLATE,
+)
 CONFIG = InteractiveConfig()
 
 
@@ -121,3 +133,46 @@ class BaseCommand(Command):
         else:
             raise CommandError("Job file '{0}' does not exists, or it is not "
                                "a file.".format(job_file))
+
+    def create_tar_repo_job(self, job_file, testdef_file, tar_content):
+        """Creates a job file based on the tar-repo template.
+
+        The tar repo is not kept on the file system.
+
+        :param job_file: The path of the job file to create.
+        :param testdef_file: The path of the test definition file.
+        :param tar_content: What should go into the tarball repository.
+        :return The path of the job file created.
+        """
+        try:
+            tar_repo = create_tar(tar_content)
+
+            job_instance = Job(LAVA_TEST_SHELL_TAR_REPO, job_file)
+            job_instance.update(self.config)
+
+            job_instance.set(LAVA_TEST_SHELL_TAR_REPO_KEY,
+                             base64_encode(tar_repo))
+            job_instance.set(LAVA_TEST_SHELL_TESDEF_KEY,
+                             os.path.basename(testdef_file))
+
+            job_instance.write()
+
+            return job_instance.file_name
+        finally:
+            if os.path.isfile(tar_repo):
+                os.unlink(tar_repo)
+
+    def create_test_definition(self, testdef_file, template=TESTDEF_TEMPLATE):
+        """Creates a test definition YAML file.
+
+        :param testdef_file: The file to create.
+        :return The path of the file created.
+        """
+        testdef = TestDefinition(template, testdef_file)
+        testdef.update(self.config)
+        testdef.write()
+
+        print >> sys.stdout, ("Create test definition "
+                              "'{0}'.".format(testdef.file_name))
+
+        return testdef.file_name
