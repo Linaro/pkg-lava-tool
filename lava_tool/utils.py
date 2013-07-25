@@ -16,8 +16,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
+import StringIO
+import base64
 import os
 import subprocess
+import tarfile
+import tempfile
+import types
 
 from lava.tool.errors import CommandError
 
@@ -34,6 +39,76 @@ def has_command(command):
     except subprocess.CalledProcessError:
         command_available = False
     return command_available
+
+
+def to_list(value):
+    """Return a list from the passed value.
+
+    :param value: The parameter to turn into a list.
+    """
+    return_value = []
+    if isinstance(value, types.StringType):
+        return_value = [value]
+    else:
+        return_value = list(value)
+    return return_value
+
+
+def create_tar(paths):
+    """Creates a temporary tar file with the provided paths.
+
+    The tar file is not deleted at the end, it has to be delete by who calls
+    this function.
+
+    If just a directory is passed, it will be flattened out: its contents will
+    be added, but not the directory itself.
+
+    :param paths: List of paths to be included in the tar archive.
+    :type list
+    :return The path to the temporary tar file.
+    """
+    paths = to_list(paths)
+    try:
+        temp_tar_file = tempfile.NamedTemporaryFile(suffix=".tar",
+                                                    delete=False)
+        with tarfile.open(temp_tar_file.name, "w") as tar_file:
+            for path in paths:
+                full_path = os.path.abspath(path)
+                if os.path.isfile(full_path):
+                    arcname = os.path.basename(full_path)
+                    tar_file.add(full_path, arcname=arcname)
+                elif os.path.isdir(full_path):
+                    # If we pass a directory, flatten it out.
+                    # List its contents, and add them as they are.
+                    for element in os.listdir(full_path):
+                        arcname = element
+                        tar_file.add(os.path.join(full_path, element),
+                                     arcname=arcname)
+        return temp_tar_file.name
+    except tarfile.TarError:
+        raise CommandError("Error creating the temporary tar archive.")
+
+
+def base64_encode(path):
+    """Encode in base64 the provided file.
+
+    :param path: The path to a file.
+    :return The file content encoded in base64.
+    """
+    if os.path.isfile(path):
+        encoded_content = StringIO.StringIO()
+
+        try:
+            with open(path) as read_file:
+                base64.encode(read_file, encoded_content)
+
+            return encoded_content.getvalue().strip()
+        except IOError:
+            raise CommandError("Cannot read file "
+                               "'{0}'.".format(path))
+    else:
+        raise CommandError("Provided path does not exists or is not a file: "
+                           "{0}.".format(path))
 
 
 def write_file(path, content):
@@ -127,7 +202,7 @@ def check_valid_extension(path, extensions):
     is_valid = False
 
     local_path, file_name = os.path.split(path)
-    name, full_extension = os.path.splittext(file_name)
+    name, full_extension = os.path.splitext(file_name)
 
     if full_extension:
         extension = full_extension[1:].strip().lower()

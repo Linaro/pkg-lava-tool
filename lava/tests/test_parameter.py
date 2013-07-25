@@ -28,6 +28,8 @@ from lava.parameter import (
     Parameter,
 )
 
+from lava_tool.utils import to_list
+
 
 class GeneralParameterTest(HelperTest):
     """General class with setUp and tearDown methods for Parameter tests."""
@@ -66,13 +68,13 @@ class ParameterTest(GeneralParameterTest):
     def test_to_list_0(self):
         value = "a_value"
         expected = [value]
-        obtained = Parameter.to_list(value)
+        obtained = to_list(value)
         self.assertIsInstance(obtained, list)
         self.assertEquals(expected, obtained)
 
     def test_to_list_1(self):
         expected = ["a_value", "b_value"]
-        obtained = Parameter.to_list(expected)
+        obtained = to_list(expected)
         self.assertIsInstance(obtained, list)
         self.assertEquals(expected, obtained)
 

@@ -54,13 +54,13 @@ from lava.helper.template import (
     expand_template,
     set_value
 )
+
 from lava.job.commands import JOB_FILE_EXTENSIONS
 from lava.parameter import (
     Parameter,
-    TarRepoParameter,
 )
 from lava.job.templates import (
-    TESTDEF_REPOS_TAR_REPO,
+    LAVA_TEST_SHELL_TAR_REPO_KEY,
 )
 from lava.testdef.templates import (
     DEFAULT_TESTDEF_FILE,
@@ -275,13 +275,14 @@ class update(BaseCommand):
         tests_dir = os.path.join(job_dir, TESTS_DIR)
 
         if os.path.isdir(tests_dir):
-            encoded_tests = TarRepoParameter.get_encoded_tar(tests_dir)
+            encoded_tests = None
 
             json_data = None
             with open(job_file, "r") as json_file:
                 try:
                     json_data = json.load(json_file)
-                    set_value(json_data, TESTDEF_REPOS_TAR_REPO, encoded_tests)
+                    set_value(
+                        json_data, LAVA_TEST_SHELL_TAR_REPO_KEY, encoded_tests)
                 except Exception:
                     raise CommandError("Cannot read job file '{0}'.".format(
                         job_file))
