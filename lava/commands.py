@@ -114,13 +114,19 @@ class init(BaseCommand):
         data = self._update_data()
 
         test_path = create_dir(full_path, TESTS_DIR)
+
+        print >> sys.stdout, ("\nCreating default test script "
+                              "'{0}'.".format(DEFAULT_TESTDEF_SCRIPT))
         # TODO
         self._create_script(test_path)
 
+        print >> sys.stdout, ("\nCreating test definition "
+                              "file '{0}'.".format(DEFAULT_TESTDEF_FILE))
         testdef_file = self.create_test_definition(
             os.path.join(test_path, DEFAULT_TESTDEF_FILE))
 
         job = data[JOBFILE_ID]
+        print >> sys.stdout, "\nCreating job file '{0}'.".format(job)
         self.create_tar_repo_job(
             os.path.join(full_path, job), testdef_file, test_path)
 
@@ -144,9 +150,6 @@ class init(BaseCommand):
         if not os.path.isfile(default_script):
             # We do not have the default testdef script. Create it, but
             # remind the user to update it.
-            print >> sys.stdout, ("\nCreating default test script "
-                                  "'{0}'.".format(DEFAULT_TESTDEF_SCRIPT))
-
             write_file(default_script, DEFAULT_TESTDEF_SCRIPT_CONTENT)
 
         # Prompt the user to write the script file.
