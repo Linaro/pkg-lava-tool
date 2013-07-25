@@ -21,26 +21,39 @@ import yaml
 from copy import deepcopy
 
 from lava.helper.template import expand_template
+from lava_tool.utils import (
+    write_file,
+    verify_path_existance,
+    verify_file_extension
+)
+
+# Default test def file extension.
+DEFAULT_TESTDEF_EXTENSION = "yaml"
+# Possible extensions for a test def file.
+TESTDEF_FILE_EXTENSIONS = [DEFAULT_TESTDEF_EXTENSION]
 
 
 class TestDefinition(object):
 
-    def __init__(self, testdef_file, data):
+    def __init__(self, data, file_name):
         """Initialize the object.
 
-        :param testdef_file: Where the test definition will be written.
-        :type str
         :param data: The serializable data to be used, usually a template.
         :type dict
+        :param file_name: Where the test definition will be written.
+        :type str
         """
-        self.testdef_file = testdef_file
+        self.file_name = verify_file_extension(file_name,
+                                               DEFAULT_TESTDEF_EXTENSION,
+                                               TESTDEF_FILE_EXTENSIONS)
+        verify_path_existance(self.file_name)
+
         self.data = deepcopy(data)
 
     def write(self):
         """Writes the test definition to file."""
-        with open(self.testdef_file, 'w') as write_file:
-            yaml.dump(self.data, write_file, default_flow_style=False,
-                      indent=4)
+        content = yaml.dump(self.data, default_flow_style=False, indent=4)
+        write_file(self.file_name, content)
 
     def update(self, config):
         """Updates the TestDefinition object based on the provided config."""

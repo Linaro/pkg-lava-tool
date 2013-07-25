@@ -18,12 +18,17 @@
 
 """lava_tool.utils tests."""
 
+import os
 import subprocess
+import tempfile
 
 from unittest import TestCase
 from mock import patch
 
-from lava_tool.utils import has_command
+from lava_tool.utils import (
+    has_command,
+    verify_file_extension,
+)
 
 
 class UtilTests(TestCase):
@@ -39,3 +44,31 @@ class UtilTests(TestCase):
         # Check that a "command" exists. The call to subprocess is mocked.
         mocked_check_call.return_value = 0
         self.assertTrue(has_command(""))
+
+    def test_verify_file_extension_with_extension(self):
+        extension = ".test"
+        supported = [extension[1:]]
+        try:
+            temp_file = tempfile.NamedTemporaryFile(suffix=extension,
+                                                    delete=False)
+            obtained = verify_file_extension(
+                temp_file.name, extension[1:], supported)
+            self.assertEquals(temp_file.name, obtained)
+        finally:
+            if os.path.isfile(temp_file.name):
+                os.unlink(temp_file.name)
+
+    def test_verify_file_extension_without_extension(self):
+        extension = "json"
+        supported = [extension]
+        expected = "/tmp/a_fake.json"
+        obtained = verify_file_extension("/tmp/a_fake", extension, supported)
+        self.assertEquals(expected, obtained)
+
+    def test_verify_file_extension_with_unsupported_extension(self):
+        extension = "json"
+        supported = [extension]
+        expected = "/tmp/a_fake.json"
+        obtained = verify_file_extension(
+            "/tmp/a_fake.extension", extension, supported)
+        self.assertEquals(expected, obtained)

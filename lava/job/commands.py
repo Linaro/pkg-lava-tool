@@ -40,7 +40,10 @@ from lava.parameter import (
 from lava.tool.command import CommandGroup
 from lava.tool.errors import CommandError
 from lava_tool.authtoken import AuthenticatingServerProxy, KeyringAuthBackend
-from lava_tool.utils import has_command
+from lava_tool.utils import (
+    has_command,
+    verify_file_extension,
+)
 
 
 # Name of the config value to store the job ids.
@@ -71,8 +74,8 @@ class new(BaseCommand):
 
     def invoke(self, tests_dir=None):
         full_path = os.path.abspath(self.args.FILE)
-        job_file = self.verify_file_extension(full_path, DEFAULT_EXTENSION,
-                                              JOB_FILE_EXTENSIONS)
+        job_file = verify_file_extension(full_path, DEFAULT_EXTENSION,
+                                        JOB_FILE_EXTENSIONS)
 
         if os.path.exists(job_file):
             raise CommandError('{0} already exists.'.format(job_file))

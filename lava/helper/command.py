@@ -129,27 +129,6 @@ class BaseCommand(Command):
         return job_file
 
     @classmethod
-    def verify_file_extension(cls, path, default, supported):
-        """Verifies if a file has a supported extensions.
-
-        If the file does not have one, it will add the default extension
-        provided.
-
-        :param path: The path of a file to verify.
-        :param default: The default extension to use.
-        :param supported: A list of supported extension to check the file one
-                          against.
-        :return The path of the file.
-        """
-        full_path, file_name = os.path.split(path)
-        name, extension = os.path.splitext(file_name)
-        if not extension:
-            path = ".".join([path, default])
-        elif extension[1:].lower() not in supported:
-            path = os.path.join(full_path, ".".join([name, default]))
-        return path
-
-    @classmethod
     def run(cls, cmd_args):
         """Runs the supplied command args.
 

@@ -69,6 +69,10 @@ from lava.testdef.templates import (
 )
 from lava.tool.errors import CommandError
 
+from lava_tool.utils import (
+    retrieve_file,
+)
+
 # Default directory structure name.
 TESTS_DIR = "tests"
 
@@ -205,7 +209,7 @@ class run(BaseCommand):
 
     def invoke(self):
         full_path = os.path.abspath(self.args.JOB)
-        job_file = self.retrieve_file(full_path, JOB_FILE_EXTENSIONS)
+        job_file = retrieve_file(full_path, JOB_FILE_EXTENSIONS)
 
         self._run_job(job_file)
 
