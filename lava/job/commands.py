@@ -26,11 +26,10 @@ import xmlrpclib
 
 from lava.helper.command import BaseCommand
 from lava.helper.dispatcher import get_devices
-from lava.helper.template import get_key
 from lava.job import Job
 from lava.job.templates import (
-    LAVA_TEST_SHELL,
-    LAVA_TEST_SHELL_TAR_REPO_KEY,
+    BOOT_TEST_KEY,
+    JOB_TYPES,
 )
 from lava.parameter import (
     Parameter,
@@ -41,13 +40,7 @@ from lava.tool.errors import CommandError
 from lava_tool.authtoken import AuthenticatingServerProxy, KeyringAuthBackend
 from lava_tool.utils import (
     has_command,
-    verify_file_extension,
 )
-
-# Default job file extension.
-DEFAULT_EXTENSION = "json"
-# Possible extension for a job file.
-JOB_FILE_EXTENSIONS = [DEFAULT_EXTENSION]
 
 
 class job(CommandGroup):
@@ -62,25 +55,20 @@ class new(BaseCommand):
     def register_arguments(cls, parser):
         super(new, cls).register_arguments(parser)
         parser.add_argument("FILE", help=("Job file to be created."))
+        parser.add_argument("--type",
+                            help="The type of job to create.",
+                            choices=JOB_TYPES.keys(),
+                            default=BOOT_TEST_KEY)
 
-    def invoke(self, tests_dir=None):
+    def invoke(self, job_template=None):
+        if not job_template:
+            job_template = JOB_TYPES.get(self.args.type)
+
         full_path = os.path.abspath(self.args.FILE)
-        job_file = verify_file_extension(full_path, DEFAULT_EXTENSION,
-                                         JOB_FILE_EXTENSIONS)
 
-        if os.path.exists(job_file):
-            raise CommandError('{0} already exists.'.format(job_file))
-
-        job_instance = Job(LAVA_TEST_SHELL)
-        if tests_dir:
-            testdef_tar_repo = get_key(job_instance.data,
-                                       LAVA_TEST_SHELL_TAR_REPO_KEY)
-            testdef_tar_repo.set(tests_dir)
-            testdef_tar_repo.asked = True
-
-        with open(job_file, 'w') as write_file:
-            job_instance.fill_in(self.config)
-            job_instance.write(write_file)
+        job_instance = Job(job_template, full_path)
+        job_instance.update(self.config)
+        job_instance.write()
 
 
 class submit(BaseCommand):

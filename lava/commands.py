@@ -55,7 +55,7 @@ from lava.helper.template import (
     set_value
 )
 
-from lava.job.commands import JOB_FILE_EXTENSIONS
+from lava.job import JOB_FILE_EXTENSIONS
 from lava.parameter import (
     Parameter,
 )

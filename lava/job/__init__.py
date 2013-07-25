@@ -16,18 +16,46 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
-from copy import deepcopy
 import json
 
-from lava.helper.template import expand_template
+from copy import deepcopy
+
+from lava.helper.template import (
+    expand_template,
+    set_value,
+)
+from lava_tool.utils import (
+    verify_file_extension,
+    verify_path_existance,
+    write_file
+)
+
+# Default job file extension.
+DEFAULT_JOB_EXTENSION = "json"
+# Possible extension for a job file.
+JOB_FILE_EXTENSIONS = [DEFAULT_JOB_EXTENSION]
 
 
-class Job:
-    def __init__(self, template):
-        self.data = deepcopy(template)
+class Job(object):
+    def __init__(self, data, file_name):
+        self.file_name = verify_file_extension(file_name,
+                                               DEFAULT_JOB_EXTENSION,
+                                               JOB_FILE_EXTENSIONS)
+        verify_path_existance(self.file_name)
+        self.data = deepcopy(data)
 
-    def fill_in(self, config):
+    def set(self, key, value):
+        """Set key to the specified value.
+
+        :param key: The key to look in the object data.
+        :param value: The value to set.
+        """
+        set_value(self.data, key, value)
+
+    def update(self, config):
+        """Updates the Job object based on the provided config."""
         expand_template(self.data, config)
 
-    def write(self, stream):
-        stream.write(json.dumps(self.data, indent=4))
+    def write(self):
+        """Writes the Job object to file."""
+        write_file(self.file_name, json.dumps(self.data, indent=4))
