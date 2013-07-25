@@ -52,7 +52,7 @@ TESTDEF_TEMPLATE = {
         "environment": ENVIRONMENT_PARAMETER,
     },
     "run": {
-        TESTDEF_STEPS_KEY: "./mytest.sh"
+        TESTDEF_STEPS_KEY: ["./mytest.sh"]
     },
     "parse": {
         "pattern": '^\s*(?P<test_case_id>\w+)=(?P<result>\w+)\s*$'
