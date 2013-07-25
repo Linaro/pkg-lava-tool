@@ -46,7 +46,6 @@ necessary to run the following command in order to update the job definition:
 import copy
 import json
 import os
-import stat
 import sys
 
 from lava.helper.command import BaseCommand
@@ -119,7 +118,6 @@ class init(BaseCommand):
 
         print >> sys.stdout, ("\nCreating default test script "
                               "'{0}'.".format(DEFAULT_TESTDEF_SCRIPT))
-        # TODO
         self._create_script(test_path)
 
         print >> sys.stdout, ("\nCreating test definition "
@@ -155,10 +153,6 @@ class init(BaseCommand):
 
         # Prompt the user to write the script file.
         edit_file(default_script)
-
-        # Make sure the script is executable.
-        os.chmod(default_script,
-                 stat.S_IRWXU | stat.S_IRWXG | stat.S_IROTH | stat.S_IXOTH)
 
 
 class run(BaseCommand):
