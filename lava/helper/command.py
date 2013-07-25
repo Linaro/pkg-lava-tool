@@ -172,7 +172,8 @@ class BaseCommand(Command):
         testdef.update(self.config)
         testdef.write()
 
-        print >> sys.stdout, ("Create test definition "
-                              "'{0}'.".format(testdef.file_name))
+        print >> sys.stdout, ("Created test definition "
+                              "'{0}'.".format(
+                              os.path.basename(testdef.file_name)))
 
         return testdef.file_name
