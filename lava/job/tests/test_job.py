@@ -25,8 +25,8 @@ import json
 from mock import patch
 from StringIO import StringIO
 
-from lava.helper.tests.helper_test import HelperTest
 from lava.config import Config
+from lava.helper.tests.helper_test import HelperTest
 from lava.job import Job
 from lava.job.templates import BOOT_TEST
 from lava.parameter import Parameter

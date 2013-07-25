@@ -23,17 +23,17 @@ Device class unit tests.
 from mock import patch
 
 from lava.config import Config
-from lava.parameter import Parameter
+from lava.device import (
+    Device,
+    get_known_device,
+)
 from lava.device.templates import (
     HOSTNAME_PARAMETER,
     PANDA_DEVICE_TYPE,
     PANDA_CONNECTION_COMMAND,
 )
-from lava.device import (
-    Device,
-    get_known_device,
-)
 from lava.helper.tests.helper_test import HelperTest
+from lava.parameter import Parameter
 
 
 class DeviceTest(HelperTest):

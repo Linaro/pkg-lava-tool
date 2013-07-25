@@ -54,6 +54,7 @@ def get_key(data, search_key):
     :return The key value.
     """
     return_value = None
+    found = False
 
     if isinstance(data, dict):
         bucket = []
@@ -61,11 +62,12 @@ def get_key(data, search_key):
         for key, value in data.iteritems():
             if key == search_key:
                 return_value = value
+                found = True
                 break
             else:
                 bucket.append(value)
 
-        if bucket and return_value is None:
+        if bucket and not found:
             for element in bucket:
                 if isinstance(element, list):
                     for element in element:
@@ -74,9 +76,12 @@ def get_key(data, search_key):
                     for key, value in element.iteritems():
                         if key == search_key:
                             return_value = value
+                            found = True
                             break
                         else:
                             bucket.append(value)
+                if found:
+                    break
 
     return return_value
 
