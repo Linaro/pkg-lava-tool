@@ -21,13 +21,12 @@ Tests for lava.commands.
 """
 
 import os
-import shutil
 import tempfile
 
 from mock import (
     MagicMock,
+    patch
 )
-
 
 from lava.commands import (
     init,
@@ -65,27 +64,14 @@ class InitCommandTests(HelperTest):
         _, args, _ = self.parser.method_calls[1]
         self.assertIn("DIR", args)
 
-    def test_command_invoke_0(self):
+
+    @patch("lava.commands.edit_file", create=True)
+    def test_command_invoke_0(self, mocked_edit_file):
         # Invoke the init command passing a path to a file. Should raise an
         # exception.
         self.args.DIR = self.temp_file.name
         init_command = init(self.parser, self.args)
         self.assertRaises(CommandError, init_command.invoke)
-
-    def test_command_invoke_1(self):
-        # Invoke the init command passing a path to a directory that does not
-        # exist.
-        try:
-            self.args.DIR = self.tmp("a_temp_dir")
-            init_command = init(self.parser, self.args)
-            init_command._create_files = MagicMock()
-            init_command._update_data = MagicMock()
-            init_command.invoke()
-
-            self.assertTrue(os.path.isdir(self.args.DIR))
-        finally:
-            if os.path.exists(self.args.DIR):
-                shutil.rmtree(self.args.DIR)
 
     def test_command_invoke_2(self):
         # Invoke the init command passing a path where the user cannot write.
@@ -140,4 +126,3 @@ class SubmitCommandTests(HelperTest):
 
         _, args, _ = self.parser.method_calls[1]
         self.assertIn("JOB", args)
-
