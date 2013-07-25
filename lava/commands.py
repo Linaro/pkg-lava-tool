@@ -54,7 +54,9 @@ from lava.helper.template import (
     expand_template,
     set_value
 )
-from lava.job import JOB_FILE_EXTENSIONS
+from lava.job import (
+    JOB_FILE_EXTENSIONS,
+)
 from lava.job.templates import (
     LAVA_TEST_SHELL_TAR_REPO_KEY,
 )
@@ -68,7 +70,10 @@ from lava.testdef.templates import (
 )
 from lava.tool.errors import CommandError
 from lava_tool.utils import (
+    edit_file,
     retrieve_file,
+    create_dir,
+    write_file,
 )
 
 # Default directory structure name.
@@ -104,23 +109,20 @@ class init(BaseCommand):
             raise CommandError("'{0}' already exists, and is a "
                                "file.".format(self.args.DIR))
 
-        if not os.path.isdir(full_path):
-            try:
-                os.makedirs(full_path)
-            except OSError:
-                raise CommandError("Cannot create directory "
-                                   "'{0}'.".format(self.args.DIR))
-
-        test_path = os.path.join(full_path, TESTS_DIR)
-        if not os.path.isdir(test_path):
-            try:
-                os.makedirs(test_path)
-            except OSError:
-                raise CommandError("Cannot create directory "
-                                   "'{0}'.".format(self.args.DIR))
+        create_dir(full_path)
 
         data = self._update_data()
-        self._create_files(data, full_path, test_path)
+
+        test_path = create_dir(full_path, TESTS_DIR)
+        # TODO
+        self._create_script(test_path)
+
+        testdef_file = self.create_test_definition(
+            os.path.join(test_path, DEFAULT_TESTDEF_FILE))
+
+        job = data[JOBFILE_ID]
+        self.create_tar_repo_job(
+            os.path.join(full_path, job), testdef_file, test_path)
 
     def _update_data(self):
         """Updates the template and ask values to the user.
@@ -135,7 +137,7 @@ class init(BaseCommand):
 
         return data
 
-    def _create_files(self, data, full_path, test_path):
+    def _create_script(self, test_path):
         # This is the default script file as defined in the testdef template.
         default_script = os.path.join(test_path, DEFAULT_TESTDEF_SCRIPT)
 
@@ -145,50 +147,14 @@ class init(BaseCommand):
             print >> sys.stdout, ("\nCreating default test script "
                                   "'{0}'.".format(DEFAULT_TESTDEF_SCRIPT))
 
-            with open(default_script, "w") as write_file:
-                write_file.write(DEFAULT_TESTDEF_SCRIPT_CONTENT)
+            write_file(default_script, DEFAULT_TESTDEF_SCRIPT_CONTENT)
 
-            # Prompt the user to write the script file.
-            self.edit_file(default_script)
+        # Prompt the user to write the script file.
+        edit_file(default_script)
 
         # Make sure the script is executable.
         os.chmod(default_script,
                  stat.S_IRWXU | stat.S_IRWXG | stat.S_IROTH | stat.S_IXOTH)
-
-        print >> sys.stdout, ("\nCreating test definition "
-                              "'{0}':".format(DEFAULT_TESTDEF_FILE))
-        self._create_test_file(os.path.join(test_path,
-                                            DEFAULT_TESTDEF_FILE))
-
-        job = data[JOBFILE_ID]
-        print >> sys.stdout, "\nCreating job file '{0}':".format(job)
-        self._create_job_file(os.path.join(full_path, job), test_path)
-
-    def _create_job_file(self, job_file, test_path=None):
-        """Creates the job file on the filesystem."""
-
-        # Invoke the command to create new job files: make a copy of the local
-        # args and add what is necessary for the command.
-        from lava.job.commands import new
-
-        args = copy.copy(self.args)
-        args.FILE = job_file
-
-        job_cmd = new(self.parser, args)
-        job_cmd.invoke(tests_dir=test_path)
-
-    def _create_test_file(self, test_file):
-        """Creates the test definition file on the filesystem."""
-
-        # Invoke the command to create new testdef files: make a copy of the
-        # local args and add what is necessary for the command.
-        from lava.testdef.commands import new
-
-        args = copy.copy(self.args)
-        args.FILE = test_file
-
-        testdef_cmd = new(self.parser, args)
-        testdef_cmd.invoke()
 
 
 class run(BaseCommand):
@@ -209,17 +175,7 @@ class run(BaseCommand):
         full_path = os.path.abspath(self.args.JOB)
         job_file = retrieve_file(full_path, JOB_FILE_EXTENSIONS)
 
-        self._run_job(job_file)
-
-    def _run_job(self, job_file):
-        """Runs a job on the dispatcher."""
-        from lava.job.commands import run
-
-        args = copy.copy(self.args)
-        args.FILE = job_file
-
-        run_cmd = run(self.parser, args)
-        run_cmd.invoke()
+        super(run, self).run(job_file)
 
 
 class submit(BaseCommand):
@@ -240,17 +196,7 @@ class submit(BaseCommand):
         full_path = os.path.abspath(self.args.JOB)
         job_file = self.retrieve_file(full_path, JOB_FILE_EXTENSIONS)
 
-        self._submit_job(job_file)
-
-    def _submit_job(self, job_file):
-        """Submits a job file to LAVA."""
-        from lava.job.commands import submit
-
-        args = copy.copy(self.args)
-        args.FILE = job_file
-
-        submit_cmd = submit(self.parser, args)
-        submit_cmd.invoke()
+        super(submit, self).submit(job_file)
 
 
 class status(BaseCommand):
@@ -296,6 +242,7 @@ class update(BaseCommand):
         tests_dir = os.path.join(job_dir, TESTS_DIR)
 
         if os.path.isdir(tests_dir):
+            # TODO
             encoded_tests = None
 
             json_data = None
@@ -308,12 +255,9 @@ class update(BaseCommand):
                     raise CommandError("Cannot read job file '{0}'.".format(
                         job_file))
 
-            with open(job_file, "w") as write_file:
-                try:
-                    write_file.write(json.dumps(json_data, indent=4))
-                except Exception:
-                    raise CommandError("Cannot update job file "
-                                       "'{0}'.".format(json_file))
+            content = json.dumps(json_data, indent=4)
+            write_file(job_file, content)
+
             print >> sys.stdout, "Job definition updated."
         else:
             raise CommandError("Cannot find tests directory.")

@@ -298,3 +298,23 @@ def verify_and_create_url(server, endpoint=""):
 
     return urlparse.urlunparse(
         (scheme, netloc, path, params, query, fragment))
+
+
+def create_dir(path, dir_name=None):
+    """Checks if a directory does not exists, and creates it.
+
+    :param path: The path where the directory should be created.
+    :param dir_name: An optional name for a directory to be created at
+                     path (dir_name will be joined with path).
+    :return The path of the created directory."""
+    created_dir = path
+    if dir_name:
+        created_dir = os.path.join(path, dir_name)
+
+    if not os.path.isdir(created_dir):
+        try:
+            os.makedirs(created_dir)
+        except OSError:
+            raise CommandError("Cannot create directory "
+                               "'{0}'.".format(created_dir))
+    return created_dir
