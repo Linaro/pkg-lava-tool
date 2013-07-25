@@ -65,8 +65,10 @@ from lava.parameter import (
 )
 from lava.testdef.templates import (
     DEFAULT_TESTDEF_FILE,
+)
+from lava.script import (
+    ShellScript,
     DEFAULT_TESTDEF_SCRIPT,
-    DEFAULT_TESTDEF_SCRIPT_CONTENT,
 )
 from lava.tool.errors import CommandError
 from lava_tool.utils import (
@@ -148,9 +150,8 @@ class init(BaseCommand):
         default_script = os.path.join(test_path, DEFAULT_TESTDEF_SCRIPT)
 
         if not os.path.isfile(default_script):
-            # We do not have the default testdef script. Create it, but
-            # remind the user to update it.
-            write_file(default_script, DEFAULT_TESTDEF_SCRIPT_CONTENT)
+            shell_script = ShellScript(default_script)
+            shell_script.write()
 
         # Prompt the user to write the script file.
         edit_file(default_script)

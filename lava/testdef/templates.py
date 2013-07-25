@@ -24,18 +24,8 @@ from lava.parameter import (
 )
 
 DEFAULT_TESTDEF_FILE = "lavatest.yaml"
-
 DEFAULT_TESTDEF_VERSION = "1.0"
 DEFAULT_TESTDEF_FORMAT = "Lava-Test Test Definition 1.0"
-
-# This is what will be called by default by the test definition yaml file.
-DEFAULT_TESTDEF_SCRIPT = "mytest.sh"
-DEFAULT_TESTDEF_SCRIPT_CONTENT = """#!/bin/sh
-# Automatic generated content by lava-tool.
-# Please add your own instructions.
-"""
-DEFAULT_TESTDEF_STEP = "./mytest.sh"
-
 DEFAULT_ENVIRONMET_VALUE = "lava_test_shell"
 
 # All these parameters will not be stored on the local config file.
@@ -51,12 +41,7 @@ ENVIRONMENT_PARAMETER.add(DEFAULT_ENVIRONMET_VALUE)
 ENVIRONMENT_PARAMETER.asked = True
 ENVIRONMENT_PARAMETER.store = False
 
-# Steps parameter. Default to a local shell script that the user defines.
-# We do not ask this parameter, and we do not store it either.
-STEPS_PARAMETER = ListParameter("steps", depends=NAME_PARAMETER)
-STEPS_PARAMETER.add(DEFAULT_TESTDEF_STEP)
-STEPS_PARAMETER.asked = True
-STEPS_PARAMETER.store = False
+TESTDEF_STEPS_KEY = "steps"
 
 TESTDEF_TEMPLATE = {
     "metadata": {
@@ -67,7 +52,7 @@ TESTDEF_TEMPLATE = {
         "environment": ENVIRONMENT_PARAMETER,
     },
     "run": {
-        "steps": STEPS_PARAMETER,
+        TESTDEF_STEPS_KEY: "./mytest.sh"
     },
     "parse": {
         "pattern": '^\s*(?P<test_case_id>\w+)=(?P<result>\w+)\s*$'

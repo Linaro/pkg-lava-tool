@@ -20,11 +20,14 @@ import yaml
 
 from copy import deepcopy
 
-from lava.helper.template import expand_template
+from lava.helper.template import (
+    expand_template,
+    set_value,
+)
 from lava_tool.utils import (
     write_file,
     verify_path_existance,
-    verify_file_extension
+    verify_file_extension,
 )
 
 # Default test def file extension.
@@ -49,6 +52,14 @@ class TestDefinition(object):
         verify_path_existance(self.file_name)
 
         self.data = deepcopy(data)
+
+    def set(self, key, value):
+        """Set key to the specified value.
+
+        :param key: The key to look in the object data.
+        :param value: The value to set.
+        """
+        set_value(self.data, key, value)
 
     def write(self):
         """Writes the test definition to file."""

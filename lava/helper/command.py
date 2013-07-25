@@ -24,9 +24,20 @@ import xmlrpclib
 
 from lava.config import InteractiveConfig
 from lava.helper.dispatcher import get_devices
+from lava.job import Job
+from lava.job.templates import (
+    LAVA_TEST_SHELL_TAR_REPO,
+    LAVA_TEST_SHELL_TAR_REPO_KEY,
+    LAVA_TEST_SHELL_TESDEF_KEY,
+)
 from lava.parameter import (
     Parameter,
     SingleChoiceParameter,
+)
+from lava.testdef import TestDefinition
+from lava.testdef.templates import (
+    TESTDEF_STEPS_KEY,
+    TESTDEF_TEMPLATE,
 )
 from lava.tool.command import Command
 from lava.tool.errors import CommandError
@@ -35,22 +46,13 @@ from lava_tool.authtoken import (
     KeyringAuthBackend
 )
 from lava_tool.utils import (
-    has_command,
-    verify_and_create_url,
-    create_tar,
     base64_encode,
-)
-from lava.job import Job
-from lava.job.templates import (
-    LAVA_TEST_SHELL_TAR_REPO,
-    LAVA_TEST_SHELL_TAR_REPO_KEY,
-    LAVA_TEST_SHELL_TESDEF_KEY,
+    create_tar,
+    has_command,
+    to_list,
+    verify_and_create_url,
 )
 
-from lava.testdef import TestDefinition
-from lava.testdef.templates import (
-    TESTDEF_TEMPLATE,
-)
 CONFIG = InteractiveConfig()
 
 
@@ -182,7 +184,8 @@ class BaseCommand(Command):
             if os.path.isfile(tar_repo):
                 os.unlink(tar_repo)
 
-    def create_test_definition(self, testdef_file, template=TESTDEF_TEMPLATE):
+    def create_test_definition(self, testdef_file, template=TESTDEF_TEMPLATE,
+                               steps=None):
         """Creates a test definition YAML file.
 
         :param testdef_file: The file to create.
@@ -190,6 +193,9 @@ class BaseCommand(Command):
         """
         testdef = TestDefinition(template, testdef_file)
         testdef.update(self.config)
+        if steps:
+            steps = to_list(steps)
+            testdef.set(TESTDEF_STEPS_KEY, steps)
         testdef.write()
 
         print >> sys.stdout, ("Created test definition "
