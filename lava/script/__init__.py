@@ -31,7 +31,7 @@ DEFAULT_TESTDEF_SCRIPT_CONTENT = """#!/bin/sh
 #
 # You can use all the avialable Bash commands.
 #
-# For the LAVA commands that are available, see:
+# For the available LAVA commands, see:
 #    http://lava.readthedocs.org/
 #
 """
