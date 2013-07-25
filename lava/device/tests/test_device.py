@@ -86,10 +86,6 @@ class DeviceTest(HelperTest):
         instance = get_known_device(hostname)
         instance.update(config)
 
-        # This is necessary to clean up the state of the "singleton", and
-        # always get back a fresh object.
-        config.__metaclass__._drop()
-
         self.assertEqual(expected, instance.data)
 
     @patch("lava.config.Config.save")
@@ -116,10 +112,6 @@ class DeviceTest(HelperTest):
 
         expected = ("hostname = panda_device\nconnection_command = test\n"
                     "device_type = panda\n")
-
-        # This is necessary to clean up the state of the "singleton", and
-        # always get back a fresh object.
-        config.__metaclass__._drop()
 
         obtained = ""
         with open(self.temp_file.name) as f:

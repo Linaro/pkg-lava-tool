@@ -28,6 +28,8 @@ from lava.tool.command import Command
 from lava.tool.errors import CommandError
 from lava_tool.utils import has_command
 
+CONFIG = InteractiveConfig()
+
 
 class BaseCommand(Command):
 
@@ -35,8 +37,8 @@ class BaseCommand(Command):
 
     def __init__(self, parser, args):
         super(BaseCommand, self).__init__(parser, args)
-        self.config = InteractiveConfig(
-            force_interactive=self.args.non_interactive)
+        self.config = CONFIG
+        self.config.force_interactive = self.args.non_interactive
 
     @classmethod
     def register_arguments(cls, parser):

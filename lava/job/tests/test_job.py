@@ -38,11 +38,7 @@ class JobTest(HelperTest):
     def setUp(self, mocked_config):
         super(JobTest, self).setUp()
         self.config = Config()
-        self.config._config_file = self.temp_file.name
-
-    def tearDown(self):
-        super(JobTest, self).tearDown()
-        self.config.__metaclass__._drop()
+        self.config.config_file = self.temp_file.name
 
     def test_from_template(self):
         template = {}

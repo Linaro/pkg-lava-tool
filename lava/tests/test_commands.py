@@ -44,11 +44,10 @@ class InitCommandTests(HelperTest):
         super(InitCommandTests, self).setUp()
         self.config_file = self.tmp("init_command_tests")
         self.config = Config()
-        self.config._config_file = self.config_file
+        self.config.config_file = self.config_file
 
     def tearDown(self):
         super(InitCommandTests, self).tearDown()
-        self.config.__metaclass__._drop()
         if os.path.isfile(self.config_file):
             os.unlink(self.config_file)
 
@@ -120,12 +119,11 @@ class SubmitCommandTests(HelperTest):
         super(SubmitCommandTests, self).setUp()
         self.config_file = self.tmp("submit_command_tests")
         self.config = Config()
-        self.config._config_file = self.config_file
+        self.config.config_file = self.config_file
         self.config.save = MagicMock()
 
     def tearDown(self):
         super(SubmitCommandTests, self).tearDown()
-        self.config.__metaclass__._drop()
         if os.path.isfile(self.config_file):
             os.unlink(self.config_file)
 
