@@ -28,12 +28,6 @@ from lava.testdef.templates import TESTDEF_TEMPLATE
 from lava.tool.command import CommandGroup
 
 
-# Default test def file extension.
-DEFAULT_TEST_EXTENSION = "yaml"
-# Possible extensions for a test def file.
-TEST_FILE_EXTENSIONS = [DEFAULT_TEST_EXTENSION]
-
-
 class testdef(CommandGroup):
 
     """LAVA test definitions handling."""
