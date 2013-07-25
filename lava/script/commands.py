@@ -21,9 +21,9 @@
 import os
 import tempfile
 
-from lava.job.commands import DEFAULT_JOB_EXTENSION
-from lava.tool.command import CommandGroup
 from lava.helper.command import BaseCommand
+from lava.job import DEFAULT_JOB_EXTENSION
+from lava.tool.command import CommandGroup
 
 JOB_FILE_EXTENSION = "." + DEFAULT_JOB_EXTENSION
 

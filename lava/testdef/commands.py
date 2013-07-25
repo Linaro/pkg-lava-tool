@@ -29,6 +29,7 @@ from lava.tool.command import CommandGroup
 
 JOB_FILE_EXTENSION = "." + DEFAULT_JOB_EXTENSION
 
+
 class testdef(CommandGroup):
 
     """LAVA test definitions handling."""
