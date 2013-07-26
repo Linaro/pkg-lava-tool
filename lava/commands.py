@@ -116,7 +116,9 @@ class init(BaseCommand):
         # Create the directory that will contain the test definition and
         # shell script.
         test_path = create_dir(full_path, TESTS_DIR)
-        self.create_shell_script(test_path)
+        shell_script = self.create_shell_script(test_path)
+        # Let the user modify the file.
+        edit_file(shell_script)
 
         testdef_file = self.create_test_definition(
             os.path.join(test_path, DEFAULT_TESTDEF_FILENAME))
@@ -137,17 +139,6 @@ class init(BaseCommand):
         expand_template(data, self.config)
 
         return data
-
-    def _create_script(self, test_path):
-        # This is the default script file as defined in the testdef template.
-        default_script = os.path.join(test_path, DEFAULT_TESTDEF_SCRIPT)
-
-        if not os.path.isfile(default_script):
-            shell_script = ShellScript(default_script)
-            shell_script.write()
-
-        # Prompt the user to write the script file.
-        edit_file(default_script)
 
 
 class run(BaseCommand):
