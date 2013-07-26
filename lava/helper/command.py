@@ -151,8 +151,8 @@ class BaseCommand(Command):
             bundle = job_status["bundle_sha1"]
 
             print >> sys.stdout, "\nJob id: {0}".format(job_id)
-            print >> sys.stdout, ("Status: {0}".format(status))
-            print >> sys.stdout, ("Bundle: {0}".format(bundle))
+            print >> sys.stdout, "Status: {0}".format(status)
+            print >> sys.stdout, "Bundle: {0}".format(bundle)
         except xmlrpclib.Fault, exc:
             raise CommandError(str(exc))
 
@@ -198,8 +198,8 @@ class BaseCommand(Command):
             testdef.set(TESTDEF_STEPS_KEY, steps)
         testdef.write()
 
+        basename = os.path.basename(testdef.file_name)
         print >> sys.stdout, ("Created test definition "
-                              "'{0}'.".format(
-                              os.path.basename(testdef.file_name)))
+                              "'{0}'.".format(basename))
 
         return testdef.file_name

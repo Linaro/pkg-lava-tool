@@ -47,7 +47,7 @@ class NewCommandTest(HelperTest):
         self.args.FILE = self.file_path
 
         self.temp_yaml = tempfile.NamedTemporaryFile(suffix=".yaml",
-                                                    delete=False)
+                                                     delete=False)
 
         self.config_file = tempfile.NamedTemporaryFile(delete=False)
         self.config = InteractiveConfig()
@@ -110,7 +110,7 @@ class NewCommandTest(HelperTest):
                         'name': ''},
                     'parse': {
                         'pattern':
-                            '^\\s*(?P<test_case_id>\\w+)=(?P<result>\\w+)\\s*$'
+                        '^\\s*(?P<test_case_id>\\w+)=(?P<result>\\w+)\\s*$'
                         },
                     }
         obtained = None
@@ -144,7 +144,7 @@ class NewCommandTest(HelperTest):
                     },
                     'parse': {
                         'pattern':
-                            '^\\s*(?P<test_case_id>\\w+)=(?P<result>\\w+)\\s*$'
+                        '^\\s*(?P<test_case_id>\\w+)=(?P<result>\\w+)\\s*$'
                         },
                     }
         obtained = None

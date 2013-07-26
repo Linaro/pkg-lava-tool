@@ -20,15 +20,9 @@
 Parameter class and its accessory methods/functions.
 """
 
-import StringIO
-import base64
-import os
 import sys
-import tarfile
-import tempfile
 import types
 
-from lava.tool.errors import CommandError
 from lava_tool.utils import to_list
 
 # Character used to join serialized list parameters.

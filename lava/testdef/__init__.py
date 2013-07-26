@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
+"""TestDefinition class."""
+
 import yaml
 
 from copy import deepcopy
@@ -37,6 +39,13 @@ TESTDEF_FILE_EXTENSIONS = [DEFAULT_TESTDEF_EXTENSION]
 
 
 class TestDefinition(object):
+
+    """A test definition object.
+
+    This class should be used to create test definitions. The initialization
+    enforces a default file name extension, and makes sure that the file is
+    not already present on the file system.
+    """
 
     def __init__(self, data, file_name):
         """Initialize the object.

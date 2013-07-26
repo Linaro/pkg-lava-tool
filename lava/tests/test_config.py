@@ -21,7 +21,6 @@ lava.config unit tests.
 """
 
 import sys
-import tempfile
 
 from StringIO import StringIO
 from mock import (
@@ -157,6 +156,7 @@ class ConfigTest(ConfigTestCase):
         param = Parameter("foo")
         obtained = self.config.get_from_backend(param)
         self.assertEquals("bar", obtained)
+
 
 class InteractiveConfigTest(ConfigTestCase):
 

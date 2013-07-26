@@ -71,7 +71,7 @@ LAVA_TEST_SHELL = {
         },
         {
             "command": "submit_results",
-            "parameters" : {
+            "parameters": {
                 "stream": STREAM_PARAMETER,
                 "server": SERVER_PARAMETER
             }
@@ -97,16 +97,16 @@ LAVA_TEST_SHELL_TAR_REPO = {
             "parameters": {
                 "timeout": 1800,
                 "testdef_repos": [
-                        {
-                            LAVA_TEST_SHELL_TESDEF_KEY: None,
-                            LAVA_TEST_SHELL_TAR_REPO_KEY: None,
-                        }
+                    {
+                        LAVA_TEST_SHELL_TESDEF_KEY: None,
+                        LAVA_TEST_SHELL_TAR_REPO_KEY: None,
+                    }
                 ]
             }
         },
         {
             "command": "submit_results",
-            "parameters" : {
+            "parameters": {
                 "stream": STREAM_PARAMETER,
                 "server": SERVER_PARAMETER
             }

@@ -23,7 +23,7 @@ Unit tests for the commands classes
 import json
 import os
 
-from mock import MagicMock, patch
+from mock import patch
 
 from lava.config import Config
 from lava.helper.tests.helper_test import HelperTest

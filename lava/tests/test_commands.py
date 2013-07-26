@@ -64,7 +64,6 @@ class InitCommandTests(HelperTest):
         _, args, _ = self.parser.method_calls[1]
         self.assertIn("DIR", args)
 
-
     @patch("lava.commands.edit_file", create=True)
     def test_command_invoke_0(self, mocked_edit_file):
         # Invoke the init command passing a path to a file. Should raise an

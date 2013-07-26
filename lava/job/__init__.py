@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Job class."""
+
 import json
 
 from copy import deepcopy
@@ -37,6 +39,14 @@ JOB_FILE_EXTENSIONS = [DEFAULT_JOB_EXTENSION]
 
 
 class Job(object):
+
+    """A Job object.
+
+    This class should be used to create new job files. The initialization
+    enforces a default file name extension, and makes sure that the file is
+    not already present on the file system.
+    """
+
     def __init__(self, data, file_name):
         self.file_name = verify_file_extension(file_name,
                                                DEFAULT_JOB_EXTENSION,

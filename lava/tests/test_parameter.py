@@ -27,7 +27,6 @@ from lava.parameter import (
     ListParameter,
     Parameter,
 )
-
 from lava_tool.utils import to_list
 
 
@@ -78,7 +77,9 @@ class ParameterTest(GeneralParameterTest):
         self.assertIsInstance(obtained, list)
         self.assertEquals(expected, obtained)
 
+
 class ListParameterTest(GeneralParameterTest):
+
     """Tests for the specialized ListParameter class."""
 
     def setUp(self):

@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Device class."""
+
 import re
 
 from copy import deepcopy
@@ -46,9 +48,11 @@ KNOWN_DEVICES = dict([(device, (__re_compile(device), template))
 
 
 class Device(object):
+
     """A generic device."""
-    def __init__(self, template, hostname=None):
-        self.data = deepcopy(template)
+
+    def __init__(self, data, hostname=None):
+        self.data = deepcopy(data)
         self.hostname = hostname
 
     def write(self, conf_file):
@@ -86,7 +90,7 @@ def get_known_device(name):
     :return A Device instance.
         """
     instance = Device(DEFAULT_TEMPLATE, hostname=name)
-    for known_dev, (matcher, dev_template) in KNOWN_DEVICES.iteritems():
+    for _, (matcher, dev_template) in KNOWN_DEVICES.iteritems():
         if matcher.match(name):
             instance = Device(dev_template, hostname=name)
             break

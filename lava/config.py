@@ -33,7 +33,6 @@ from ConfigParser import (
 from lava.parameter import Parameter
 from lava.tool.errors import CommandError
 
-
 __all__ = ['Config', 'InteractiveConfig']
 
 # Store for function calls to be made at exit time.
@@ -54,6 +53,7 @@ def _run_at_exit():
     for call in list(AT_EXIT_CALLS):
         call()
 atexit.register(_run_at_exit)
+
 
 class Config(object):
     """A generic config object."""
