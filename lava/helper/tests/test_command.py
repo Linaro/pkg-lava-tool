@@ -16,7 +16,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
-"""lava.herlp.command module tests."""
+"""lava.helper.command module tests."""
+
+from mock import MagicMock, patch
 
 
 from lava.helper.command import BaseCommand
@@ -32,3 +34,14 @@ class BaseCommandTests(HelperTest):
         command.register_arguments(self.parser)
         name, args, kwargs = self.parser.method_calls[0]
         self.assertIn("--non-interactive", args)
+
+    @patch("lava.helper.command.AuthenticatingServerProxy", create=True)
+    def test_authenticated_server(self, mocked_auth_server):
+        command = BaseCommand(self.parser, self.args)
+        command.config = MagicMock()
+        command.config.get = MagicMock()
+        command.config.get.side_effect = ["www.example.org", "RPC"]
+
+        command.authenticated_server()
+
+        self.assertTrue(mocked_auth_server.called)
