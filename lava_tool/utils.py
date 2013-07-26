@@ -209,7 +209,7 @@ def verify_path_non_existance(path):
     :param path: The path to verify.
     """
     if not os.path.exists(path):
-        raise CommandError("{0} already exists.".format(path))
+        raise CommandError("{0} does not exists.".format(path))
 
 
 def write_file(path, content):
