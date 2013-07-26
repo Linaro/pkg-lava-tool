@@ -74,7 +74,7 @@ class run(BaseCommand):
                 os.unlink(job_file)
 
 
-def submit(BaseCommand):
+class submit(BaseCommand):
 
     """Submits the specified test definition to a LAVA server."""
 
