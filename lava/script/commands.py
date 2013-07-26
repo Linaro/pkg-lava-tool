@@ -79,6 +79,9 @@ class run(ScriptBaseCommand):
         parser.add_argument("FILE", help="Shell script file to run.")
 
     def invoke(self):
+        job_file = ""
+        testdef_file = ""
+
         try:
             job_file, testdef_file = self._create_tmp_job_file(self.args.FILE)
             super(run, self).run(job_file)
@@ -99,6 +102,9 @@ class submit(ScriptBaseCommand):
         parser.add_argument("FILE", help="Shell script file to send.")
 
     def invoke(self):
+        job_file = ""
+        testdef_file = ""
+
         try:
             job_file, testdef_file = self._create_tmp_job_file(self.args.FILE)
             super(submit, self).submit(job_file)

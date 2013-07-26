@@ -62,18 +62,16 @@ from lava.job.templates import (
 from lava.parameter import (
     Parameter,
 )
-from lava.script import (
-    ShellScript,
-    DEFAULT_TESTDEF_SCRIPT,
-)
 from lava.testdef import (
     DEFAULT_TESTDEF_FILENAME,
 )
 from lava.tool.errors import CommandError
 from lava_tool.utils import (
+    base64_encode,
+    create_dir,
+    create_tar,
     edit_file,
     retrieve_file,
-    create_dir,
     write_file,
 )
 
@@ -203,22 +201,27 @@ class update(BaseCommand):
         tests_dir = os.path.join(job_dir, TESTS_DIR)
 
         if os.path.isdir(tests_dir):
-            # TODO
-            encoded_tests = None
+            tar_repo = None
+            try:
+                tar_repo = create_tar(tests_dir)
+                encoded_tests = base64_encode(tar_repo)
 
-            json_data = None
-            with open(job_file, "r") as json_file:
-                try:
-                    json_data = json.load(json_file)
-                    set_value(
-                        json_data, LAVA_TEST_SHELL_TAR_REPO_KEY, encoded_tests)
-                except Exception:
-                    raise CommandError("Cannot read job file '{0}'.".format(
-                        job_file))
+                json_data = None
+                with open(job_file, "r") as json_file:
+                    try:
+                        json_data = json.load(json_file)
+                        set_value(json_data, LAVA_TEST_SHELL_TAR_REPO_KEY,
+                                  encoded_tests)
+                    except Exception:
+                        raise CommandError("Cannot read job file "
+                                           "'{0}'.".format(job_file))
 
-            content = json.dumps(json_data, indent=4)
-            write_file(job_file, content)
+                content = json.dumps(json_data, indent=4)
+                write_file(job_file, content)
 
-            print >> sys.stdout, "Job definition updated."
+                print >> sys.stdout, "Job definition updated."
+            finally:
+                if tar_repo and os.path.isfile(tar_repo):
+                    os.unlink(tar_repo)
         else:
             raise CommandError("Cannot find tests directory.")

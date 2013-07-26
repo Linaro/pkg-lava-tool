@@ -76,6 +76,7 @@ class run(TestdefBaseCommand):
         parser.add_argument("FILE", help="Test definition file to run.")
 
     def invoke(self):
+        job_file = ""
         try:
             job_file = self._create_tmp_job_file(self.args.FILE)
             super(run, self).run(job_file)
@@ -94,6 +95,7 @@ class submit(TestdefBaseCommand):
         parser.add_argument("FILE", help="Test definition file to send.")
 
     def invoke(self):
+        job_file = ""
         try:
             job_file = self._create_tmp_job_file(self.args.FILE)
             super(submit, self).submit(job_file)
