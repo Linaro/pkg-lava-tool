@@ -191,12 +191,24 @@ def verify_file_extension(path, default, supported):
 
 
 def verify_path_existance(path):
-    """Verifies if a given path exists or not on the file system.
+    """Verifies if a given path exists on the file system.
 
     Raises a CommandError in case it exists.
 
-    :param path: The path to verify."""
+    :param path: The path to verify.
+    """
     if os.path.exists(path):
+        raise CommandError("{0} already exists.".format(path))
+
+
+def verify_path_non_existance(path):
+    """Verifies if a given path does not exist on the file system.
+
+    Raises a CommandError in case it does not exist.
+
+    :param path: The path to verify.
+    """
+    if not os.path.exists(path):
         raise CommandError("{0} already exists.".format(path))
 
 

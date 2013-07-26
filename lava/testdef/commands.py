@@ -26,7 +26,7 @@ import tempfile
 from lava.helper.command import BaseCommand
 from lava.job import DEFAULT_JOB_FILENAME
 from lava.tool.command import CommandGroup
-from lava_tool.utils import verify_path_existance
+from lava_tool.utils import verify_path_non_existance
 
 
 class testdef(CommandGroup):
@@ -40,7 +40,7 @@ class TestdefBaseCommand(BaseCommand):
 
     def _create_tmp_job_file(self, testdef_file):
         testdef_file = os.path.abspath(testdef_file)
-        verify_path_existance(testdef_file)
+        verify_path_non_existance(testdef_file)
 
         job_file = os.path.join(tempfile.gettempdir(),
                                 DEFAULT_JOB_FILENAME)

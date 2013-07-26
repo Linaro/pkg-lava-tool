@@ -25,7 +25,7 @@ from lava.helper.command import BaseCommand
 from lava.job import DEFAULT_JOB_FILENAME
 from lava.testdef import DEFAULT_TESTDEF_FILENAME
 from lava.tool.command import CommandGroup
-from lava_tool.utils import verify_path_existance
+from lava_tool.utils import verify_path_non_existance
 
 
 class script(CommandGroup):
@@ -47,7 +47,7 @@ class ScriptBaseCommand(BaseCommand):
         :return A tuple with the job file path, and the test definition path.
         """
         script_file = os.path.abspath(script_file)
-        verify_path_existance(script_file)
+        verify_path_non_existance(script_file)
 
         temp_dir = tempfile.gettempdir()
 
