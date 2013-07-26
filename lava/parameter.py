@@ -20,15 +20,10 @@
 Parameter class and its accessory methods/functions.
 """
 
-import StringIO
-import base64
-import os
 import sys
-import tarfile
-import tempfile
 import types
 
-from lava.tool.errors import CommandError
+from lava_tool.utils import to_list
 
 # Character used to join serialized list parameters.
 LIST_SERIALIZE_DELIMITER = ","
@@ -143,25 +138,12 @@ class Parameter(object):
             deserialized = list(value)
         return deserialized
 
-    @classmethod
-    def to_list(cls, value):
-        """Return a list from the passed value.
-
-        :param value: The parameter to turn into a list.
-        """
-        return_value = []
-        if isinstance(value, types.StringType):
-            return_value = [value]
-        else:
-            return_value = list(value)
-        return return_value
-
 
 class SingleChoiceParameter(Parameter):
     """A parameter implemeting a single choice between multiple choices."""
     def __init__(self, id, choices):
         super(SingleChoiceParameter, self).__init__(id)
-        self.choices = self.to_list(choices)
+        self.choices = to_list(choices)
 
     def prompt(self, prompt, old_value=None):
         """Asks the user for their choice."""
@@ -206,7 +188,7 @@ class ListParameter(Parameter):
 
         :param value: The value to set.
         """
-        self.value = self.to_list(value)
+        self.value = to_list(value)
 
     def add(self, value):
         """Adds a new value to the list of values of this parameter.
@@ -267,60 +249,3 @@ class ListParameter(Parameter):
             self.asked = True
 
         return self.value
-
-
-class TarRepoParameter(Parameter):
-    def __init__(self, id="tar_repo_dir", value=None, depends=None):
-        super(TarRepoParameter, self).__init__(id, value=value,
-                                               depends=depends)
-
-    @classmethod
-    def get_encoded_tar(cls, paths):
-        """Encodes in base64 the provided path.
-
-        The econding will create a temporary tar file, read the content of
-        the tarball and encode it in base64. At the end the temporary file
-        will be deleted.
-
-        :param paths: Paths that will be added to the temporary tar file.
-        :return The encoded content of the tar file.
-        """
-        paths = cls.to_list(paths)
-        try:
-            temp_tar_file = tempfile.NamedTemporaryFile(suffix=".tar",
-                                                        delete=False)
-            with tarfile.open(temp_tar_file.name, "w") as tar_file:
-                for path in paths:
-                    full_path = os.path.abspath(path)
-                    if os.path.isfile(full_path):
-                        arcname = os.path.basename(full_path)
-                        tar_file.add(full_path, arcname=arcname)
-                    elif os.path.isdir(full_path):
-                        # If we pass a directory, flatten it out.
-                        # List its content, and add them as they are.
-                        for element in os.listdir(full_path):
-                            arcname = element
-                            tar_file.add(os.path.join(full_path, element),
-                                         arcname=arcname)
-
-            encoded_content = StringIO.StringIO()
-
-            if os.path.isfile(temp_tar_file.name):
-                try:
-                    with open(temp_tar_file.name) as read_file:
-                        base64.encode(read_file, encoded_content)
-
-                    return encoded_content.getvalue().strip()
-                except IOError:
-                    raise CommandError("Cannot read file "
-                                       "'{0}'.".format(temp_tar_file.name))
-            else:
-                raise CommandError("Provided path does not exists: "
-                                   "{0}.".format(temp_tar_file.name))
-        finally:
-            if os.path.isfile(temp_tar_file.name):
-                os.unlink(temp_tar_file.name)
-
-    def prompt(self, old_value=None):
-        super(TarRepoParameter, self).prompt(old_value=old_value)
-        return self.get_encoded_tar(self.value)

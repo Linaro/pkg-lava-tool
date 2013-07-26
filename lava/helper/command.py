@@ -19,27 +19,41 @@
 """Base command class common to lava commands series."""
 
 import os
-import subprocess
 import sys
-import types
-import urlparse
+import xmlrpclib
 
 from lava.config import InteractiveConfig
-from lava.parameter import Parameter
+from lava.helper.dispatcher import get_devices
+from lava.job import Job
+from lava.job.templates import (
+    LAVA_TEST_SHELL_TAR_REPO,
+    LAVA_TEST_SHELL_TAR_REPO_KEY,
+    LAVA_TEST_SHELL_TESDEF_KEY,
+)
+from lava.parameter import (
+    Parameter,
+    SingleChoiceParameter,
+)
+from lava.testdef import TestDefinition
+from lava.testdef.templates import (
+    TESTDEF_STEPS_KEY,
+    TESTDEF_TEMPLATE,
+)
 from lava.tool.command import Command
 from lava.tool.errors import CommandError
 from lava_tool.authtoken import (
     AuthenticatingServerProxy,
     KeyringAuthBackend
 )
-from lava_tool.utils import has_command
+from lava_tool.utils import (
+    base64_encode,
+    create_tar,
+    has_command,
+    to_list,
+    verify_and_create_url,
+)
 
-# Name of the config value to store the job ids.
-JOBS_ID = "jobs_id"
-# Name of the config value to store the LAVA server URL.
-SERVER = "server"
-# Name of the config value to store the LAVA rpc_endpoint.
-RPC_ENDPOINT = "rpc_endpoint"
+CONFIG = InteractiveConfig()
 
 
 class BaseCommand(Command):
@@ -48,8 +62,8 @@ class BaseCommand(Command):
 
     def __init__(self, parser, args):
         super(BaseCommand, self).__init__(parser, args)
-        self.config = InteractiveConfig(
-            force_interactive=self.args.non_interactive)
+        self.config = CONFIG
+        self.config.force_interactive = self.args.non_interactive
 
     @classmethod
     def register_arguments(cls, parser):
@@ -64,158 +78,128 @@ class BaseCommand(Command):
         It will ask the user the necessary parameters to establish the
         connection.
         """
-        server_name_parameter = Parameter(SERVER)
-        rpc_endpoint_parameter = Parameter(RPC_ENDPOINT,
+        server_name_parameter = Parameter("server")
+        rpc_endpoint_parameter = Parameter("rpc_endpoint",
                                            depends=server_name_parameter)
 
         server_url = self.config.get(server_name_parameter)
         endpoint = self.config.get(rpc_endpoint_parameter)
 
-        rpc_url = self.verify_and_create_url(server_url, endpoint)
+        rpc_url = verify_and_create_url(server_url, endpoint)
         server = AuthenticatingServerProxy(rpc_url,
                                            auth_backend=KeyringAuthBackend())
         return server
 
-    @classmethod
-    def verify_and_create_url(cls, server, endpoint=""):
-        """Checks that the provided values make a correct URL.
+    def submit(self, job_file):
+        """Submits a job file to a LAVA server.
 
-        If the server address does not contain a scheme, by default it will use
-        HTTPS.
-        The endpoint is then added at the URL.
+        :param job_file: The job file to submit.
+        :return The job ID on success.
         """
-        scheme, netloc, path, params, query, fragment = \
-            urlparse.urlparse(server)
-        if not scheme:
-            scheme = "https"
-        if not netloc:
-            netloc, path = path, ""
+        if os.path.isfile(job_file):
+            try:
+                jobdata = open(job_file, 'rb').read()
+                server = self.authenticated_server()
 
-        if endpoint:
-            if not netloc[-1:] == "/" and not endpoint[0] == "/":
-                netloc += "/"
-            if not endpoint[-1:] == "/":
-                endpoint += "/"
-            netloc += endpoint
+                job_id = server.scheduler.submit_job(jobdata)
+                print >> sys.stdout, ("Job submitted with job "
+                                      "ID {0}.".format(job_id))
 
-        return urlparse.urlunparse(
-            (scheme, netloc, path, params, query, fragment))
-
-    @classmethod
-    def can_edit_file(cls, conf_file):
-        """Checks if a file can be opend in write mode.
-
-        :param conf_file: The path to the file.
-        :return True if it is possible to write on the file, False otherwise.
-        """
-        can_edit = True
-        try:
-            fp = open(conf_file, "a")
-            fp.close()
-        except IOError:
-            can_edit = False
-        return can_edit
-
-    @classmethod
-    def edit_file(cls, file_to_edit):
-        """Opens the specified file with the default file editor.
-
-        :param file_to_edit: The file to edit.
-        """
-        editor = os.environ.get("EDITOR", None)
-        if editor is None:
-            if has_command("sensible-editor"):
-                editor = "sensible-editor"
-            elif has_command("xdg-open"):
-                editor = "xdg-open"
-            else:
-                # We really do not know how to open a file.
-                print >> sys.stdout, ("Cannot find an editor to open the "
-                                      "file '{0}'.".format(file_to_edit))
-                print >> sys.stdout, ("Either set the 'EDITOR' environment "
-                                      "variable, or install 'sensible-editor' "
-                                      "or 'xdg-open'.")
-                sys.exit(-1)
-        try:
-            subprocess.Popen([editor, file_to_edit]).wait()
-        except Exception:
-            raise CommandError("Error opening the file '{0}' with the "
-                               "following editor: {1}.".format(file_to_edit,
-                                                               editor))
-
-    @classmethod
-    def retrieve_file(cls, path, extensions):
-        """Searches for a file that has one of the supported extensions.
-
-        The path of the first file that matches one of the supported provided
-        extensions will be returned. The files are examined in alphabetical
-        order.
-
-        :param path: Where to look for the file.
-        :param extensions: A list of extensions the file to look for should
-                           have.
-        :return The full path of the file.
-        """
-        if os.path.isfile(path):
-            job_file = path
+                return job_id
+            except xmlrpclib.Fault, exc:
+                raise CommandError(str(exc))
         else:
-            dir_listing = os.listdir(path)
-            dir_listing.sort()
+            raise CommandError("Job file '{0}' does not exists, or is not "
+                               "a file.".format(job_file))
 
-            for element in dir_listing:
-                element_path = os.path.join(path, element)
-                if os.path.isdir(element_path):
-                    continue
-                elif os.path.isfile(element_path):
-                    job_file = os.path.split(element)[1]
-                    # Extension here contains also the leading dot.
-                    full_extension = os.path.splitext(job_file)[1]
+    def run(self, job_file):
+        """Runs a job file on the local LAVA dispatcher.
 
-                    if full_extension:
-                        # Make sure that we have a supported extension.
-                        extension = full_extension[1:].strip().lower()
-                        if extension in extensions:
-                            job_file = element_path
-                            break
+        :param job_file: The job file to run.
+        """
+        if os.path.isfile(job_file):
+            if has_command("lava-dispatch"):
+                devices = get_devices()
+                if devices:
+                    if len(devices) > 1:
+                        device_names = [device.hostname for device in devices]
+                        device_param = SingleChoiceParameter("device",
+                                                             device_names)
+                        device = device_param.prompt("Device to use: ")
+                    else:
+                        device = devices[0].hostname
+                    self.execute(
+                        ["lava-dispatch", "--target", device, job_file])
             else:
-                raise CommandError("No job file found in: '{0}'".format(path))
-
-        return job_file
-
-    @classmethod
-    def verify_file_extension(cls, path, default, supported):
-        """Verifies if a file has a supported extensions.
-
-        If the file does not have one, it will add the default extension
-        provided.
-
-        :param path: The path of a file to verify.
-        :param default: The default extension to use.
-        :param supported: A list of supported extension to check the file one
-                          against.
-        :return The path of the file.
-        """
-        full_path, file_name = os.path.split(path)
-        name, extension = os.path.splitext(file_name)
-        if not extension:
-            path = ".".join([path, default])
-        elif extension[1:].lower() not in supported:
-            path = os.path.join(full_path, ".".join([name, default]))
-        return path
-
-    @classmethod
-    def run(cls, cmd_args):
-        """Runs the supplied command args.
-
-        :param cmd_args: The command, and its optional arguments, to run.
-        :return The command execution return code.
-        """
-        if isinstance(cmd_args, types.StringTypes):
-            cmd_args = [cmd_args]
+                raise CommandError("Cannot find lava-dispatcher installation.")
         else:
-            cmd_args = list(cmd_args)
+            raise CommandError("Job file '{0}' does not exists, or it is not "
+                               "a file.".format(job_file))
+
+    def status(self, job_id):
+        """Retrieves the status of a LAVA job.
+
+        :param job_id: The ID of the job to look up.
+        """
+        job_id = str(job_id)
+
         try:
-            return subprocess.check_call(cmd_args)
-        except subprocess.CalledProcessError:
-            raise CommandError("Error running the following command: "
-                               "{0}".format(" ".join(cmd_args)))
+            server = self.authenticated_server()
+            job_status = server.scheduler.job_status(job_id)
+
+            status = job_status["job_status"].lower()
+            bundle = job_status["bundle_sha1"]
+
+            print >> sys.stdout, "\nJob id: {0}".format(job_id)
+            print >> sys.stdout, "Status: {0}".format(status)
+            print >> sys.stdout, "Bundle: {0}".format(bundle)
+        except xmlrpclib.Fault, exc:
+            raise CommandError(str(exc))
+
+    def create_tar_repo_job(self, job_file, testdef_file, tar_content):
+        """Creates a job file based on the tar-repo template.
+
+        The tar repo is not kept on the file system.
+
+        :param job_file: The path of the job file to create.
+        :param testdef_file: The path of the test definition file.
+        :param tar_content: What should go into the tarball repository.
+        :return The path of the job file created.
+        """
+        try:
+            tar_repo = create_tar(tar_content)
+
+            job_instance = Job(LAVA_TEST_SHELL_TAR_REPO, job_file)
+            job_instance.update(self.config)
+
+            job_instance.set(LAVA_TEST_SHELL_TAR_REPO_KEY,
+                             base64_encode(tar_repo))
+            job_instance.set(LAVA_TEST_SHELL_TESDEF_KEY,
+                             os.path.basename(testdef_file))
+
+            job_instance.write()
+
+            return job_instance.file_name
+        finally:
+            if os.path.isfile(tar_repo):
+                os.unlink(tar_repo)
+
+    def create_test_definition(self, testdef_file, template=TESTDEF_TEMPLATE,
+                               steps=None):
+        """Creates a test definition YAML file.
+
+        :param testdef_file: The file to create.
+        :return The path of the file created.
+        """
+        testdef = TestDefinition(template, testdef_file)
+        testdef.update(self.config)
+        if steps:
+            steps = to_list(steps)
+            testdef.set(TESTDEF_STEPS_KEY, steps)
+        testdef.write()
+
+        basename = os.path.basename(testdef.file_name)
+        print >> sys.stdout, ("Created test definition "
+                              "'{0}'.".format(basename))
+
+        return testdef.file_name

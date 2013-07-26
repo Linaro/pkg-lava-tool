@@ -23,18 +23,20 @@ Device specific commands class.
 import os
 import sys
 
+from lava.device import get_known_device
 from lava.helper.command import (
     BaseCommand,
 )
-
 from lava.helper.dispatcher import (
     get_device_file,
     get_devices_path,
 )
-
-from lava.device import get_known_device
 from lava.tool.command import CommandGroup
 from lava.tool.errors import CommandError
+from lava_tool.utils import (
+    can_edit_file,
+    edit_file,
+)
 
 DEVICE_FILE_SUFFIX = "conf"
 
@@ -73,7 +75,7 @@ class add(BaseCommand):
 
         print >> sys.stdout, ("Created device file '{0}' in: {1}".format(
             real_file_name, devices_path))
-        self.edit_file(device_conf_file)
+        edit_file(device_conf_file)
 
 
 class remove(BaseCommand):
@@ -114,7 +116,7 @@ class config(BaseCommand):
         real_file_name = ".".join([self.args.DEVICE, DEVICE_FILE_SUFFIX])
         device_conf = get_device_file(real_file_name)
 
-        if device_conf and self.can_edit_file(device_conf):
-            self.edit_file(device_conf)
+        if device_conf and can_edit_file(device_conf):
+            edit_file(device_conf)
         else:
             raise CommandError("Cannot edit file '{0}'".format(real_file_name))

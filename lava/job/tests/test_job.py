@@ -20,13 +20,14 @@
 Unit tests for the Job class
 """
 
+import os
 import json
+import tempfile
 
 from mock import patch
-from StringIO import StringIO
 
-from lava.helper.tests.helper_test import HelperTest
 from lava.config import Config
+from lava.helper.tests.helper_test import HelperTest
 from lava.job import Job
 from lava.job.templates import BOOT_TEST
 from lava.parameter import Parameter
@@ -38,44 +39,54 @@ class JobTest(HelperTest):
     def setUp(self, mocked_config):
         super(JobTest, self).setUp()
         self.config = Config()
-        self.config._config_file = self.temp_file.name
-
-    def tearDown(self):
-        super(JobTest, self).tearDown()
-        self.config.__metaclass__._drop()
+        self.config.config_file = self.temp_file.name
 
     def test_from_template(self):
         template = {}
-        job = Job(template)
+        job = Job(template, self.temp_file.name)
         self.assertEqual(job.data, template)
         self.assertIsNot(job.data, template)
 
-    def test_fill_in_data(self):
+    def test_update_data(self):
         image = "/path/to/panda.img"
         param1 = Parameter("device_type")
         param2 = Parameter("image", depends=param1)
         self.config.put_parameter(param1, "panda")
         self.config.put_parameter(param2, image)
 
-        job = Job(BOOT_TEST)
-        job.fill_in(self.config)
+        job = Job(BOOT_TEST, self.temp_file.name)
+        job.update(self.config)
 
         self.assertEqual(job.data['device_type'], "panda")
         self.assertEqual(job.data['actions'][0]["parameters"]["image"], image)
 
     def test_write(self):
-        orig_data = {"foo": "bar"}
-        job = Job(orig_data)
-        output = StringIO()
-        job.write(output)
+        try:
+            orig_data = {"foo": "bar"}
+            job_file = os.path.join(tempfile.gettempdir(), "a_json_file.json")
+            job = Job(orig_data, job_file)
+            job.write()
 
-        data = json.loads(output.getvalue())
-        self.assertEqual(data, orig_data)
+            output = ""
+            with open(job_file) as read_file:
+                output = read_file.read()
+
+            data = json.loads(output)
+            self.assertEqual(data, orig_data)
+        finally:
+            os.unlink(job_file)
 
     def test_writes_nicely_formatted_json(self):
-        orig_data = {"foo": "bar"}
-        job = Job(orig_data)
-        output = StringIO()
-        job.write(output)
+        try:
+            orig_data = {"foo": "bar"}
+            job_file = os.path.join(tempfile.gettempdir(), "b_json_file.json")
+            job = Job(orig_data, job_file)
+            job.write()
 
-        self.assertTrue(output.getvalue().startswith("{\n"))
+            output = ""
+            with open(job_file) as read_file:
+                output = read_file.read()
+
+            self.assertTrue(output.startswith("{\n"))
+        finally:
+            os.unlink(job_file)

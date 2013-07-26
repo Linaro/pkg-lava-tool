@@ -55,6 +55,13 @@ VEXPRESS_DEVICE_TYPE.asked = True
 VEXPRESS_CONNECTION_COMMAND = copy(CONNECTION_COMMAND_PARMAETER)
 VEXPRESS_CONNECTION_COMMAND.depends = VEXPRESS_DEVICE_TYPE
 
+QEMU_DEVICE_TYPE = copy(DEVICE_TYPE_PARAMETER)
+QEMU_DEVICE_TYPE.value = "qemu"
+QEMU_DEVICE_TYPE.asked = True
+
+QEMU_CONNECTION_COMMAND = copy(CONNECTION_COMMAND_PARMAETER)
+QEMU_CONNECTION_COMMAND.depends = QEMU_DEVICE_TYPE
+
 # Dictionary with templates of known devices.
 KNOWN_TEMPLATES = {
     'panda': {
@@ -67,4 +74,9 @@ KNOWN_TEMPLATES = {
         'device_type': VEXPRESS_DEVICE_TYPE,
         'connection_command': VEXPRESS_CONNECTION_COMMAND,
     },
+    'qemu': {
+        'hostname': HOSTNAME_PARAMETER,
+        'device_type': QEMU_DEVICE_TYPE,
+        'connection_command': QEMU_CONNECTION_COMMAND,
+    }
 }

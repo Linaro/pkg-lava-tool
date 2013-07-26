@@ -23,7 +23,7 @@ Unit tests for the commands classes
 import json
 import os
 
-from mock import MagicMock, patch
+from mock import patch
 
 from lava.config import Config
 from lava.helper.tests.helper_test import HelperTest
@@ -42,6 +42,7 @@ class CommandTest(HelperTest):
     def setUp(self):
         super(CommandTest, self).setUp()
         self.args.FILE = self.temp_file.name
+        self.args.type = "boot-test"
 
         self.device_type = Parameter('device_type')
         self.prebuilt_image = Parameter('prebuilt_image',
@@ -125,10 +126,11 @@ class JobRunTest(CommandTest):
         command = run(self.parser, self.args)
         self.assertRaises(CommandError, command.invoke)
 
-    @patch("lava.job.commands.has_command", new=MagicMock(return_value=False))
-    def test_invoke_raises_1(self):
-        # Users passes a valid file to the run command, but she does not have
+    @patch("lava.helper.command.has_command", create=True)
+    def test_invoke_raises_1(self, mocked_has_command):
+        # User passes a valid file to the run command, but she does not have
         # the dispatcher installed.
+        mocked_has_command.return_value = False
         command = run(self.parser, self.args)
         self.assertRaises(CommandError, command.invoke)
 
