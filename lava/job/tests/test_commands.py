@@ -70,13 +70,16 @@ class JobNewTest(CommandTest):
         new_cmd.register_arguments(self.parser)
 
         # Make sure we do not forget about this test.
-        self.assertEqual(2, len(self.parser.method_calls))
+        self.assertEqual(3, len(self.parser.method_calls))
 
         _, args, _ = self.parser.method_calls[0]
         self.assertIn("--non-interactive", args)
 
         _, args, _ = self.parser.method_calls[1]
         self.assertIn("FILE", args)
+
+        _, args, _ = self.parser.method_calls[2]
+        self.assertIn("--type", args)
 
     def test_create_new_file(self):
         self.new_command.invoke()
