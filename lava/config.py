@@ -206,8 +206,12 @@ class Config(object):
 
     def save(self):
         """Saves the config to file."""
-        with open(self.config_file, "w") as write_file:
-            self.config_backend.write(write_file)
+        # Since we lazy load the config_backend property, this check is needed
+        # when a user enters a wrong command or it will overwrite the 'config'
+        # file with empty contents.
+        if self._config_backend:
+            with open(self.config_file, "w") as write_file:
+                self.config_backend.write(write_file)
 
 
 class InteractiveConfig(Config):
