@@ -176,7 +176,7 @@ class submit(BaseCommand):
 
     def invoke(self):
         full_path = os.path.abspath(self.args.JOB)
-        job_file = self.retrieve_file(full_path, JOB_FILE_EXTENSIONS)
+        job_file = retrieve_file(full_path, JOB_FILE_EXTENSIONS)
 
         super(submit, self).submit(job_file)
 
