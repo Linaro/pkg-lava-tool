@@ -62,12 +62,12 @@ from lava.job.templates import (
 from lava.parameter import (
     Parameter,
 )
-from lava.testdef.templates import (
-    DEFAULT_TESTDEF_FILE,
-)
 from lava.script import (
     ShellScript,
     DEFAULT_TESTDEF_SCRIPT,
+)
+from lava.testdef import (
+    DEFAULT_TESTDEF_FILENAME,
 )
 from lava.tool.errors import CommandError
 from lava_tool.utils import (
@@ -111,22 +111,17 @@ class init(BaseCommand):
                                "file.".format(self.args.DIR))
 
         create_dir(full_path)
-
         data = self._update_data()
 
+        # Create the directory that will contain the test definition and
+        # shell script.
         test_path = create_dir(full_path, TESTS_DIR)
+        self.create_shell_script(test_path)
 
-        print >> sys.stdout, ("\nCreating default test script "
-                              "'{0}'.".format(DEFAULT_TESTDEF_SCRIPT))
-        self._create_script(test_path)
-
-        print >> sys.stdout, ("\nCreating test definition "
-                              "file '{0}'.".format(DEFAULT_TESTDEF_FILE))
         testdef_file = self.create_test_definition(
-            os.path.join(test_path, DEFAULT_TESTDEF_FILE))
+            os.path.join(test_path, DEFAULT_TESTDEF_FILENAME))
 
         job = data[JOBFILE_ID]
-        print >> sys.stdout, "\nCreating job file '{0}'.".format(job)
         self.create_tar_repo_job(
             os.path.join(full_path, job), testdef_file, test_path)
 

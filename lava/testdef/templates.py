@@ -19,11 +19,9 @@
 """Test definition templates."""
 
 from lava.parameter import (
-    ListParameter,
     Parameter,
 )
 
-DEFAULT_TESTDEF_FILE = "lavatest.yaml"
 DEFAULT_TESTDEF_VERSION = "1.0"
 DEFAULT_TESTDEF_FORMAT = "Lava-Test Test Definition 1.0"
 DEFAULT_ENVIRONMET_VALUE = "lava_test_shell"
@@ -35,12 +33,6 @@ NAME_PARAMETER.store = False
 DESCRIPTION_PARAMETER = Parameter("description", depends=NAME_PARAMETER)
 DESCRIPTION_PARAMETER.store = False
 
-ENVIRONMENT_PARAMETER = ListParameter("environment",
-                                      depends=NAME_PARAMETER)
-ENVIRONMENT_PARAMETER.add(DEFAULT_ENVIRONMET_VALUE)
-ENVIRONMENT_PARAMETER.asked = True
-ENVIRONMENT_PARAMETER.store = False
-
 TESTDEF_STEPS_KEY = "steps"
 
 TESTDEF_TEMPLATE = {
@@ -49,12 +41,12 @@ TESTDEF_TEMPLATE = {
         "format": DEFAULT_TESTDEF_FORMAT,
         "version": DEFAULT_TESTDEF_VERSION,
         "description": DESCRIPTION_PARAMETER,
-        "environment": ENVIRONMENT_PARAMETER,
+        "environment": [DEFAULT_ENVIRONMET_VALUE],
     },
     "run": {
         TESTDEF_STEPS_KEY: ["./mytest.sh"]
     },
     "parse": {
-        "pattern": '^\s*(?P<test_case_id>\w+)=(?P<result>\w+)\s*$'
+        "pattern": r'^\s*(?P<test_case_id>\w+)=(?P<result>\w+)\s*$'
     }
 }

@@ -24,10 +24,9 @@ import os
 import tempfile
 
 from lava.helper.command import BaseCommand
-from lava.job import DEFAULT_JOB_EXTENSION
+from lava.job import DEFAULT_JOB_FILENAME
 from lava.tool.command import CommandGroup
-
-JOB_FILE_EXTENSION = "." + DEFAULT_JOB_EXTENSION
+from lava_tool.utils import verify_path_existance
 
 
 class testdef(CommandGroup):
@@ -37,7 +36,23 @@ class testdef(CommandGroup):
     namespace = "lava.testdef.commands"
 
 
-class new(BaseCommand):
+class TestdefBaseCommand(BaseCommand):
+
+    def _create_tmp_job_file(self, testdef_file):
+        testdef_file = os.path.abspath(testdef_file)
+        verify_path_existance(testdef_file)
+
+        job_file = os.path.join(tempfile.gettempdir(),
+                                DEFAULT_JOB_FILENAME)
+
+        tar_content = [testdef_file]
+        job_file = self.create_tar_repo_job(job_file, testdef_file,
+                                            tar_content)
+
+        return job_file
+
+
+class new(TestdefBaseCommand):
 
     """Creates a new test definition file."""
 
@@ -51,7 +66,7 @@ class new(BaseCommand):
         self.create_test_definition(full_path)
 
 
-class run(BaseCommand):
+class run(TestdefBaseCommand):
 
     """Runs the specified test definition on a local device."""
 
@@ -62,19 +77,14 @@ class run(BaseCommand):
 
     def invoke(self):
         try:
-            job_file_name = "testdef_run_tmp_job" + JOB_FILE_EXTENSION
-            job_file = os.path.join(tempfile.gettempdir(), job_file_name)
-
-            tar_content = [self.args.FILE]
-            self.create_tar_repo_job(job_file, self.args.FILE, tar_content)
-
+            job_file = self._create_tmp_job_file(self.args.FILE)
             super(run, self).run(job_file)
         finally:
             if os.path.isfile(job_file):
                 os.unlink(job_file)
 
 
-class submit(BaseCommand):
+class submit(TestdefBaseCommand):
 
     """Submits the specified test definition to a LAVA server."""
 
@@ -85,12 +95,7 @@ class submit(BaseCommand):
 
     def invoke(self):
         try:
-            job_file_name = "testdef_submit_tmp_job" + JOB_FILE_EXTENSION
-            job_file = os.path.join(tempfile.gettempdir(), job_file_name)
-
-            tar_content = [self.args.FILE]
-            self.create_tar_repo_job(job_file, self.args.FILE, tar_content)
-
+            job_file = self._create_tmp_job_file(self.args.FILE)
             super(submit, self).submit(job_file)
         finally:
             if os.path.isfile(job_file):

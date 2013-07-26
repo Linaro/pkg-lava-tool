@@ -22,10 +22,10 @@ import os
 import tempfile
 
 from lava.helper.command import BaseCommand
-from lava.job import DEFAULT_JOB_EXTENSION
+from lava.job import DEFAULT_JOB_FILENAME
+from lava.testdef import DEFAULT_TESTDEF_FILENAME
 from lava.tool.command import CommandGroup
-
-JOB_FILE_EXTENSION = "." + DEFAULT_JOB_EXTENSION
+from lava_tool.utils import verify_path_existance
 
 
 class script(CommandGroup):
@@ -35,7 +35,41 @@ class script(CommandGroup):
     namespace = "lava.script.commands"
 
 
-class run(BaseCommand):
+class ScriptBaseCommand(BaseCommand):
+
+    def _create_tmp_job_file(self, script_file):
+        """Creates a temporary job file to run or submit the passed file.
+
+        The temporary job file and its accessory test definition file are
+        not removed by this method.
+
+        :param script_file: The script file that has to be run or submitted.
+        :return A tuple with the job file path, and the test definition path.
+        """
+        script_file = os.path.abspath(script_file)
+        verify_path_existance(script_file)
+
+        temp_dir = tempfile.gettempdir()
+
+        # The name of the job and testdef files.
+        job_file = os.path.join(temp_dir, DEFAULT_JOB_FILENAME)
+        testdef_file = os.path.join(temp_dir, DEFAULT_TESTDEF_FILENAME)
+
+        # The steps that the testdef file should have. We need to change it
+        # from the default one, since the users are passing their own file.
+        steps = "./" + os.path.basename(script_file)
+        testdef_file = self.create_test_definition(testdef_file,
+                                                   steps=steps)
+
+        # The content of the tar file.
+        tar_content = [script_file, testdef_file]
+        job_file = self.create_tar_repo_job(job_file, testdef_file,
+                                            tar_content)
+
+        return (job_file, testdef_file)
+
+
+class run(ScriptBaseCommand):
 
     """Runs the specified shell script on a local device."""
 
@@ -46,19 +80,16 @@ class run(BaseCommand):
 
     def invoke(self):
         try:
-            job_file_name = "shell_run_tmp_job" + JOB_FILE_EXTENSION
-            job_file = os.path.join(tempfile.gettempdir(), job_file_name)
-
-            tar_content = [self.args.FILE]
-            self.create_tar_repo_job(job_file, self.args.FILE, tar_content)
-
+            job_file, testdef_file = self._create_tmp_job_file(self.args.FILE)
             super(run, self).run(job_file)
         finally:
             if os.path.isfile(job_file):
                 os.unlink(job_file)
+            if os.path.isfile(testdef_file):
+                os.unlink(testdef_file)
 
 
-class submit(BaseCommand):
+class submit(ScriptBaseCommand):
 
     """Submits the specified shell script to a LAVA server."""
 
@@ -69,13 +100,10 @@ class submit(BaseCommand):
 
     def invoke(self):
         try:
-            job_file_name = "shell_submit_tmp_job" + JOB_FILE_EXTENSION
-            job_file = os.path.join(tempfile.gettempdir(), job_file_name)
-
-            tar_content = [self.args.FILE]
-            self.create_tar_repo_job(job_file, self.args.FILE, tar_content)
-
+            job_file, testdef_file = self._create_tmp_job_file(self.args.FILE)
             super(submit, self).submit(job_file)
         finally:
             if os.path.isfile(job_file):
                 os.unlink(job_file)
+            if os.path.isfile(testdef_file):
+                os.unlink(testdef_file)

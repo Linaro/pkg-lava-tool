@@ -32,6 +32,8 @@ from lava_tool.utils import (
     write_file
 )
 
+# A default name for job files.
+DEFAULT_JOB_FILENAME = "lava-tool-job.json"
 # Default job file extension.
 DEFAULT_JOB_EXTENSION = "json"
 # Possible extension for a job file.
