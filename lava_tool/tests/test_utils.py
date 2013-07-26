@@ -18,9 +18,10 @@
 
 """lava_tool.utils tests."""
 
-import sys
 import os
+import shutil
 import subprocess
+import sys
 import tempfile
 
 from unittest import TestCase
@@ -33,10 +34,12 @@ from mock import (
 from lava.tool.errors import CommandError
 from lava_tool.utils import (
     can_edit_file,
+    create_dir,
     edit_file,
     execute,
     has_command,
     retrieve_file,
+    verify_and_create_url,
     verify_file_extension,
 )
 
@@ -137,6 +140,29 @@ class UtilTests(TestCase):
             os.unlink(file_name_with_suffix.name)
             os.unlink(hidden_file.name)
 
+    def test_retrieve_job_file_2(self):
+        # Pass a file with the valid extension.
+        temp_file = tempfile.NamedTemporaryFile(suffix=".json")
+        obtained = retrieve_file(temp_file.name, ["json"])
+        self.assertEquals(temp_file.name, obtained)
+
+    def test_retrieve_job_file_3(self):
+        # Pass a file with a non-valid extension.
+        temp_file = tempfile.NamedTemporaryFile(suffix=".bork")
+        self.assertRaises(
+            CommandError, retrieve_file, temp_file.name, ["json"])
+
+    @patch("os.listdir")
+    def test_retrieve_job_file_4(self, mocked_os_listdir):
+        # Pass hidden and wrong files and make sure exception is thrown.
+        a_hidden_file = ".a_hidden.json"
+        b_hidden_file = ".b_hidden.json"
+        c_wrong_file = "a_wrong_file.bork"
+
+        mocked_os_listdir.return_value = [a_hidden_file, b_hidden_file, c_wrong_file]
+        self.assertRaises(
+            CommandError, retrieve_file, tempfile.gettempdir(), ["json"])
+
     @patch("lava_tool.utils.subprocess")
     def test_execute_0(self, mocked_subprocess):
         mocked_subprocess.check_call = MagicMock()
@@ -214,3 +240,43 @@ class UtilTests(TestCase):
             obtained = f.read()
 
         self.assertEqual(expected, obtained)
+
+    def test_verify_and_create_url_0(self):
+        expected = "https://www.example.org/"
+        obtained = verify_and_create_url("www.example.org", "")
+        self.assertEquals(expected, obtained)
+
+    def test_verify_and_create_url_1(self):
+        expected = "http://www.example.org/"
+        obtained = verify_and_create_url("http://www.example.org")
+        self.assertEquals(expected, obtained)
+
+    def test_verify_and_create_url_2(self):
+        expected = "http://www.example.org/RPC/"
+        obtained = verify_and_create_url("http://www.example.org", "RPC")
+        self.assertEquals(expected, obtained)
+
+    def test_verify_and_create_url_3(self):
+        expected = "https://www.example.org/RPC/"
+        obtained = verify_and_create_url("www.example.org/", "/RPC/")
+        self.assertEquals(expected, obtained)
+
+    def test_create_dir_0(self):
+        try:
+            temp_dir = os.path.join(tempfile.gettempdir(), "a_dir")
+            create_dir(temp_dir)
+            self.assertTrue(os.path.isdir(temp_dir))
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def test_create_dir_1(self):
+        try:
+            temp_dir = os.path.join(tempfile.gettempdir(), "a_dir")
+            create_dir(temp_dir, "subdir")
+            self.assertTrue(os.path.isdir(os.path.join(temp_dir, "subdir")))
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def test_create_dir_2(self):
+        temp_dir = os.path.join("/", "a_temp_dir")
+        self.assertRaises(CommandError, create_dir, temp_dir)
