@@ -34,6 +34,10 @@ from lava.parameter import (
     Parameter,
     SingleChoiceParameter,
 )
+from lava.script import (
+    ShellScript,
+    DEFAULT_TESTDEF_SCRIPT,
+)
 from lava.testdef import TestDefinition
 from lava.testdef.templates import (
     TESTDEF_STEPS_KEY,
@@ -166,6 +170,9 @@ class BaseCommand(Command):
         :param tar_content: What should go into the tarball repository.
         :return The path of the job file created.
         """
+
+        print >> sys.stdout, "Creating job file..."
+
         try:
             tar_repo = create_tar(tar_content)
 
@@ -179,6 +186,10 @@ class BaseCommand(Command):
 
             job_instance.write()
 
+            basename = os.path.basename(job_instance.file_name)
+            print >> sys.stdout, ("\nCreated test definition "
+                                  "'{0}'.".format(basename))
+
             return job_instance.file_name
         finally:
             if os.path.isfile(tar_repo):
@@ -191,15 +202,39 @@ class BaseCommand(Command):
         :param testdef_file: The file to create.
         :return The path of the file created.
         """
+
+        print >> sys.stdout, "Creating test definition file..."
+
         testdef = TestDefinition(template, testdef_file)
-        testdef.update(self.config)
         if steps:
             steps = to_list(steps)
             testdef.set(TESTDEF_STEPS_KEY, steps)
+        testdef.update(self.config)
         testdef.write()
 
         basename = os.path.basename(testdef.file_name)
-        print >> sys.stdout, ("Created test definition "
+        print >> sys.stdout, ("\nCreated test definition "
                               "'{0}'.".format(basename))
 
         return testdef.file_name
+
+    def create_shell_script(self, test_path,
+                            script_name=DEFAULT_TESTDEF_SCRIPT):
+        """Creates a shell script with some default content.
+
+        :param test_path: The directory where to create the script.
+        :param script_name: The name of the script.
+        :return The full path to the script file.
+        """
+        default_script = os.path.join(test_path, script_name)
+
+        if not os.path.isfile(default_script):
+            print >> sys.stdout, "Creating shell script..."
+
+            shell_script = ShellScript(default_script)
+            shell_script.write()
+
+            print >> sys.stdout, ("\nCreated shell script "
+                                  "'{0}'.".format(script_name))
+
+        return default_script

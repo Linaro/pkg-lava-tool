@@ -32,6 +32,8 @@ from lava_tool.utils import (
     verify_file_extension,
 )
 
+# Default name for a test definition.
+DEFAULT_TESTDEF_FILENAME = "lavatest.yaml"
 # Default test def file extension.
 DEFAULT_TESTDEF_EXTENSION = "yaml"
 # Possible extensions for a test def file.
