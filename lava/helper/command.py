@@ -52,6 +52,7 @@ from lava_tool.authtoken import (
 from lava_tool.utils import (
     base64_encode,
     create_tar,
+    execute,
     has_command,
     to_list,
     verify_and_create_url,
@@ -134,8 +135,7 @@ class BaseCommand(Command):
                         device = device_param.prompt("Device to use: ")
                     else:
                         device = devices[0].hostname
-                    self.execute(
-                        ["lava-dispatch", "--target", device, job_file])
+                    execute(["lava-dispatch", "--target", device, job_file])
             else:
                 raise CommandError("Cannot find lava-dispatcher installation.")
         else:
