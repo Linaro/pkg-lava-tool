@@ -82,6 +82,8 @@ class BaseCommand(Command):
         It will ask the user the necessary parameters to establish the
         connection.
         """
+        print >> sys.stdout, "\nServer connection parameters:"
+
         server_name_parameter = Parameter("server")
         rpc_endpoint_parameter = Parameter("rpc_endpoint",
                                            depends=server_name_parameter)
@@ -171,7 +173,7 @@ class BaseCommand(Command):
         :return The path of the job file created.
         """
 
-        print >> sys.stdout, "Creating job file..."
+        print >> sys.stdout, "\nCreating job file..."
 
         try:
             tar_repo = create_tar(tar_content)
@@ -187,7 +189,7 @@ class BaseCommand(Command):
             job_instance.write()
 
             basename = os.path.basename(job_instance.file_name)
-            print >> sys.stdout, ("\nCreated test definition "
+            print >> sys.stdout, ("\nCreated job file "
                                   "'{0}'.".format(basename))
 
             return job_instance.file_name
@@ -203,7 +205,7 @@ class BaseCommand(Command):
         :return The path of the file created.
         """
 
-        print >> sys.stdout, "Creating test definition file..."
+        print >> sys.stdout, "\nCreating test definition file..."
 
         testdef = TestDefinition(template, testdef_file)
         if steps:

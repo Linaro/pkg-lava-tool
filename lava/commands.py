@@ -62,18 +62,16 @@ from lava.job.templates import (
 from lava.parameter import (
     Parameter,
 )
-from lava.script import (
-    ShellScript,
-    DEFAULT_TESTDEF_SCRIPT,
-)
 from lava.testdef import (
     DEFAULT_TESTDEF_FILENAME,
 )
 from lava.tool.errors import CommandError
 from lava_tool.utils import (
+    base64_encode,
+    create_dir,
+    create_tar,
     edit_file,
     retrieve_file,
-    create_dir,
     write_file,
 )
 
@@ -116,7 +114,9 @@ class init(BaseCommand):
         # Create the directory that will contain the test definition and
         # shell script.
         test_path = create_dir(full_path, TESTS_DIR)
-        self.create_shell_script(test_path)
+        shell_script = self.create_shell_script(test_path)
+        # Let the user modify the file.
+        edit_file(shell_script)
 
         testdef_file = self.create_test_definition(
             os.path.join(test_path, DEFAULT_TESTDEF_FILENAME))
@@ -137,17 +137,6 @@ class init(BaseCommand):
         expand_template(data, self.config)
 
         return data
-
-    def _create_script(self, test_path):
-        # This is the default script file as defined in the testdef template.
-        default_script = os.path.join(test_path, DEFAULT_TESTDEF_SCRIPT)
-
-        if not os.path.isfile(default_script):
-            shell_script = ShellScript(default_script)
-            shell_script.write()
-
-        # Prompt the user to write the script file.
-        edit_file(default_script)
 
 
 class run(BaseCommand):
@@ -187,7 +176,7 @@ class submit(BaseCommand):
 
     def invoke(self):
         full_path = os.path.abspath(self.args.JOB)
-        job_file = self.retrieve_file(full_path, JOB_FILE_EXTENSIONS)
+        job_file = retrieve_file(full_path, JOB_FILE_EXTENSIONS)
 
         super(submit, self).submit(job_file)
 
@@ -212,22 +201,27 @@ class update(BaseCommand):
         tests_dir = os.path.join(job_dir, TESTS_DIR)
 
         if os.path.isdir(tests_dir):
-            # TODO
-            encoded_tests = None
+            tar_repo = None
+            try:
+                tar_repo = create_tar(tests_dir)
+                encoded_tests = base64_encode(tar_repo)
 
-            json_data = None
-            with open(job_file, "r") as json_file:
-                try:
-                    json_data = json.load(json_file)
-                    set_value(
-                        json_data, LAVA_TEST_SHELL_TAR_REPO_KEY, encoded_tests)
-                except Exception:
-                    raise CommandError("Cannot read job file '{0}'.".format(
-                        job_file))
+                json_data = None
+                with open(job_file, "r") as json_file:
+                    try:
+                        json_data = json.load(json_file)
+                        set_value(json_data, LAVA_TEST_SHELL_TAR_REPO_KEY,
+                                  encoded_tests)
+                    except Exception:
+                        raise CommandError("Cannot read job file "
+                                           "'{0}'.".format(job_file))
 
-            content = json.dumps(json_data, indent=4)
-            write_file(job_file, content)
+                content = json.dumps(json_data, indent=4)
+                write_file(job_file, content)
 
-            print >> sys.stdout, "Job definition updated."
+                print >> sys.stdout, "Job definition updated."
+            finally:
+                if tar_repo and os.path.isfile(tar_repo):
+                    os.unlink(tar_repo)
         else:
             raise CommandError("Cannot find tests directory.")
