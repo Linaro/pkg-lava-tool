@@ -1,6 +1,6 @@
 # Copyright (C) 2013 Linaro Limited
 #
-# Author: Antonio Terceiro <antonio.terceiro@linaro.org>
+# Author: Milo Casagrande <milo.casagrande@linaro.org>
 #
 # This file is part of lava-tool.
 #
@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Job class."""
+"""TestDefinition class."""
 
-import json
+import yaml
 
 from copy import deepcopy
 
@@ -27,33 +27,41 @@ from lava.helper.template import (
     set_value,
 )
 from lava_tool.utils import (
-    verify_file_extension,
+    write_file,
     verify_path_existance,
-    write_file
+    verify_file_extension,
 )
 
-# A default name for job files.
-DEFAULT_JOB_FILENAME = "lava-tool-job.json"
-# Default job file extension.
-DEFAULT_JOB_EXTENSION = "json"
-# Possible extension for a job file.
-JOB_FILE_EXTENSIONS = [DEFAULT_JOB_EXTENSION]
+# Default name for a test definition.
+DEFAULT_TESTDEF_FILENAME = "lavatest.yaml"
+# Default test def file extension.
+DEFAULT_TESTDEF_EXTENSION = "yaml"
+# Possible extensions for a test def file.
+TESTDEF_FILE_EXTENSIONS = [DEFAULT_TESTDEF_EXTENSION]
 
 
-class Job(object):
+class TestDefinition(object):
 
-    """A Job object.
+    """A test definition object.
 
-    This class should be used to create new job files. The initialization
+    This class should be used to create test definitions. The initialization
     enforces a default file name extension, and makes sure that the file is
     not already present on the file system.
     """
 
     def __init__(self, data, file_name):
+        """Initialize the object.
+
+        :param data: The serializable data to be used, usually a template.
+        :type dict
+        :param file_name: Where the test definition will be written.
+        :type str
+        """
         self.file_name = verify_file_extension(file_name,
-                                               DEFAULT_JOB_EXTENSION,
-                                               JOB_FILE_EXTENSIONS)
+                                               DEFAULT_TESTDEF_EXTENSION,
+                                               TESTDEF_FILE_EXTENSIONS)
         verify_path_existance(self.file_name)
+
         self.data = deepcopy(data)
 
     def set(self, key, value):
@@ -64,10 +72,11 @@ class Job(object):
         """
         set_value(self.data, key, value)
 
-    def update(self, config):
-        """Updates the Job object based on the provided config."""
-        expand_template(self.data, config)
-
     def write(self):
-        """Writes the Job object to file."""
-        write_file(self.file_name, json.dumps(self.data, indent=4))
+        """Writes the test definition to file."""
+        content = yaml.dump(self.data, default_flow_style=False, indent=4)
+        write_file(self.file_name, content)
+
+    def update(self, config):
+        """Updates the TestDefinition object based on the provided config."""
+        expand_template(self.data, config)

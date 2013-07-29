@@ -16,23 +16,33 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
-class Parameter(object):
+from lava.parameter import (
+    ListParameter,
+    Parameter,
+)
 
-    def __init__(self, id, depends=None):
-        self.id = id
-        self.depends = depends
+LAVA_TEST_SHELL_TAR_REPO_KEY = "tar-repo"
+LAVA_TEST_SHELL_TESDEF_KEY = "testdef"
 
-device_type = Parameter("device_type")
-prebuilt_image = Parameter("prebuilt_image", depends=device_type)
+DEVICE_TYPE_PARAMETER = Parameter("device_type")
+PREBUILT_IMAGE_PARAMETER = Parameter("image", depends=DEVICE_TYPE_PARAMETER)
+
+TESTDEF_URLS_PARAMETER = ListParameter("testdef_urls")
+TESTDEF_URLS_PARAMETER.store = False
+
+# Use another ID for the server parameter, might be different.
+SERVER_PARAMETER = Parameter("stream_server")
+STREAM_PARAMETER = Parameter("stream")
 
 BOOT_TEST = {
+    "timeout": 18000,
     "job_name": "Boot test",
-    "device_type": device_type,
+    "device_type": DEVICE_TYPE_PARAMETER,
     "actions": [
         {
             "command": "deploy_linaro_image",
             "parameters": {
-                "image": prebuilt_image
+                "image": PREBUILT_IMAGE_PARAMETER
             }
         },
         {
@@ -43,21 +53,72 @@ BOOT_TEST = {
 
 LAVA_TEST_SHELL = {
     "job_name": "LAVA Test Shell",
-    "device_type": device_type,
+    "timeout": 18000,
+    "device_type": DEVICE_TYPE_PARAMETER,
     "actions": [
         {
             "command": "deploy_linaro_image",
             "parameters": {
-                "image": prebuilt_image,
+                "image": PREBUILT_IMAGE_PARAMETER,
             }
         },
         {
             "command": "lava_test_shell",
             "parameters": {
-                "testdef_urls": [
-                    Parameter("testdef_url")
-                ]
+                "timeout": 1800,
+                "testdef_urls": TESTDEF_URLS_PARAMETER,
+            }
+        },
+        {
+            "command": "submit_results",
+            "parameters": {
+                "stream": STREAM_PARAMETER,
+                "server": SERVER_PARAMETER
             }
         }
     ]
+}
+
+# This is a special case template, only use when automatically create job files
+# starting from a testdef or a script. Never to be used directly by the user.
+LAVA_TEST_SHELL_TAR_REPO = {
+    "job_name": "LAVA Test Shell",
+    "timeout": 18000,
+    "device_type": DEVICE_TYPE_PARAMETER,
+    "actions": [
+        {
+            "command": "deploy_linaro_image",
+            "parameters": {
+                "image": PREBUILT_IMAGE_PARAMETER,
+            }
+        },
+        {
+            "command": "lava_test_shell",
+            "parameters": {
+                "timeout": 1800,
+                "testdef_repos": [
+                    {
+                        LAVA_TEST_SHELL_TESDEF_KEY: None,
+                        LAVA_TEST_SHELL_TAR_REPO_KEY: None,
+                    }
+                ]
+            }
+        },
+        {
+            "command": "submit_results",
+            "parameters": {
+                "stream": STREAM_PARAMETER,
+                "server": SERVER_PARAMETER
+            }
+        }
+    ]
+}
+
+BOOT_TEST_KEY = "boot-test"
+LAVA_TEST_SHELL_KEY = "lava-test-shell"
+
+# Dict with all the user available job templates.
+JOB_TYPES = {
+    BOOT_TEST_KEY: BOOT_TEST,
+    LAVA_TEST_SHELL_KEY: LAVA_TEST_SHELL,
 }

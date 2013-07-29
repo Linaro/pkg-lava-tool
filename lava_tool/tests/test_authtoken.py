@@ -24,7 +24,6 @@ import base64
 import StringIO
 from unittest import TestCase
 import urlparse
-import sys
 import xmlrpclib
 
 from mocker import ARGS, KWARGS, Mocker

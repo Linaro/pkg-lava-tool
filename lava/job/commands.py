@@ -16,79 +16,92 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with lava-tool.  If not, see <http://www.gnu.org/licenses/>.
 
-from os.path import exists
+"""
+LAVA job commands.
+"""
 
-from lava.config import InteractiveConfig
+import os
+
+from lava.helper.command import BaseCommand
 from lava.job import Job
-from lava.job.templates import *
-from lava.tool.command import Command, CommandGroup
+from lava.job.templates import (
+    BOOT_TEST_KEY,
+    JOB_TYPES,
+)
+from lava.tool.command import CommandGroup
 from lava.tool.errors import CommandError
 
-from lava_tool.authtoken import AuthenticatingServerProxy, KeyringAuthBackend
-import xmlrpclib
 
 class job(CommandGroup):
-    """
-    LAVA job file handling
-    """
-
+    """LAVA job file handling."""
     namespace = 'lava.job.commands'
 
-class BaseCommand(Command):
-
-    def __init__(self, parser, args):
-        super(BaseCommand, self).__init__(parser, args)
-        self.config = InteractiveConfig(force_interactive=self.args.interactive)
-
-    @classmethod
-    def register_arguments(cls, parser):
-        super(BaseCommand, cls).register_arguments(parser)
-        parser.add_argument(
-            "-i", "--interactive",
-            action='store_true',
-            help=("Forces asking for input parameters even if we already "
-                  "have them cached."))
 
 class new(BaseCommand):
+    """Creates a new job file."""
 
     @classmethod
     def register_arguments(cls, parser):
         super(new, cls).register_arguments(parser)
         parser.add_argument("FILE", help=("Job file to be created."))
+        parser.add_argument("--type",
+                            help=("The type of job to create. Defaults to "
+                                  "'{0}'.".format(BOOT_TEST_KEY)),
+                            choices=JOB_TYPES.keys(),
+                            default=BOOT_TEST_KEY)
 
-    def invoke(self):
-        if exists(self.args.FILE):
-            raise CommandError('%s already exists' % self.args.FILE)
+    def invoke(self, job_template=None):
+        if not job_template:
+            job_template = JOB_TYPES.get(self.args.type)
 
-        with open(self.args.FILE, 'w') as f:
-            job = Job(BOOT_TEST)
-            job.fill_in(self.config)
-            job.write(f)
+        full_path = os.path.abspath(self.args.FILE)
+
+        job_instance = Job(job_template, full_path)
+        job_instance.update(self.config)
+        job_instance.write()
 
 
 class submit(BaseCommand):
+
+    """Submits the specified job file."""
+
     @classmethod
     def register_arguments(cls, parser):
         super(submit, cls).register_arguments(parser)
-        parser.add_argument("FILE", help=("The job file to submit"))
+        parser.add_argument("FILE", help=("The job file to submit."))
 
     def invoke(self):
-        jobfile = self.args.FILE
-        jobdata = open(jobfile, 'rb').read()
+        super(submit, self).submit(self.args.FILE)
 
-        server_name = Parameter('server')
-        rpc_endpoint = Parameter('rpc_endpoint', depends=server_name)
-        self.config.get(server_name)
-        endpoint = self.config.get(rpc_endpoint)
-
-        server = AuthenticatingServerProxy(endpoint,
-                                           auth_backend=KeyringAuthBackend())
-        try:
-            job_id = server.scheduler.submit_job(jobdata)
-            print "Job submitted with job ID %d" % job_id
-        except xmlrpclib.Fault, e:
-            raise CommandError(str(e))
 
 class run(BaseCommand):
+
+    """Runs the specified job file on the local dispatcher."""
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(run, cls).register_arguments(parser)
+        parser.add_argument("FILE", help=("The job file to submit."))
+
     def invoke(self):
-        print("hello world")
+        super(run, self).run(self.args.FILE)
+
+
+class status(BaseCommand):
+
+    """Retrieves the status of a job."""
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(status, cls).register_arguments(parser)
+        parser.add_argument("JOB_ID",
+                            help=("Prints status information about the "
+                                  "provided job id."),
+                            nargs="?",
+                            default=None)
+
+    def invoke(self):
+        if self.args.JOB_ID:
+            super(status, self).status(self.args.JOB_ID)
+        else:
+            raise CommandError("It is necessary to specify a job id.")

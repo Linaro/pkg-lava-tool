@@ -3,3 +3,6 @@
 ./build
 ./dist
 /tags
+.testrepository
+*.egg
+lava_tool_coverage

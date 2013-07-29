@@ -20,74 +20,136 @@
 Unit tests for the commands classes
 """
 
-from argparse import ArgumentParser
 import json
-from os import (
-    makedirs,
-    removedirs,
-)
-from os.path import(
-    exists,
-    join,
-)
-from shutil import(
-    rmtree,
-)
-from tempfile import mkdtemp
-from unittest import TestCase
+import os
 
-from lava.config import NonInteractiveConfig
-from lava.job.commands import *
+from mock import patch
+
+from lava.config import Config
+from lava.helper.tests.helper_test import HelperTest
+from lava.job.commands import (
+    new,
+    run,
+    submit,
+    status,
+)
+from lava.parameter import Parameter
 from lava.tool.errors import CommandError
 
-from mocker import Mocker
 
-def make_command(command, *args):
-    parser = ArgumentParser(description="fake argument parser")
-    command.register_arguments(parser)
-    the_args = parser.parse_args(*args)
-    cmd = command(parser, the_args)
-    cmd.config = NonInteractiveConfig({ 'device_type': 'foo', 'prebuilt_image': 'bar' })
-    return cmd
-
-class CommandTest(TestCase):
+class CommandTest(HelperTest):
 
     def setUp(self):
-        self.tmpdir = mkdtemp()
+        super(CommandTest, self).setUp()
+        self.args.FILE = self.temp_file.name
+        self.args.type = "boot-test"
 
-    def tearDown(self):
-        rmtree(self.tmpdir)
+        self.device_type = Parameter('device_type')
+        self.prebuilt_image = Parameter('prebuilt_image',
+                                        depends=self.device_type)
+        self.config = Config()
+        self.config.put_parameter(self.device_type, 'foo')
+        self.config.put_parameter(self.prebuilt_image, 'bar')
 
-    def tmp(self, filename):
-        return join(self.tmpdir, filename)
 
 class JobNewTest(CommandTest):
 
+    def setUp(self):
+        super(JobNewTest, self).setUp()
+        self.args.FILE = self.tmp("new_file.json")
+        self.new_command = new(self.parser, self.args)
+        self.new_command.config = self.config
+
+    def tearDown(self):
+        super(JobNewTest, self).tearDown()
+        if os.path.exists(self.args.FILE):
+            os.unlink(self.args.FILE)
+
+    def test_register_arguments(self):
+        new_cmd = new(self.parser, self.args)
+        new_cmd.register_arguments(self.parser)
+
+        # Make sure we do not forget about this test.
+        self.assertEqual(3, len(self.parser.method_calls))
+
+        _, args, _ = self.parser.method_calls[0]
+        self.assertIn("--non-interactive", args)
+
+        _, args, _ = self.parser.method_calls[1]
+        self.assertIn("FILE", args)
+
+        _, args, _ = self.parser.method_calls[2]
+        self.assertIn("--type", args)
+
     def test_create_new_file(self):
-        f = self.tmp('file.json')
-        command = make_command(new, [f])
-        command.invoke()
-        self.assertTrue(exists(f))
+        self.new_command.invoke()
+        self.assertTrue(os.path.exists(self.args.FILE))
 
     def test_fills_in_template_parameters(self):
-        f = self.tmp('myjob.json')
-        command = make_command(new, [f])
-        command.invoke()
+        self.new_command.invoke()
 
-        data = json.loads(open(f).read())
+        data = json.loads(open(self.args.FILE).read())
         self.assertEqual(data['device_type'], 'foo')
 
-    def test_wont_overwriteexisting_file(self):
-        existing = self.tmp('existing.json')
-        with open(existing, 'w') as f:
+    def test_wont_overwrite_existing_file(self):
+        with open(self.args.FILE, 'w') as f:
             f.write("CONTENTS")
-        command = make_command(new, [existing])
-        with self.assertRaises(CommandError):
-            command.invoke()
-        self.assertEqual("CONTENTS", open(existing).read())
+
+        self.assertRaises(CommandError, self.new_command.invoke)
+        self.assertEqual("CONTENTS", open(self.args.FILE).read())
+
 
 class JobSubmitTest(CommandTest):
 
     def test_receives_job_file_in_cmdline(self):
-        cmd = make_command(new, ['FOO.json'])
-        self.assertEqual('FOO.json', cmd.args.FILE)
+        command = submit(self.parser, self.args)
+        command.register_arguments(self.parser)
+        name, args, kwargs = self.parser.method_calls[1]
+        self.assertIn("FILE", args)
+
+
+class JobRunTest(CommandTest):
+
+    def test_register_arguments(self):
+        run_cmd = run(self.parser, self.args)
+        run_cmd.register_arguments(self.parser)
+
+        # Make sure we do not forget about this test.
+        self.assertEqual(2, len(self.parser.method_calls))
+
+        _, args, _ = self.parser.method_calls[0]
+        self.assertIn("--non-interactive", args)
+
+        _, args, _ = self.parser.method_calls[1]
+        self.assertIn("FILE", args)
+
+    def test_invoke_raises_0(self):
+        # Users passes a non existing job file to the run command.
+        self.args.FILE = self.tmp("test_invoke_raises_0.json")
+        command = run(self.parser, self.args)
+        self.assertRaises(CommandError, command.invoke)
+
+    @patch("lava.helper.command.has_command", create=True)
+    def test_invoke_raises_1(self, mocked_has_command):
+        # User passes a valid file to the run command, but she does not have
+        # the dispatcher installed.
+        mocked_has_command.return_value = False
+        command = run(self.parser, self.args)
+        self.assertRaises(CommandError, command.invoke)
+
+
+class TestsStatusCommand(CommandTest):
+
+    def test_register_arguments(self):
+        self.args.JOB_ID = "1"
+        status_cmd = status(self.parser, self.args)
+        status_cmd.register_arguments(self.parser)
+
+        # Make sure we do not forget about this test.
+        self.assertEqual(2, len(self.parser.method_calls))
+
+        _, args, _ = self.parser.method_calls[0]
+        self.assertIn("--non-interactive", args)
+
+        _, args, _ = self.parser.method_calls[1]
+        self.assertIn("JOB_ID", args)
