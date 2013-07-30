@@ -89,10 +89,10 @@ class BaseCommand(Command):
         rpc_endpoint_parameter = Parameter("rpc_endpoint",
                                            depends=server_name_parameter)
 
-        server_url = self.config.get(server_name_parameter)
+        self.config.get(server_name_parameter)
         endpoint = self.config.get(rpc_endpoint_parameter)
 
-        rpc_url = verify_and_create_url(server_url, endpoint)
+        rpc_url = verify_and_create_url(endpoint)
         server = AuthenticatingServerProxy(rpc_url,
                                            auth_backend=KeyringAuthBackend())
         return server
