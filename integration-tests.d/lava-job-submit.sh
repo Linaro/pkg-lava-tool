@@ -2,10 +2,10 @@ fixed_response 999
 
 lava_config <<CONFIG
 [DEFAULT]
-server = validation.example.com
+server = http://localhost:5000
 
 [server=validation.example.com]
-rpc_endpoint = http://localhost:5000/ok
+rpc_endpoint = /ok
 CONFIG
 
 lava job submit integration-tests.d/sample/nexus.json > $tmpdir/output
