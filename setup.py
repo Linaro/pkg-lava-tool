@@ -51,7 +51,8 @@ setup(
         'argcomplete >= 0.3',
         'keyring',
         'json-schema-validator >= 2.0',
-        'versiontools >= 1.3.1'
+        'versiontools >= 1.3.1',
+        'pyxdg == 0.25',
     ],
     setup_requires=['versiontools >= 1.3.1'],
     tests_require=[
