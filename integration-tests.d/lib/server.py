@@ -1,5 +1,4 @@
 import os
-import sys
 import yaml
 
 from flask import (
@@ -25,7 +24,7 @@ def exit():
     request.environ['werkzeug.server.shutdown']()
     return ""
 
-@app.route('/<status_code>', methods=['GET', 'POST'])
+@app.route('/<status_code>/', methods=['GET', 'POST'])
 def reply(status_code):
 
     status = int(aliases.get(status_code, status_code))
