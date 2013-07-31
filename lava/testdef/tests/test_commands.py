@@ -25,10 +25,11 @@ import tempfile
 import yaml
 
 from mock import (
+    MagicMock,
     patch,
 )
 
-from lava.config import InteractiveConfig
+from lava.config import InteractiveCache
 from lava.helper.tests.helper_test import HelperTest
 from lava.testdef.commands import (
     new,
@@ -39,8 +40,7 @@ from lava.tool.errors import CommandError
 class NewCommandTest(HelperTest):
     """Class for the lava.testdef new command tests."""
 
-    @patch("lava.config.Config.save")
-    def setUp(self, mocked_save):
+    def setUp(self):
         super(NewCommandTest, self).setUp()
         self.file_name = "fake_testdef.yaml"
         self.file_path = os.path.join(tempfile.gettempdir(), self.file_name)
@@ -50,7 +50,8 @@ class NewCommandTest(HelperTest):
                                                      delete=False)
 
         self.config_file = tempfile.NamedTemporaryFile(delete=False)
-        self.config = InteractiveConfig()
+        self.config = InteractiveCache()
+        self.config.save = MagicMock()
         self.config.config_file = self.config_file.name
         # Patch class raw_input, start it, and stop it on tearDown.
         self.patcher1 = patch("lava.parameter.raw_input", create=True)
@@ -84,6 +85,7 @@ class NewCommandTest(HelperTest):
         # file system.
         self.mocked_raw_input.return_value = "\n"
         new_command = new(self.parser, self.args)
+        new_command.config = self.config
         new_command.invoke()
         self.assertTrue(os.path.exists(self.file_path))
 
@@ -92,6 +94,7 @@ class NewCommandTest(HelperTest):
         # thrown.
         self.args.FILE = self.temp_yaml.name
         new_command = new(self.parser, self.args)
+        new_command.config = self.config
         self.assertRaises(CommandError, new_command.invoke)
 
     def test_invoke_2(self):
@@ -124,6 +127,7 @@ class NewCommandTest(HelperTest):
         self.args.FILE = "/test_file.yaml"
         self.mocked_raw_input.return_value = "\n"
         new_command = new(self.parser, self.args)
+        new_command.config = self.config
         self.assertRaises(CommandError, new_command.invoke)
         self.assertFalse(os.path.exists(self.args.FILE))
 
@@ -133,6 +137,7 @@ class NewCommandTest(HelperTest):
         self.mocked_raw_input.side_effect = ["foo", "\n", "\n", "\n", "\n",
                                              "\n"]
         new_command = new(self.parser, self.args)
+        new_command.config = self.config
         new_command.invoke()
         expected = {'run': {'steps': ["./mytest.sh"]},
                     'metadata': {
