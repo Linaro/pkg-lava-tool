@@ -22,7 +22,9 @@ import os
 import sys
 import xmlrpclib
 
-from lava.config import InteractiveConfig
+from lava.config import (
+    InteractiveCache,
+)
 from lava.helper.dispatcher import get_devices
 from lava.job import Job
 from lava.job.templates import (
@@ -58,7 +60,7 @@ from lava_tool.utils import (
     verify_and_create_url,
 )
 
-CONFIG = InteractiveConfig()
+CONFIG = InteractiveCache()
 
 
 class BaseCommand(Command):
