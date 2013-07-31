@@ -281,6 +281,10 @@ class InteractiveCache(InteractiveConfig):
                                               'parameters.ini'))
         return self._config_file
 
+    @config_file.setter
+    def config_file(self, value):
+        self._config_file = value
+
     def _ensure_xdg_dirs(self):
         """Make sure we have the default resource.
 
