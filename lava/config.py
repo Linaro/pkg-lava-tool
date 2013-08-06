@@ -23,6 +23,7 @@ Config class.
 import atexit
 import os
 import readline
+import xdg.BaseDirectory as xdgBaseDir
 
 from ConfigParser import (
     ConfigParser,
@@ -33,12 +34,16 @@ from ConfigParser import (
 from lava.parameter import Parameter
 from lava.tool.errors import CommandError
 
-__all__ = ['Config', 'InteractiveConfig']
+__all__ = ['Config', 'InteractiveCache', 'InteractiveConfig']
 
 # Store for function calls to be made at exit time.
 AT_EXIT_CALLS = set()
 # Config default section.
 DEFAULT_SECTION = "DEFAULT"
+# This is the default base name used to create XDG resources.
+DEFAULT_XDG_RESOURCE = "linaro"
+# This is the default name for lava-tool resources.
+DEFAULT_LAVA_TOOL_RESOURCE = "lava-tool"
 
 HISTORY = os.path.join(os.path.expanduser("~"), ".lava_history")
 try:
@@ -69,8 +74,8 @@ class Config(object):
     def config_file(self):
         if self._config_file is None:
             self._config_file = (os.environ.get('LAVACONFIG') or
-                                 os.path.join(os.path.expanduser('~'),
-                                              '.lavaconfig'))
+                                 os.path.join(self._ensure_xdg_dirs(),
+                                              'lava-tool.ini'))
         return self._config_file
 
     @config_file.setter
@@ -83,6 +88,14 @@ class Config(object):
             self._config_backend = ConfigParser()
             self._config_backend.read([self.config_file])
         return self._config_backend
+
+    def _ensure_xdg_dirs(self):
+        """Make sure we have the default resource.
+
+        :return The path to the XDG resource.
+        """
+        return xdgBaseDir.save_config_path(DEFAULT_XDG_RESOURCE,
+                                           DEFAULT_LAVA_TOOL_RESOURCE)
 
     def _calculate_config_section(self, parameter):
         """Calculates the config section of the specified parameter.
@@ -248,3 +261,34 @@ class InteractiveConfig(Config):
         if value is not None and parameter.store:
             self.put(parameter.id, value, section)
         return value
+
+
+class InteractiveCache(InteractiveConfig):
+
+    """An interactive cache where parameters that can change are stored.
+
+    This class is basically the same as the Confing and InteractiveConfig ones,
+    only the base directory where the cache file is stored is different.
+
+    In this case it will use the $XDG_CACHE_HOME value as defined in XDG.
+    """
+
+    @property
+    def config_file(self):
+        if self._config_file is None:
+            self._config_file = (os.environ.get('LAVACACHE') or
+                                 os.path.join(self._ensure_xdg_dirs(),
+                                              'parameters.ini'))
+        return self._config_file
+
+    @config_file.setter
+    def config_file(self, value):
+        self._config_file = value
+
+    def _ensure_xdg_dirs(self):
+        """Make sure we have the default resource.
+
+        :return The path to the XDG resource.
+        """
+        return xdgBaseDir.save_cache_path(DEFAULT_XDG_RESOURCE,
+                                          DEFAULT_LAVA_TOOL_RESOURCE)

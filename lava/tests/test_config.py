@@ -20,6 +20,8 @@
 lava.config unit tests.
 """
 
+import os
+import shutil
 import sys
 
 from StringIO import StringIO
@@ -31,6 +33,7 @@ from mock import (
 
 from lava.config import (
     Config,
+    InteractiveCache,
     InteractiveConfig,
 )
 from lava.helper.tests.helper_test import HelperTest
@@ -49,17 +52,75 @@ class ConfigTestCase(HelperTest):
         self.param2 = Parameter("bar", depends=self.param1)
 
 
-class ConfigTest(ConfigTestCase):
+class TestConfigSave(ConfigTestCase):
 
-    @patch("lava.config.Config.save")
-    def setUp(self, mocked_save):
-        super(ConfigTest, self).setUp()
+    """Used to test the save() method of config class.
+
+    Done here since in the other tests we want to mock the atexit save call
+    in order not to write the file, or accidentaly overwrite the real
+    user file.
+    """
+
+    def setUp(self):
+        super(TestConfigSave, self).setUp()
         self.config = Config()
         self.config.config_file = self.temp_file.name
 
-    def test_assert_temp_config_file(self):
-        # Dummy test to make sure we are overriding correctly the Config class.
-        self.assertEqual(self.config.config_file, self.temp_file.name)
+    def test_config_save(self):
+        self.config.put_parameter(self.param1, "foo")
+        self.config.save()
+
+        expected = "[DEFAULT]\nfoo = foo\n\n"
+        obtained = ""
+        with open(self.temp_file.name) as tmp_file:
+            obtained = tmp_file.read()
+        self.assertEqual(expected, obtained)
+
+    def test_save_list_param(self):
+        # Tests that when saved to file, the ListParameter parameter is stored
+        # correctly.
+        param_values = ["foo", "more than one words", "bar"]
+        list_param = ListParameter("list")
+        list_param.set(param_values)
+
+        self.config.put_parameter(list_param, param_values)
+        self.config.save()
+
+        expected = "[DEFAULT]\nlist = " + ",".join(param_values) + "\n\n"
+        obtained = ""
+        with open(self.temp_file.name, "r") as read_file:
+            obtained = read_file.read()
+        self.assertEqual(expected, obtained)
+
+
+class ConfigTest(ConfigTestCase):
+
+    def setUp(self):
+        super(ConfigTest, self).setUp()
+        self.patcher = patch("lava.config.DEFAULT_XDG_RESOURCE", "a_temp_dir")
+        self.patcher.start()
+        self.xdg_resource = os.path.join(
+            os.path.expanduser("~"), ".config/a_temp_dir")
+        self.lavatool_resource = os.path.join(self.xdg_resource, "lava-tool")
+        self.config = Config()
+        self.config.save = MagicMock()
+
+    def tearDown(self):
+        super(ConfigTest, self).tearDown()
+        self.patcher.stop()
+        if os.path.isdir(self.xdg_resource):
+            shutil.rmtree(self.xdg_resource)
+
+    def test_ensure_xdg_dirs(self):
+        # Test that xdg can create the correct cache path, we remove it
+        # at the end since we patch the default value.
+        obtained = self.config._ensure_xdg_dirs()
+        self.assertEquals(self.lavatool_resource, obtained)
+
+    def test_config_file(self):
+        expected = os.path.join(self.lavatool_resource, "lava-tool.ini")
+        obtained = self.config.config_file
+        self.assertEquals(expected, obtained)
 
     def test_config_put_in_cache_0(self):
         self.config._put_in_cache("key", "value", "section")
@@ -138,16 +199,6 @@ class ConfigTest(ConfigTestCase):
         obtained = self.config._calculate_config_section(self.param2)
         self.assertEqual(expected, obtained)
 
-    def test_config_save(self):
-        self.config.put_parameter(self.param1, "foo")
-        self.config.save()
-
-        expected = "[DEFAULT]\nfoo = foo\n\n"
-        obtained = ""
-        with open(self.temp_file.name) as tmp_file:
-            obtained = tmp_file.read()
-        self.assertEqual(expected, obtained)
-
     def test_config_get_from_backend_public(self):
         # Need to to this, since we want a clean Config instance, with
         # a config_file with some content.
@@ -160,10 +211,10 @@ class ConfigTest(ConfigTestCase):
 
 class InteractiveConfigTest(ConfigTestCase):
 
-    @patch("lava.config.Config.save")
-    def setUp(self, mocked_save):
+    def setUp(self):
         super(InteractiveConfigTest, self).setUp()
         self.config = InteractiveConfig()
+        self.config.save = MagicMock()
         self.config.config_file = self.temp_file.name
 
     @patch("lava.config.Config.get", new=MagicMock(return_value=None))
@@ -264,18 +315,38 @@ class InteractiveConfigTest(ConfigTestCase):
         self.assertIsInstance(obtained, list)
         self.assertEqual(expected, obtained)
 
-    def test_interactive_save_list_param(self):
-        # Tests that when saved to file, the ListParameter parameter is stored
-        # correctly.
-        param_values = ["foo", "more than one words", "bar"]
-        list_param = ListParameter("list")
-        list_param.set(param_values)
 
-        self.config.put_parameter(list_param, param_values)
-        self.config.save()
+class TestInteractiveCache(HelperTest):
 
-        expected = "[DEFAULT]\nlist = " + ",".join(param_values) + "\n\n"
-        obtained = ""
-        with open(self.temp_file.name, "r") as read_file:
-            obtained = read_file.read()
-        self.assertEqual(expected, obtained)
+    def setUp(self):
+        super(TestInteractiveCache, self).setUp()
+        self.patcher = patch("lava.config.DEFAULT_XDG_RESOURCE", "a_temp_dir")
+        self.patcher.start()
+        self.cache = InteractiveCache()
+        self.cache.save = MagicMock()
+        self.xdg_resource = os.path.join(
+            os.path.expanduser("~"), ".cache/a_temp_dir")
+        self.lavatool_resource = os.path.join(self.xdg_resource, "lava-tool")
+
+    def tearDown(self):
+        super(TestInteractiveCache, self).tearDown()
+        self.patcher.stop()
+        if os.path.isdir(self.xdg_resource):
+            shutil.rmtree(self.xdg_resource)
+
+    def test_default_xdg(self):
+        # Dummy test, only to make sure patching the module attribute works.
+        from lava.config import DEFAULT_XDG_RESOURCE
+        self.assertEquals(DEFAULT_XDG_RESOURCE, "a_temp_dir")
+
+    def test_ensure_xdg_dirs(self):
+        # Test that xdg can create the correct cache path, we remove it
+        # at the end since we patch the default value.
+        obtained = self.cache._ensure_xdg_dirs()
+        self.assertEquals(self.lavatool_resource, obtained)
+
+    def test_config_file(self):
+        expected = os.path.join(self.lavatool_resource, "parameters.ini")
+        obtained = self.cache.config_file
+        self.assertEquals(expected, obtained)
+
