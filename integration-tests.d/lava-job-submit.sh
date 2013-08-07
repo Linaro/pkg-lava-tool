@@ -1,6 +1,6 @@
 fixed_response 999
 
-cat "${tmpdir}/config" <<EOF
+lava_config <<EOF
 [DEFAULT]
 server = validation.example.com
 
