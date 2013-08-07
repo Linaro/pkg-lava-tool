@@ -23,6 +23,7 @@ lava.config unit tests.
 import os
 import shutil
 import sys
+import tempfile
 
 from StringIO import StringIO
 from mock import (
@@ -97,19 +98,22 @@ class ConfigTest(ConfigTestCase):
 
     def setUp(self):
         super(ConfigTest, self).setUp()
-        self.patcher = patch("lava.config.DEFAULT_XDG_RESOURCE", "a_temp_dir")
-        self.patcher.start()
-        self.xdg_resource = os.path.join(
-            os.path.expanduser("~"), ".config/a_temp_dir")
+
+        self.config_dir = os.path.join(tempfile.gettempdir(), "config")
+        self.xdg_resource = os.path.join(self.config_dir, "linaro")
         self.lavatool_resource = os.path.join(self.xdg_resource, "lava-tool")
+
+        os.makedirs(self.lavatool_resource)
+
         self.config = Config()
+        self.config._ensure_xdg_dirs = MagicMock(
+            return_value=self.lavatool_resource)
         self.config.save = MagicMock()
 
     def tearDown(self):
         super(ConfigTest, self).tearDown()
-        self.patcher.stop()
-        if os.path.isdir(self.xdg_resource):
-            shutil.rmtree(self.xdg_resource)
+        if os.path.isdir(self.config_dir):
+            shutil.rmtree(self.config_dir)
 
     def test_ensure_xdg_dirs(self):
         # Test that xdg can create the correct cache path, we remove it
@@ -314,39 +318,3 @@ class InteractiveConfigTest(ConfigTestCase):
         obtained = self.config.get(ListParameter("list"))
         self.assertIsInstance(obtained, list)
         self.assertEqual(expected, obtained)
-
-
-class TestInteractiveCache(HelperTest):
-
-    def setUp(self):
-        super(TestInteractiveCache, self).setUp()
-        self.patcher = patch("lava.config.DEFAULT_XDG_RESOURCE", "a_temp_dir")
-        self.patcher.start()
-        self.cache = InteractiveCache()
-        self.cache.save = MagicMock()
-        self.xdg_resource = os.path.join(
-            os.path.expanduser("~"), ".cache/a_temp_dir")
-        self.lavatool_resource = os.path.join(self.xdg_resource, "lava-tool")
-
-    def tearDown(self):
-        super(TestInteractiveCache, self).tearDown()
-        self.patcher.stop()
-        if os.path.isdir(self.xdg_resource):
-            shutil.rmtree(self.xdg_resource)
-
-    def test_default_xdg(self):
-        # Dummy test, only to make sure patching the module attribute works.
-        from lava.config import DEFAULT_XDG_RESOURCE
-        self.assertEquals(DEFAULT_XDG_RESOURCE, "a_temp_dir")
-
-    def test_ensure_xdg_dirs(self):
-        # Test that xdg can create the correct cache path, we remove it
-        # at the end since we patch the default value.
-        obtained = self.cache._ensure_xdg_dirs()
-        self.assertEquals(self.lavatool_resource, obtained)
-
-    def test_config_file(self):
-        expected = os.path.join(self.lavatool_resource, "parameters.ini")
-        obtained = self.cache.config_file
-        self.assertEquals(expected, obtained)
-
