@@ -243,7 +243,7 @@ class UtilTests(TestCase):
 
     def test_verify_and_create_url_0(self):
         expected = "https://www.example.org/"
-        obtained = verify_and_create_url("www.example.org", "")
+        obtained = verify_and_create_url("www.example.org")
         self.assertEquals(expected, obtained)
 
     def test_verify_and_create_url_1(self):
@@ -253,12 +253,12 @@ class UtilTests(TestCase):
 
     def test_verify_and_create_url_2(self):
         expected = "http://www.example.org/RPC/"
-        obtained = verify_and_create_url("http://www.example.org", "RPC")
+        obtained = verify_and_create_url("http://www.example.org/RPC")
         self.assertEquals(expected, obtained)
 
     def test_verify_and_create_url_3(self):
         expected = "https://www.example.org/RPC/"
-        obtained = verify_and_create_url("www.example.org/", "/RPC/")
+        obtained = verify_and_create_url("www.example.org/RPC")
         self.assertEquals(expected, obtained)
 
     def test_create_dir_0(self):

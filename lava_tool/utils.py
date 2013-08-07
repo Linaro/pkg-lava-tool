@@ -281,7 +281,7 @@ def edit_file(file_to_edit):
                                                            editor))
 
 
-def verify_and_create_url(server, endpoint=""):
+def verify_and_create_url(endpoint):
     """Checks that the provided values make a correct URL.
 
     If the server address does not contain a scheme, by default it will use
@@ -291,25 +291,22 @@ def verify_and_create_url(server, endpoint=""):
     :param server: A server URL to verify.
     :return A URL.
     """
-    scheme, netloc, path, params, query, fragment = \
-        urlparse.urlparse(server)
-    if not scheme:
-        scheme = "https"
-    if not netloc:
-        netloc, path = path, ""
-
-    if not netloc[-1:] == "/":
-        netloc += "/"
-
+    url = ""
     if endpoint:
-        if endpoint[0] == "/":
-            endpoint = endpoint[1:]
-        if not endpoint[-1:] == "/":
-            endpoint += "/"
-        netloc += endpoint
+        scheme, netloc, path, params, query, fragment = \
+            urlparse.urlparse(endpoint)
+        if not scheme:
+            scheme = "https"
+        if not netloc:
+            netloc, path = path, ""
 
-    return urlparse.urlunparse(
-        (scheme, netloc, path, params, query, fragment))
+        url = urlparse.urlunparse(
+            (scheme, netloc, path, params, query, fragment))
+
+        if url[-1:] != "/":
+            url += "/"
+
+    return url
 
 
 def create_dir(path, dir_name=None):
