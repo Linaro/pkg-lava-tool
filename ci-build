@@ -33,8 +33,6 @@ if ! pip show coverage | grep -q coverage; then
   pip install coverage
 fi
 
-export LAVACONFIG=/dev/null
-
 if test -z "$DISPLAY"; then
   # actual CI
 
