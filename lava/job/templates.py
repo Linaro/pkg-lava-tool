@@ -30,10 +30,6 @@ PREBUILT_IMAGE_PARAMETER = Parameter("image", depends=DEVICE_TYPE_PARAMETER)
 TESTDEF_URLS_PARAMETER = ListParameter("testdef_urls")
 TESTDEF_URLS_PARAMETER.store = False
 
-# Use another ID for the server parameter, might be different.
-SERVER_PARAMETER = Parameter("stream_server")
-STREAM_PARAMETER = Parameter("stream")
-
 BOOT_TEST = {
     "timeout": 18000,
     "job_name": "Boot test",
@@ -68,13 +64,6 @@ LAVA_TEST_SHELL = {
                 "timeout": 1800,
                 "testdef_urls": TESTDEF_URLS_PARAMETER,
             }
-        },
-        {
-            "command": "submit_results",
-            "parameters": {
-                "stream": STREAM_PARAMETER,
-                "server": SERVER_PARAMETER
-            }
         }
     ]
 }
@@ -102,13 +91,6 @@ LAVA_TEST_SHELL_TAR_REPO = {
                         LAVA_TEST_SHELL_TAR_REPO_KEY: None,
                     }
                 ]
-            }
-        },
-        {
-            "command": "submit_results",
-            "parameters": {
-                "stream": STREAM_PARAMETER,
-                "server": SERVER_PARAMETER
             }
         }
     ]
