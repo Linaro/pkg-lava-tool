@@ -144,7 +144,6 @@ class job_status(Command):
         super(job_status, cls).register_arguments(parser)
         parser.add_argument("SERVER")
         parser.add_argument("JOB_ID",
-                            type=int,
                             help="Job ID to check the status")
 
     def invoke(self):
@@ -152,6 +151,6 @@ class job_status(Command):
             self.args.SERVER, auth_backend=KeyringAuthBackend())
         job_status = server.scheduler.job_status(self.args.JOB_ID)
 
-        print "Job ID: %d\nJob Status: %s\nBundle SHA1: %s" %(self.args.JOB_ID,
-               job_status['job_status'], job_status['bundle_sha1'])
-
+        print "Job ID: %s\nJob Status: %s\nBundle SHA1: %s" % \
+            (str(self.args.JOB_ID), job_status['job_status'],
+             job_status['bundle_sha1'])
