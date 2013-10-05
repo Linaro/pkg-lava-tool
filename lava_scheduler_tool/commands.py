@@ -65,7 +65,7 @@ class resubmit_job(ExperimentalCommandMixIn, Command):
     @classmethod
     def register_arguments(self, parser):
         parser.add_argument("SERVER")
-        parser.add_argument("JOB_ID", type=int)
+        parser.add_argument("JOB_ID")
 
     def invoke(self):
         self.print_experimental_notice()
@@ -84,7 +84,7 @@ class cancel_job(ExperimentalCommandMixIn, Command):
     @classmethod
     def register_arguments(self, parser):
         parser.add_argument("SERVER")
-        parser.add_argument("JOB_ID", type=int)
+        parser.add_argument("JOB_ID")
 
     def invoke(self):
         self.print_experimental_notice()
@@ -103,7 +103,6 @@ class job_output(Command):
         super(job_output, cls).register_arguments(parser)
         parser.add_argument("SERVER")
         parser.add_argument("JOB_ID",
-                            type=int,
                             help="Job ID to download output file")
         parser.add_argument("--overwrite",
                             action="store_true",
