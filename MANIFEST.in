@@ -4,3 +4,11 @@ recursive-include launch_control_tool/models *.py
 recursive-include launch_control_tool/tests *.py
 recursive-include launch_control_tool/thirdparty *.py
 recursive-include launch_control_tool/utils *.py
+include .coveragerc
+include .testr.conf
+include HACKING
+include ci-build
+include entry_points.ini
+include integration-tests
+recursive-include integration-tests.d *
+
