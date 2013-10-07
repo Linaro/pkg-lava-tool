@@ -21,6 +21,7 @@ Module with LavaDispatcher - the command dispatcher
 """
 
 import argparse
+import argcomplete
 import logging
 import pkg_resources
 import sys
@@ -121,6 +122,8 @@ class Dispatcher(object):
 
         If arguments are left out they are looked up in sys.argv automatically
         """
+        # Before anything, hook into the bash completion
+        argcomplete.autocomplete(self.parser)
         # First parse whatever input arguments we've got
         args = self.parser.parse_args(raw_args)
         # Adjust logging level after seeing arguments

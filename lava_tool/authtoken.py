@@ -72,6 +72,15 @@ class XMLRPCTransport(xmlrpclib.Transport):
 
     def request(self, host, handler, request_body, verbose=0):
         self.verbose = verbose
+        request = self.build_http_request(host, handler, request_body)
+        try:
+            response = self._opener.open(request)
+        except urllib2.HTTPError as e:
+            raise xmlrpclib.ProtocolError(
+                host + handler, e.code, e.msg, e.info())
+        return self.parse_response(response)
+
+    def build_http_request(self, host, handler, request_body):
         token = None
         user = None
         auth, host = urllib.splituser(host)
@@ -88,12 +97,8 @@ class XMLRPCTransport(xmlrpclib.Transport):
         if token:
             auth = base64.b64encode(urllib.unquote(user + ':' + token))
             request.add_header("Authorization", "Basic " + auth)
-        try:
-            response = self._opener.open(request)
-        except urllib2.HTTPError as e:
-            raise xmlrpclib.ProtocolError(
-                host + handler, e.code, e.msg, e.info())
-        return self.parse_response(response)
+
+        return request
 
 
 class AuthenticatingServerProxy(xmlrpclib.ServerProxy):

@@ -1,0 +1,14 @@
+[run]
+branch = True
+source = .
+omit =
+    setup*
+    */tests/*
+
+[report]
+precision = 2
+show_missing = True
+
+[html]
+title = Code Coverage of lava-tool
+directory = lava_tool_coverage
