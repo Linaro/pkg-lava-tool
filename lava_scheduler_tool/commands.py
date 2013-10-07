@@ -132,3 +132,26 @@ class job_output(Command):
 
         print "Downloaded job output of {0} to file {1!r}".format(
             self.args.JOB_ID, filename)
+
+
+class job_status(Command):
+    """
+    Get job status and bundle sha1, if it existed, from the scheduler.
+    """
+
+    @classmethod
+    def register_arguments(cls, parser):
+        super(job_status, cls).register_arguments(parser)
+        parser.add_argument("SERVER")
+        parser.add_argument("JOB_ID",
+                            type=int,
+                            help="Job ID to check the status")
+
+    def invoke(self):
+        server = AuthenticatingServerProxy(
+            self.args.SERVER, auth_backend=KeyringAuthBackend())
+        job_status = server.scheduler.job_status(self.args.JOB_ID)
+
+        print "Job ID: %d\nJob Status: %s\nBundle SHA1: %s" %(self.args.JOB_ID,
+               job_status['job_status'], job_status['bundle_sha1'])
+
