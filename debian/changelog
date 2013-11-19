@@ -1,3 +1,9 @@
+lava-tool (0.8.1-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Neil Williams <codehelp@debian.org>  Tue, 19 Nov 2013 09:32:57 +0000
+
 lava-tool (0.7.2-1) unstable; urgency=low
 
   * Update for working support of a native Debian LAVA install.
