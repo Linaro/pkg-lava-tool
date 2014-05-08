@@ -1,0 +1,8 @@
+versiontools python-versiontools; PEP386
+PyYaml python-yaml; PEP386
+argparse libpython2.7-stdlib
+argcomplete python-argcomplete; PEP386
+keyring python-keyring; PEP386
+json-schema-validator python-json-schema-validator; PEP386
+pyxdg python-xdg; PEP386
+

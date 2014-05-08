@@ -1,5 +1,5 @@
 Source: lava-tool
-Section: net
+Section: python
 Priority: optional
 Maintainer: Debian LAVA team <pkg-linaro-lava-devel@lists.alioth.debian.org>
 Uploaders: Antonio Terceiro <terceiro@debian.org>,
@@ -7,15 +7,21 @@ Uploaders: Antonio Terceiro <terceiro@debian.org>,
  Fathi Boudra <fabo@debian.org>, Jordi Mallach <jordi@debian.org>
 Build-Depends: debhelper (>= 8.0.0),
  python | python-all | python-dev | python-all-dev,
+ python-sphinx (>= 1.0.7+dfsg) | python3-sphinx,
  python-versiontools, python-setuptools
 X-Python-Version: 2.7
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 Homepage: http://www.linaro.org/engineering/validation
-#Vcs-Git: git://git.debian.org/collab-maint/lava-tool.git
-#Vcs-Browser: http://git.debian.org/?p=collab-maint/lava-tool.git;a=summary
+Vcs-Git: https://github.com/Linaro/pkg-lava-tool.git
+Vcs-Browser: https://github.com/Linaro/pkg-lava-tool
 
 Package: lava-tool
 Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}
+Depends: python-setuptools, ${python:Depends}, ${misc:Depends}
+Breaks: lava-dashboard-tool (<< 0.8), lava-scheduler-tool (<< 0.6)
+Replaces: lava-dashboard-tool (<< 0.8), lava-scheduler-tool (<< 0.6)
 Description: command line utility for LAVA
- Linaro Automated Validation Architecture.
+ This package provides a user space connection to a
+ LAVA (Linaro Automated Validation Architecture)
+ instance for submitting test jobs or querying the instance
+ for device and job status over XMLRPC.
