@@ -1,3 +1,11 @@
+lava-tool (0.11.2-1) unstable; urgency=medium
+
+  * New upstream release - completes the removal of
+    versiontools. (Closes: #749871)
+  * Add autopkgtests support.
+
+ -- Neil Williams <codehelp@debian.org>  Tue, 10 Jun 2014 19:50:38 +0100
+
 lava-tool (0.11.1-1) unstable; urgency=medium
 
   * New upstream release
