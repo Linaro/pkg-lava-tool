@@ -25,7 +25,17 @@ Depends: python-setuptools, ${python:Depends}, ${misc:Depends}
 Breaks: lava-dashboard-tool (<< 0.8), lava-scheduler-tool (<< 0.6)
 Replaces: lava-dashboard-tool (<< 0.8), lava-scheduler-tool (<< 0.6)
 Description: command line utility for LAVA
- This package provides a user space connection to a
- LAVA (Linaro Automated Validation Architecture)
- instance for submitting test jobs or querying the instance
- for device and job status over XMLRPC.
+ LAVA is a continuous integration system for deploying operating
+ systems onto physical and virtual hardware for running tests.
+ Tests can be simple boot testing, bootloader testing and system
+ level testing, although extra hardware may be required for some
+ system tests. Results are tracked over time and data can be
+ exported for further analysis.
+ .
+ This package provides a user space connection to any LAVA
+ (Linaro Automated Validation Architecture) instance for
+ submitting test jobs or querying the instance for device and job
+ status over XMLRPC. A user account on the instance is needed to
+ create and use authentication tokens for some calls. The list
+ of calls supported is described on the API section of the LAVA
+ instance.
