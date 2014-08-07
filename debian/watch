@@ -1,5 +1,5 @@
 # Compulsory line, this is a version 3 file
 version=3
 
-http://releases.linaro.org/latest/components/platform/lava/lava-tool_(.*).orig.tar.gz
+http://releases.linaro.org/latest/components/lava/lava-tool_(.*).tar.gz
 
