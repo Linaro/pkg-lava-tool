@@ -5,7 +5,7 @@ Maintainer: Debian LAVA team <pkg-linaro-lava-devel@lists.alioth.debian.org>
 Uploaders: Antonio Terceiro <terceiro@debian.org>,
  Neil Williams <codehelp@debian.org>,
  Fathi Boudra <fabo@debian.org>, Jordi Mallach <jordi@debian.org>
-Build-Depends: debhelper (>= 8.0.0),
+Build-Depends: debhelper (>= 8.0.0), dh-python,
  python | python-all | python-dev | python-all-dev,
  python-sphinx (>= 1.0.7+dfsg) | python3-sphinx,
  python-setuptools
@@ -14,7 +14,7 @@ Build-Depends-Indep: python-json-schema-validator,
  python-yaml (>= 3.10), python-mock, python-mocker
 X-Python-Version: 2.7
 XS-Testsuite: autopkgtest
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 Homepage: http://www.linaro.org/engineering/validation
 Vcs-Git: https://github.com/Linaro/pkg-lava-tool.git
 Vcs-Browser: https://github.com/Linaro/pkg-lava-tool

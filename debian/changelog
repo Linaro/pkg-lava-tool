@@ -1,7 +1,8 @@
-lava-tool (0.11.3-1) unstable; urgency=medium
+lava-tool (0.12-1) unstable; urgency=medium
 
   * New upstream release
   * Update watch file for git tags
+  * Add dh-python to build-depends
 
  -- Neil Williams <codehelp@debian.org>  Tue, 05 May 2015 11:23:12 +0100
 
