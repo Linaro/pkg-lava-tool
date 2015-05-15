@@ -1,3 +1,9 @@
+lava-tool (0.12-1~bpo8+1) jessie-backports; urgency=medium
+
+  * Rebuild for jessie-backports.
+
+ -- Neil Williams <codehelp@debian.org>  Fri, 15 May 2015 11:48:12 +0100
+
 lava-tool (0.12-1) unstable; urgency=medium
 
   * New upstream release
