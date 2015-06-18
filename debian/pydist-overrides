@@ -5,4 +5,5 @@ argcomplete python-argcomplete; PEP386
 keyring python-keyring; PEP386
 json-schema-validator python-json-schema-validator; PEP386
 pyxdg python-xdg; PEP386
+jinja2 python-jinja2; PEP386
 
