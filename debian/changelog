@@ -1,3 +1,9 @@
+lava-tool (0.13-2) unstable; urgency=medium
+
+  * Add Senthil Kumaran S (stylesen) as an uploader.
+
+ -- Senthil Kumaran S (stylesen) <stylesen@gmail.com>  Tue, 08 Sep 2015 22:13:51 +0530
+
 lava-tool (0.13-1) unstable; urgency=medium
 
   * New production release
