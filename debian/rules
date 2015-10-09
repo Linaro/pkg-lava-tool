@@ -43,12 +43,12 @@ override_dh_auto_clean:
 
 # test suite not yet suitable for use on a buildd
 # tries to create files
-ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
-test-python%:
-	HOME=$(TESTDIR) python setup.py test -vv
+#ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+#test-python%:
+#	HOME=$(TESTDIR) python setup.py test -vv
 
-override_dh_auto_test: $(PYTHON2:%=test-python%)
-endif
+#override_dh_auto_test: $(PYTHON2:%=test-python%)
+#endif
 
 # get upstream version for get-orig-source target
 VERSION:= $(shell dpkg-parsechangelog | grep '^Version: ' | sed -e 's/^Version: //' | sed -e 's/\-.*$$//')
