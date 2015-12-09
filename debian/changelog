@@ -1,6 +1,8 @@
 lava-tool (0.14-1) unstable; urgency=medium
 
   * New production release.
+  * Add sphinx options to set the manpage build date for reproducibility
+    support.
 
  -- Neil Williams <codehelp@debian.org>  Wed, 09 Dec 2015 09:34:36 +0000
 
