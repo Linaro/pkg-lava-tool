@@ -1,0 +1,19 @@
+Building lava-tool
+==================
+
+For unstable:
+-------------
+
+$ gbp buildpackage
+
+For jessie backports:
+---------------------
+
+Uses a jessie-backports schroot.
+Change <KEYID> and <VERSION> for your GnuPG Debian key and the most recent
+version of lava-tool in backports.
+
+$ gbp buildpackage --git-debian-branch=backports \
+  --git-builder=sbuild -d jessie-backports -A -s --force-orig-source \
+  --debbuildopts='-v<VERSION>' -k<KEYID>
+
