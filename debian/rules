@@ -13,6 +13,9 @@
 # Prevent setuptools/distribute from accessing the internet.
 export http_proxy = http://127.0.9.1:9
 
+export LAST_CHANGE=$(shell dpkg-parsechangelog -S Date)
+export BUILD_DATE=$(shell LC_ALL=C date -u "+%B %d, %Y" -d "$(LAST_CHANGE)")
+
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
 
@@ -22,12 +25,12 @@ PYTHON2:=$(shell pyversions -r)
 install_dir=$(call py_libdir, $(PYTHON2))
 
 %:
-	dh $@ --with python2
+	dh $@ --with sphinxdoc,python2
 
 override_dh_auto_build:
 	dh_auto_build
 	python setup.py build
-	make -C man/ man
+	make -C man/ man SPHINXOPTS="-D today=\"$(BUILD_DATE)\""
 	mkdir -p $(TESTDIR)
 
 override_dh_auto_install:
@@ -43,12 +46,12 @@ override_dh_auto_clean:
 
 # test suite not yet suitable for use on a buildd
 # tries to create files
-ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
-test-python%:
-	HOME=$(TESTDIR) python setup.py test -vv
+#ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+#test-python%:
+#	HOME=$(TESTDIR) python setup.py test -vv
 
-override_dh_auto_test: $(PYTHON2:%=test-python%)
-endif
+#override_dh_auto_test: $(PYTHON2:%=test-python%)
+#endif
 
 # get upstream version for get-orig-source target
 VERSION:= $(shell dpkg-parsechangelog | grep '^Version: ' | sed -e 's/^Version: //' | sed -e 's/\-.*$$//')
