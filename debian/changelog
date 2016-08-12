@@ -1,3 +1,9 @@
+lava-tool (0.14-3) unstable; urgency=medium
+
+  * Drop python-json-schema-validator from Build-Depends-Indep
+
+ -- Anders Roxell <anders.roxell@linaro.org>  Fri, 12 Aug 2016 11:06:24 +0200
+
 lava-tool (0.14-2) unstable; urgency=medium
 
   * Add requirement for python-keyrings.alt to provide access to the
