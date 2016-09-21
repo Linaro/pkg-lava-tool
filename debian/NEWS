@@ -1,0 +1,18 @@
+lava-tool (0.15-1) unstable; urgency=medium
+
+   lava-tool has changed the backend for token storage.
+
+   This means that existing authentications will not be usable to this
+   new version. This change has been made to fix persistent problems with
+   the python-keyring support, including:
+   * DBus errors when used over SSH
+   * Interaction with gnome-keyring causing authentication failure
+   * Inability to list or remove authentications added to the keyring
+   * Inability to work with other keyring solutions.
+
+   The new backend is able to list and remove authentications. The new
+   support also removes the need for a default password on the user
+   keyring, so lava-tool will no longer pause waiting for password
+   entry.
+
+ -- Neil Williams <codehelp@debian.org>  Mon, 19 Sep 2016 16:09:31 +0100
