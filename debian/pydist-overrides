@@ -5,4 +5,4 @@ argcomplete python-argcomplete; PEP386
 keyring python-keyring; PEP386
 pyxdg python-xdg; PEP386
 jinja2 python-jinja2; PEP386
-
+zmq python-zmq; PEP386
