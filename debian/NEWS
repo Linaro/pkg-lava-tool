@@ -1,4 +1,4 @@
-lava-tool (0.15-1) unstable; urgency=medium
+lava-tool (0.19-1) unstable; urgency=medium
 
    lava-tool has changed the backend for token storage.
 
@@ -15,4 +15,5 @@ lava-tool (0.15-1) unstable; urgency=medium
    keyring, so lava-tool will no longer pause waiting for password
    entry.
 
- -- Neil Williams <codehelp@debian.org>  Mon, 19 Sep 2016 16:09:31 +0100
+ -- Neil Williams <codehelp@debian.org>  Thu, 22 Dec 2016 09:34:48 +0000
+

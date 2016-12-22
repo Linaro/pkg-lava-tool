@@ -37,6 +37,7 @@ override_dh_auto_install:
 	dh_auto_install
 	python setup.py install --root=$(CURDIR)/debian/lava-tool/ --install-layout=deb
 	dh_installman -plava-tool man/_build/man/lava-tool.1
+	dh_installman -plava-tool man/_build/man/lava.1
 
 override_dh_auto_clean:
 	dh_auto_clean
