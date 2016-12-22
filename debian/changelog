@@ -1,8 +1,25 @@
-lava-tool (0.14-3) unstable; urgency=medium
+lava-tool (0.19-1) unstable; urgency=medium
 
+  [ Neil Williams ]
+  * New upstream release
+    2edd4d1 Fix remaining pep8 errors in lava-tool.
+    dc0c01c Add validate-pipeline-devices subcommand.
+    0c468c3 Allow for older instances in submit_job url
+    6da6144 Add job link on submission and resubmission.
+    35cd78e Update manpage entries for lava and lava-tool commands.
+    51fa203 Add zmq client to lava-tool.
+    748f41d Fix legacy pep8 errors.
+    32c020f lava-tool shortcuts.
+    38e1092 Secure protocol check.
+    c5878ba lava-tool auth management.
+    bf39705 Add simple URL check for git, http and ftp urls in job def.
+    c2aaff4 setup.py: remove json_schema_validator install_requires
+    3a479a7 setup.py: remove argparse from install_requires
+
+    [Anders Roxell]
   * Drop python-json-schema-validator from Build-Depends-Indep
 
- -- Anders Roxell <anders.roxell@linaro.org>  Fri, 12 Aug 2016 11:06:24 +0200
+ -- Neil Williams <codehelp@debian.org>  Thu, 22 Dec 2016 09:37:04 +0000
 
 lava-tool (0.14-2) unstable; urgency=medium
 

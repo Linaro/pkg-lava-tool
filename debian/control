@@ -10,8 +10,8 @@ Build-Depends: debhelper (>= 8.0.0), dh-python,
  python | python-all | python-dev | python-all-dev,
  python-sphinx (>= 1.0.7+dfsg) | python3-sphinx,
  python-setuptools
-Build-Depends-Indep: python-json-schema-validator,
- python-argcomplete (>= 0.3), python-yaml (>= 3.10),
+Build-Depends-Indep: python-argcomplete (>= 0.3),
+ python-keyring, python-xdg, python-yaml (>= 3.10),
  python-mock, python-mocker
 X-Python-Version: 2.7
 Testsuite: autopkgtest
