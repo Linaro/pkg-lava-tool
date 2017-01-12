@@ -1,3 +1,18 @@
+lava-tool (0.20-1) unstable; urgency=medium
+
+  * New upstream release
+    9dca673 Update for new release
+    76b7a34 LAVA-795 - expose lava-publisher event socket settings.
+    e2428b2 Spelling fixes for the lava-tool manpage
+    c0435fc Use the publishing API for local file:// references.
+    6b34143 wait_job_events output update.
+    844aabe Mark lava-dashboard-tool as deprecated when
+      invoking --help option.
+    12f67fb Support download results for job, test suite and test
+      case in lava-tool.
+
+ -- Neil Williams <codehelp@debian.org>  Thu, 12 Jan 2017 14:11:28 +0000
+
 lava-tool (0.19-1) unstable; urgency=medium
 
   [ Neil Williams ]
