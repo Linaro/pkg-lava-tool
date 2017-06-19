@@ -21,21 +21,21 @@ export DH_OPTIONS
 
 TESTDIR = $(CURDIR)/debian/testhome
 
-PYTHON2:=$(shell pyversions -r)
-install_dir=$(call py_libdir, $(PYTHON2))
+PYTHON3:=$(shell py3versions -r)
+install_dir=$(call py_libdir, $(PYTHON3))
 
 %:
-	dh $@ --with sphinxdoc,python2
+	dh $@ --with sphinxdoc,python3
 
 override_dh_auto_build:
 	dh_auto_build
-	python setup.py build
+	python3 setup.py build
 	make -C man/ man SPHINXOPTS="-D today=\"$(BUILD_DATE)\""
 	mkdir -p $(TESTDIR)
 
 override_dh_auto_install:
 	dh_auto_install
-	python setup.py install --root=$(CURDIR)/debian/lava-tool/ --install-layout=deb
+	python3 setup.py install --root=$(CURDIR)/debian/lava-tool/ --install-layout=deb
 	dh_installman -plava-tool man/_build/man/lava-tool.1
 	dh_installman -plava-tool man/_build/man/lava.1
 
@@ -58,6 +58,6 @@ override_dh_auto_clean:
 VERSION:= $(shell dpkg-parsechangelog | grep '^Version: ' | sed -e 's/^Version: //' | sed -e 's/\-.*$$//')
 
 sdist-orig:
-	python setup.py sdist
+	python3 setup.py sdist
 	mv -v dist/lava-tool-$(VERSION).tar.gz ../lava-tool_$(VERSION).orig.tar.gz
 	$(RM) -r versiontools-*.egg/
