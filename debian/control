@@ -1,5 +1,5 @@
 Source: lava-tool
-Section: python
+Section: admin
 Priority: optional
 Maintainer: Debian LAVA team <pkg-linaro-lava-devel@lists.alioth.debian.org>
 Uploaders: Antonio Terceiro <terceiro@debian.org>,

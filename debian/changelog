@@ -1,3 +1,14 @@
+lava-tool (0.22-1) unstable; urgency=medium
+
+  * New upstream release (Closes: #820371, #864417, #864418)
+    9f36d59 Move lava-tool version to scheduler
+    6881130 Handle cancel and list errors cleanly
+    89b09b9 LAVA-766 - update lava-tool manpage
+    1472288 Parse the job definition into YAML before validating urls
+    bbfec5c Drop python-argcomplete requirement
+
+ -- Senthil Kumaran S (stylesen) <stylesen@gmail.com>  Mon, 10 Jul 2017 08:22:34 +0530
+
 lava-tool (0.21-1) unstable; urgency=medium
 
   * New upstream release
