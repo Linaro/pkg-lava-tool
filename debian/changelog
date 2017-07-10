@@ -1,3 +1,12 @@
+lava-tool (0.23-1) unstable; urgency=medium
+
+  * New upstream release
+    90f2eb1 Create a new major version.
+    2b8cb85 Fix entrypoints errors and tests
+  * Standards version updated (no changes)
+
+ -- Senthil Kumaran S (stylesen) <stylesen@gmail.com>  Mon, 10 Jul 2017 23:14:27 +0530
+
 lava-tool (0.22-1) unstable; urgency=medium
 
   * New upstream release (Closes: #820371, #864417, #864418)
