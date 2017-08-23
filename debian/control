@@ -22,7 +22,7 @@ Vcs-Browser: https://github.com/Linaro/pkg-lava-tool
 
 Package: lava-tool
 Architecture: all
-Depends: python-setuptools,
+Depends: python-setuptools, python-simplejson,
  ${python:Depends}, ${misc:Depends}
 Recommends: ca-certificates
 Breaks: lava-dashboard-tool (<< 0.8), lava-scheduler-tool (<< 0.6)

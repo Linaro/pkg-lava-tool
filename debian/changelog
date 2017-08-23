@@ -1,3 +1,9 @@
+lava-tool (0.21-1+deb9u1) stable-proposed-updates; urgency=medium
+
+  * Add missing dependency: python-simplejson. (Closes: #872782)
+
+ -- Neil Williams <codehelp@debian.org>  Wed, 23 Aug 2017 11:55:21 +0100
+
 lava-tool (0.21-1) unstable; urgency=medium
 
   * New upstream release
