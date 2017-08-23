@@ -1,4 +1,4 @@
-lava-tool (0.21-1+deb9u1) stable-proposed-updates; urgency=medium
+lava-tool (0.21-1+deb9u1) stretch; urgency=medium
 
   * Add missing dependency: python-simplejson. (Closes: #872782)
 

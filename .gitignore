@@ -5,3 +5,4 @@ dist/
 .pc/
 *.pyc
 tags
+tmp/
