@@ -1,6 +1,7 @@
 # Compulsory line, this is a version 3 file
 version=3
 
-# http://releases.linaro.org/latest/components/lava/lava-tool_(.*).tar.gz
+# https://git.linaro.org/lava/lava-dispatcher.git/snapshot/lava-server-2016.11.tar.gz
 
-https://git.linaro.org/lava/lava-tool.git/tags /lava/lava-tool.git/log/refs/tags/release-(.*)
+https://git.linaro.org/lava/lava-tool.git/refs /lava/lava-tool.git/snapshot/lava-tool-release-(\d+.\d+.\d?)\d*.*.tar.gz
+
