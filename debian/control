@@ -22,7 +22,7 @@ Package: lava-tool
 Architecture: all
 Depends: python-setuptools,
  ${python:Depends}, ${misc:Depends}
-Recommends: ca-certificates
+Recommends: git, ca-certificates
 Breaks: lava-dashboard-tool (<< 0.8), lava-scheduler-tool (<< 0.6)
 Replaces: lava-dashboard-tool (<< 0.8), lava-scheduler-tool (<< 0.6)
 Description: command line utility for LAVA
