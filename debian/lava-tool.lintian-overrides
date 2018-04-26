@@ -1,0 +1,5 @@
+# lintian error
+lava-tool: spelling-error-in-description some system some systems
+
+# NEWS item added, this package is deprecated
+lava-tool: dependency-on-python-version-marked-for-end-of-life (Depends: python)

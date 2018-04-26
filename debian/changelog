@@ -1,3 +1,13 @@
+lava-tool (0.25-1) unstable; urgency=medium
+
+  * New upstream release
+  * db56922 lava-tool jobs-list: output as JSON
+  * 04f269 LAVA-107 - Drop lava-dashboard-tool
+  * e4de32 LAVA-1223 - lava-tool: check remote api for wait-job-events
+  * Add NEWS item that lava-tool is now deprecated in favour of lavacli.
+
+ -- Neil Williams <codehelp@debian.org>  Thu, 26 Apr 2018 09:20:04 +0100
+
 lava-tool (0.24-1) unstable; urgency=medium
 
   * New upstream release 

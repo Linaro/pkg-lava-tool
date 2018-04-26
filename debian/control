@@ -12,7 +12,7 @@ Build-Depends-Indep: python-xdg, python-yaml (>= 3.10),
  python-mock, python-mocker
 X-Python-Version: 2.7
 Testsuite: autopkgtest
-Standards-Version: 4.1.3
+Standards-Version: 4.1.4
 Homepage: https://www.linaro.org/initiatives/lava/
 Vcs-Git: https://github.com/Linaro/pkg-lava-tool.git
 Vcs-Browser: https://github.com/Linaro/pkg-lava-tool
@@ -24,7 +24,7 @@ Depends: python-setuptools,
 Recommends: git, ca-certificates
 Breaks: lava-dashboard-tool (<< 0.8), lava-scheduler-tool (<< 0.6)
 Replaces: lava-dashboard-tool (<< 0.8), lava-scheduler-tool (<< 0.6)
-Description: command line utility for LAVA
+Description: deprecated command line utility for LAVA
  LAVA is a continuous integration system for deploying operating
  systems onto physical and virtual hardware for running tests.
  Tests can be simple boot testing, bootloader testing and system
@@ -32,10 +32,13 @@ Description: command line utility for LAVA
  system tests. Results are tracked over time and data can be
  exported for further analysis.
  .
- This package provides a user space connection to any LAVA
+ This package provides a Python2 user space connection to any LAVA
  (Linaro Automated Validation Architecture) instance for
  submitting test jobs or querying the instance for device and job
  status over XMLRPC. A user account on the instance is needed to
  create and use authentication tokens for some calls. The list
  of calls supported is described on the API section of the LAVA
  instance.
+ .
+ This package is DEPRECATED in favour of lavacli which uses
+ Python3.
