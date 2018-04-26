@@ -1,3 +1,9 @@
+lava-tool (0.25-2) unstable; urgency=medium
+
+  * Fix autopkgtests for removed test directory
+
+ -- Neil Williams <codehelp@debian.org>  Wed, 16 May 2018 10:44:53 +0100
+
 lava-tool (0.25-1) unstable; urgency=medium
 
   * New upstream release
